@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rundown Live — Real-Time Event Cue & Multi-Room Monitor</title>
+  <meta name="description" content="Sistem monitoring rundown event real-time multi-ruangan dengan live cue, kalkulasi keterlambatan otomatis, dan riwayat event." />
+
+  <!-- Fonts: Inter + JetBrains Mono for high-contrast broadcast legibility -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+          colors: {
+            canvas: '#090B0E',
+            surface: '#11151C',
+            elevated: '#171D27',
+            line: '#252E3D',
+            'line-strong': '#334155',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: #090B0E;
+      color: #F8FAFC;
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Subtle dark scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090B0E;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #252E3D;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3B4960;
+    }
+
+    /* Live indicator pulse */
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.88); }
+    }
+    .animate-live-dot {
+      animation: livePulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Delay alert pulse (subtle border/bg attention without harsh strobe) */
+    @keyframes delayPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.72; }
+    }
+    .animate-delay-badge {
+      animation: delayPulse 2s ease-in-out infinite;
+    }
+
+    /* Custom time input icon visibility in dark mode */
+    input[type="time"]::-webkit-calendar-picker-indicator,
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.85);
+      cursor: pointer;
+    }
+
+    /* Modal transitions */
+    .modal-backdrop {
+      background-color: rgba(4, 6, 9, 0.82);
+      backdrop-filter: blur(6px);
+    }
+
+    /* Active row highlight */
+    .cue-row-active-ok {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.05) 65%, rgba(17, 21, 28, 0.4) 100%);
+      box-shadow: inset 4px 0 0 #10B981;
+    }
+    .cue-row-active-delay {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.24) 0%, rgba(239, 68, 68, 0.08) 70%, rgba(17, 21, 28, 0.4) 100%);
+      box-shadow: inset 4px 0 0 #EF4444;
+    }
+    .cue-row-completed-delay {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.10) 0%, rgba(17, 21, 28, 0.15) 60%);
+      box-shadow: inset 3px 0 0 rgba(239, 68, 68, 0.7);
+    }
+
+    /* Deterministic JS visibility toggle (never conflicts with Tailwind flex/inline-flex) */
+    .d-none {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-canvas text-slate-100 flex flex-col selection:bg-amber-400 selection:text-slate-950">
+
+  <!-- ==================== STICKY HEADER / NAVBAR ==================== -->
+  <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+
+      <!-- Left: Brand & Mobile Nav -->
+      <div class="flex items-center gap-4 min-w-0">
+        <button id="btn-brand-home" type="button" class="flex items-center gap-2.5 text-left group focus:outline-none">
+          <div class="w-9 h-9 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-extrabold text-sm tracking-tight shrink-0 shadow-sm group-hover:bg-amber-300 transition-colors">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+          <div class="leading-tight min-w-0">
+            <div class="font-extrabold text-base tracking-tight text-white truncate">RUNDOWN<span class="text-amber-400">LIVE</span></div>
+            <div class="text-[11px] font-medium text-slate-400 tracking-wide uppercase hidden sm:block">Broadcast Cue Monitor</div>
+          </div>
+        </button>
+
+        <!-- Desktop Main Navigation -->
+        <nav class="hidden md:flex items-center gap-1 ml-2 pl-4 border-l border-line" aria-label="Navigasi Utama">
+          <button id="nav-monitor" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span>Master Monitor</span>
+            <span id="badge-active-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
+          </button>
+
+          <button id="nav-history" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>History</span>
+            <span id="badge-history-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Right: Sync Status, Live Wall Clock, Auth -->
+      <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+
+        <!-- Connection Indicator -->
+        <div id="sync-indicator" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-elevated border border-line text-xs font-medium text-slate-300" title="Status Koneksi Firebase Real-Time">
+          <span id="sync-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="sync-text" class="tracking-wide uppercase text-[11px]">CONNECTING</span>
+        </div>
+
+        <!-- Master Live Clock -->
+        <div class="px-3 py-1.5 rounded-lg bg-canvas border border-line flex items-center gap-2" title="Waktu Aktual Lokal">
+          <span class="hidden lg:inline text-[10px] font-bold uppercase tracking-wider text-slate-400">TIME</span>
+          <span id="header-clock" class="font-mono font-bold text-sm sm:text-base text-white tabular-nums tracking-tight">--:--:--</span>
+        </div>
+
+        <!-- Auth Controls -->
+        <div id="auth-controls" class="flex items-center gap-2">
+          <!-- Public state: Admin Login Button -->
+          <button id="btn-open-login" type="button" class="px-3.5 py-2 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-sm font-semibold text-white transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Admin Login</span>
+          </button>
+
+          <!-- Logged-in Admin state -->
+          <div id="admin-user-bar" class="d-none flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-amber-400/10 border border-amber-400/30">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-300">Admin</span>
+              <span id="admin-email-label" class="text-xs text-slate-300 max-w-[140px] truncate hidden lg:inline"></span>
+            </div>
+            <button id="btn-logout" type="button" class="px-3 py-2 rounded-lg bg-elevated hover:bg-red-950/80 hover:text-red-200 hover:border-red-800 border border-line text-xs sm:text-sm font-semibold text-slate-200 transition-colors flex items-center gap-1.5" title="Keluar dari Mode Admin">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span class="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Bar -->
+    <div class="md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
+      <button id="nav-monitor-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
+        <span>Master Monitor</span>
+        <span id="badge-active-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
+      </button>
+      <button id="nav-history-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
+        <span>History</span>
+        <span id="badge-history-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== PERMISSION / ERROR BANNER ==================== -->
+  <div id="global-alert" class="d-none bg-red-950/90 border-b border-red-700 text-red-100">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex items-start justify-between gap-4 text-sm">
+      <div class="flex items-start gap-2.5">
+        <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div id="global-alert-text" class="leading-relaxed"></div>
+      </div>
+      <button id="btn-close-alert" type="button" class="text-red-300 hover:text-white font-bold px-2 py-0.5">&times;</button>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- Loading Skeleton -->
+    <div id="view-loading" class="py-24 flex flex-col items-center justify-center gap-4 text-slate-400">
+      <div class="w-10 h-10 rounded-full border-2 border-line-strong border-t-amber-400 animate-spin"></div>
+      <p class="text-sm font-medium tracking-wide">Menghubungkan ke Firebase Realtime Database...</p>
+    </div>
+
+    <!-- ==================== VIEW 1: MASTER MONITOR ==================== -->
+    <section id="view-monitor" class="d-none space-y-6">
+      <!-- Top Action & Stats Bar -->
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Master Monitor</h1>
+          <p class="text-sm text-slate-400 mt-1">Pantau seluruh ruangan dan status cue secara real-time. Klik ruangan untuk melihat rundown lengkap.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Mode Pill -->
+          <div id="monitor-mode-pill" class="px-3 py-2 rounded-lg bg-surface border border-line text-xs font-semibold text-slate-300 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Mode Viewer (Publik)</span>
+          </div>
+
+          <!-- Admin-Only Controls -->
+          <button id="btn-seed-demo" type="button" class="admin-only d-none px-3.5 py-2.5 rounded-lg bg-surface hover:bg-elevated border border-line-strong text-xs sm:text-sm font-semibold text-slate-200 transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+            <span>Muat Contoh Event</span>
+          </button>
+
+          <button id="btn-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors flex items-center gap-2 shadow-sm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Tambah Ruangan</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Telemetry Strip -->
+      <div id="monitor-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-surface border border-line rounded-xl p-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Ruangan Aktif</div>
+          <div id="stat-total-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-white mt-1 tabular-nums">0</div>
+        </div>
+        <div class="bg-surface border border-line rounded-xl p-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Sedang Live</div>
+          <div id="stat-live-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1 tabular-nums">0</div>
+        </div>
+        <div id="stat-delay-card" class="bg-surface border border-line rounded-xl p-4 transition-colors">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ruangan Delay</div>
+          <div id="stat-delayed-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-slate-300 mt-1 tabular-nums">0</div>
+        </div>
+        <div class="bg-surface border border-line rounded-xl p-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Selesai (History)</div>
+          <div id="stat-history-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-slate-200 mt-1 tabular-nums">0</div>
+        </div>
+      </div>
+
+      <!-- Multi-Room Cards Grid -->
+      <div id="monitor-rooms-grid" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-5">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="monitor-empty" class="d-none bg-surface border border-line rounded-2xl p-10 sm:p-14 text-center">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-elevated border border-line flex items-center justify-center text-slate-400 mb-4">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold text-white">Belum Ada Ruangan Aktif</h2>
+        <p class="text-sm text-slate-400 max-w-md mx-auto mt-1.5">
+          Saat ini belum ada rundown ruangan yang berjalan. Login sebagai Admin untuk menambahkan ruangan baru atau cek tab History untuk melihat event sebelumnya.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <button id="btn-empty-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+            + Buat Ruangan Pertama
+          </button>
+          <button id="btn-empty-seed" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-100 text-sm font-semibold transition-colors">
+            Muat Contoh 2 Ruangan
+          </button>
+          <button id="btn-empty-login" type="button" class="public-only px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-100 text-sm font-semibold transition-colors">
+            Login Admin
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: ROOM DETAIL / LIVE CUE ==================== -->
+    <section id="view-room" class="d-none space-y-5">
+      <!-- Top Breadcrumb & Quick Room Switcher -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <button id="btn-back-monitor" type="button" class="shrink-0 px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-sm font-semibold text-slate-200 transition-colors flex items-center gap-1.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Master Monitor</span>
+          </button>
+          <div id="quick-room-switcher" class="flex items-center gap-1.5">
+            <!-- Active room pills rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Room Admin Controls -->
+        <div class="admin-only d-none flex flex-wrap items-center gap-2 shrink-0">
+          <button id="btn-room-edit" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-200 transition-colors">
+            Edit Info Ruangan
+          </button>
+          <button id="btn-room-reset" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-300 transition-colors" title="Reset semua cue kembali ke standby (misal setelah gladi resik)">
+            Reset Show
+          </button>
+          <button id="btn-room-finish" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-emerald-950 hover:border-emerald-700 hover:text-emerald-200 border border-line text-xs font-semibold text-slate-200 transition-colors">
+            Selesai &rarr; History
+          </button>
+        </div>
+      </div>
+
+      <!-- Room Hero & Live Cue Console -->
+      <div id="room-live-console" class="rounded-2xl border border-line bg-surface overflow-hidden">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Rundown Table Toolbar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-bold text-white tracking-tight">Daftar Rundown</h2>
+          <span id="room-item-progress-pill" class="font-mono text-xs px-2.5 py-1 rounded-md bg-surface border border-line text-slate-300">0 / 0 Sesi</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-scroll-active" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-200 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>Fokus Sesi Aktif</span>
+          </button>
+
+          <button id="btn-add-item" type="button" class="admin-only d-none px-3.5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Tambah Sesi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Rundown Table Container -->
+      <div class="bg-surface border border-line rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[780px]">
+            <thead>
+              <tr class="border-b border-line bg-elevated/70 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <th class="py-3.5 pl-4 pr-2 w-14 text-center">#</th>
+                <th class="py-3.5 px-3 w-32">Jam Mulai</th>
+                <th class="py-3.5 px-3 w-24">Durasi</th>
+                <th class="py-3.5 px-3">Nama Sesi & Catatan</th>
+                <th class="py-3.5 px-3 w-44">PIC</th>
+                <th class="py-3.5 px-3 w-48">Aktual & Status</th>
+                <th id="th-admin-actions" class="admin-only d-none py-3.5 pl-2 pr-4 w-44 text-right">Kontrol Admin</th>
+              </tr>
+            </thead>
+            <tbody id="room-rundown-tbody" class="divide-y divide-line/80 text-sm">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="room-items-empty" class="d-none py-12 px-6 text-center">
+          <p class="text-sm font-semibold text-slate-300">Belum ada item rundown di ruangan ini.</p>
+          <p class="text-xs text-slate-400 mt-1">Admin dapat menambahkan item sesi menggunakan tombol "Tambah Sesi" di atas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: HISTORY ==================== -->
+    <section id="view-history" class="d-none space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">History Event & Riwayat Keterlambatan</h1>
+          <p class="text-sm text-slate-400 mt-1">Arsip ruangan dan rundown yang telah selesai lengkap dengan catatan waktu aktual dan delay per sesi.</p>
+        </div>
+
+        <div class="w-full sm:w-72">
+          <div class="relative">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input id="history-search" type="search" placeholder="Cari ruangan atau event..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface border border-line focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          </div>
+        </div>
+      </div>
+
+      <!-- History List -->
+      <div id="history-list" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- History Empty State -->
+      <div id="history-empty" class="d-none bg-surface border border-line rounded-2xl p-12 text-center">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-elevated border border-line flex items-center justify-center text-slate-400 mb-4">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold text-white">Belum Ada Riwayat Event</h2>
+        <p class="text-sm text-slate-400 max-w-md mx-auto mt-1.5">
+          Ruangan yang telah selesai akan otomatis dipindahkan ke halaman ini beserta seluruh catatan keterlambatannya.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500">
+    <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>Rundown Live &bull; Real-Time Multi-Room Production Monitor</span>
+      <span class="font-mono text-[11px] text-slate-500">Firebase v10 Realtime Sync &bull; High-Contrast Field Mode</span>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Admin Login -->
+  <div id="modal-login" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-400/15 text-amber-400 flex items-center justify-center">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-white">Login Admin</h3>
+        </div>
+        <button type="button" data-close-modal="modal-login" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
+      </div>
+
+      <form id="form-login" class="p-6 space-y-4">
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Masuk menggunakan akun Admin Firebase Authentication untuk mengaktifkan kontrol <strong class="text-slate-200">NEXT CUE</strong>, manajemen ruangan, dan edit rundown.
+        </p>
+
+        <div id="login-error" class="d-none p-3 rounded-lg bg-red-950/80 border border-red-700 text-xs font-medium text-red-200"></div>
+
+        <div>
+          <label for="login-email" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email Admin</label>
+          <input id="login-email" type="email" required autocomplete="email" placeholder="admin@event.com" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        </div>
+
+        <div>
+          <label for="login-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2.5">
+          <button type="button" data-close-modal="modal-login" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+          <button id="btn-submit-login" type="submit" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors flex items-center gap-2">
+            <span>Masuk Admin</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Add / Edit Room -->
+  <div id="modal-room" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+        <h3 id="modal-room-title" class="text-base font-bold text-white">Tambah Ruangan Baru</h3>
+        <button type="button" data-close-modal="modal-room" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
+      </div>
+
+      <form id="form-room" class="p-6 space-y-4">
+        <input id="room-form-id" type="hidden" />
+
+        <div>
+          <label for="room-input-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Ruangan / Stage *</label>
+          <input id="room-input-name" type="text" required placeholder="Contoh: Main Ballroom — Stage A" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        </div>
+
+        <div>
+          <label for="room-input-event" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Event / Acara *</label>
+          <input id="room-input-event" type="text" required placeholder="Contoh: Indonesia Tech Summit 2026" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="room-input-location" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Lokasi / Venue</label>
+            <input id="room-input-location" type="text" placeholder="Contoh: Lantai 3, Hall Utama" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          </div>
+          <div>
+            <label for="room-input-date" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Tanggal Event</label>
+            <input id="room-input-date" type="date" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2.5">
+          <button type="button" data-close-modal="modal-room" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+          <button id="btn-submit-room" type="submit" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+            Simpan Ruangan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add / Edit Rundown Item -->
+  <div id="modal-item" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+        <h3 id="modal-item-title" class="text-base font-bold text-white">Tambah Item Rundown</h3>
+        <button type="button" data-close-modal="modal-item" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
+      </div>
+
+      <form id="form-item" class="p-6 space-y-4">
+        <input id="item-form-id" type="hidden" />
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="item-input-start" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jam Mulai (Rencana) *</label>
+            <input id="item-input-start" type="time" required class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+          </div>
+          <div>
+            <label for="item-input-duration" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Durasi (Menit) *</label>
+            <input id="item-input-duration" type="number" min="1" max="1440" required placeholder="15" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+          </div>
+        </div>
+
+        <div>
+          <label for="item-input-title" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Sesi *</label>
+          <input id="item-input-title" type="text" required placeholder="Contoh: Opening Remarks & Keynote" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        </div>
+
+        <div>
+          <label for="item-input-pic" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">PIC (Penanggung Jawab) *</label>
+          <input id="item-input-pic" type="text" required placeholder="Contoh: MC Raka / Stage Mgr Budi" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        </div>
+
+        <div>
+          <label for="item-input-notes" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Catatan Teknis / Cue (Opsional)</label>
+          <textarea id="item-input-notes" rows="2" placeholder="Contoh: Mic handheld 2x, bumper video play, lampu dimmer 50%" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500 resize-none"></textarea>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2.5">
+          <button type="button" data-close-modal="modal-item" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+          <button id="btn-submit-item" type="submit" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+            Simpan Sesi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: History Detail / Delay Report -->
+  <div id="modal-history-detail" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between gap-4 shrink-0">
+        <div class="min-w-0">
+          <h3 id="history-modal-title" class="text-lg font-bold text-white truncate">Detail Riwayat Event</h3>
+          <p id="history-modal-subtitle" class="text-xs text-slate-400 mt-0.5 truncate"></p>
+        </div>
+        <button type="button" data-close-modal="modal-history-detail" class="text-slate-400 hover:text-white text-2xl leading-none px-1">&times;</button>
+      </div>
+      <div id="history-modal-body" class="p-6 overflow-y-auto space-y-5 flex-1">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="px-6 py-3.5 border-t border-line bg-elevated/50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div id="history-modal-admin-actions" class="flex items-center gap-2"></div>
+        <div class="flex items-center gap-2">
+          <button id="btn-export-history-csv" type="button" class="px-3.5 py-2 rounded-lg bg-surface hover:bg-elevated border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
+            Export CSV
+          </button>
+          <button type="button" data-close-modal="modal-history-detail" class="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-colors">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Confirm Action -->
+  <div id="modal-confirm" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-line">
+        <h3 id="confirm-title" class="text-base font-bold text-white">Konfirmasi</h3>
+      </div>
+      <div class="p-6">
+        <p id="confirm-message" class="text-sm text-slate-300 leading-relaxed"></p>
+        <div class="mt-6 flex items-center justify-end gap-2.5">
+          <button id="btn-confirm-cancel" type="button" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+          <button id="btn-confirm-ok" type="button" class="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+            Ya, Lanjutkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST CONTAINER ==================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-[calc(100vw-2.5rem)] pointer-events-none"></div>
+
+  <!-- ==================== APPLICATION SCRIPT (FIREBASE v10 MODULAR SDK) ==================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue,
+      set,
+      push,
+      update,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+    // ==================== 1. FIREBASE INIT ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-p0t3-CQflp79SqIkZLN1re6Sj5cCvoQ",
+      authDomain: "event-rundown-live.firebaseapp.com",
+      databaseURL: "https://event-rundown-live-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "event-rundown-live",
+      storageBucket: "event-rundown-live.firebasestorage.app",
+      messagingSenderId: "1031310238109",
+      appId: "1:1031310238109:web:4ce4c99b7be9549e020f74",
+      measurementId: "G-Q9QT66XC7B"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // ==================== 2. APP STATE ====================
+    const state = {
+      user: null,
+      isAdmin: false,
+      loaded: false,
+      connected: false,
+      view: 'monitor', // 'monitor' | 'room' | 'history'
+      selectedRoomId: null,
+      historyDetailRoomId: null,
+      historySearch: '',
+      rooms: {}, // raw Firebase object
+      confirmCallback: null
+    };
+
+    // ==================== 3. UTILITY FUNCTIONS ====================
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function pad2(n) {
+      return String(Math.floor(Math.abs(n))).padStart(2, '0');
+    }
+
+    function formatHHMMSS(date = new Date()) {
+      return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+    }
+
+    function formatHHMM(date = new Date()) {
+      return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+    }
+
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+
+    function formatDateReadable(isoOrTs) {
+      if (!isoOrTs) return '-';
+      const d = typeof isoOrTs === 'number' ? new Date(isoOrTs) : new Date(isoOrTs + 'T00:00:00');
+      if (Number.isNaN(d.getTime())) return String(isoOrTs);
+      return d.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function formatDateTimeReadable(ts) {
+      if (!ts) return '-';
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '-';
+      return d.toLocaleString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function addMinutesToHHMM(hhmm, minutesToAdd) {
+      if (!hhmm || !/^\d{2}:\d{2}$/.test(hhmm)) return '';
+      const [h, m] = hhmm.split(':').map(Number);
+      let total = (h * 60 + m + Number(minutesToAdd || 0)) % 1440;
+      if (total < 0) total += 1440;
+      return `${pad2(Math.floor(total / 60))}:${pad2(total % 60)}`;
+    }
+
+    /**
+     * Automatic Delay Calculation:
+     * Difference in minutes between actual trigger time and planned HH:mm start time.
+     * Positive = DELAY, 0 = ON TIME, Negative = EARLY.
+     */
+    function calculateDelayMinutes(plannedHHMM, actualDate = new Date()) {
+      if (!plannedHHMM || !/^\d{2}:\d{2}$/.test(plannedHHMM)) return 0;
+      const [pH, pM] = plannedHHMM.split(':').map(Number);
+      const plannedMin = pH * 60 + pM;
+      const actualMin = actualDate.getHours() * 60 + actualDate.getMinutes();
+      let diff = actualMin - plannedMin;
+      // Handle midnight crossover cleanly
+      if (diff < -720) diff += 1440;
+      if (diff > 720) diff -= 1440;
+      return diff;
+    }
+
+    function formatCountdown(seconds) {
+      const sign = seconds < 0 ? '-' : '';
+      const abs = Math.abs(Math.floor(seconds));
+      const h = Math.floor(abs / 3600);
+      const m = Math.floor((abs % 3600) / 60);
+      const s = abs % 60;
+      if (h > 0) return `${sign}${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+      return `${sign}${pad2(m)}:${pad2(s)}`;
+    }
+
+    function getSortedItems(room) {
+      if (!room || !room.items) return [];
+      return Object.entries(room.items)
+        .map(([id, item]) => ({ ...item, id }))
+        .sort((a, b) => {
+          const oa = typeof a.order === 'number' ? a.order : 9999;
+          const ob = typeof b.order === 'number' ? b.order : 9999;
+          if (oa !== ob) return oa - ob;
+          return (a.startTime || '').localeCompare(b.startTime || '');
+        });
+    }
+
+    function getActiveRoomList() {
+      return Object.entries(state.rooms)
+        .map(([id, room]) => ({ ...room, id }))
+        .filter(r => r.status !== 'history')
+        .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    }
+
+    function getHistoryRoomList() {
+      const q = state.historySearch.trim().toLowerCase();
+      return Object.entries(state.rooms)
+        .map(([id, room]) => ({ ...room, id }))
+        .filter(r => r.status === 'history')
+        .filter(r => {
+          if (!q) return true;
+          return (
+            (r.name || '').toLowerCase().includes(q) ||
+            (r.eventTitle || '').toLowerCase().includes(q) ||
+            (r.location || '').toLowerCase().includes(q)
+          );
+        })
+        .sort((a, b) => (b.completedAt || b.createdAt || 0) - (a.completedAt || a.createdAt || 0));
+    }
+
+    function computeRoomStats(room) {
+      const items = getSortedItems(room);
+      const triggered = items.filter(i => i.actualStartTs || typeof i.delayMinutes === 'number');
+      const delayedItems = triggered.filter(i => (i.delayMinutes || 0) > 0);
+      const onTimeItems = triggered.filter(i => (i.delayMinutes || 0) <= 0);
+      const maxDelay = delayedItems.reduce((acc, i) => Math.max(acc, i.delayMinutes || 0), 0);
+      const lastTriggered = triggered.length ? triggered[triggered.length - 1] : null;
+      const completedCount = items.filter(i => i.cueState === 'completed').length;
+      const activeIdx = items.findIndex(i => i.id === room.activeItemId);
+      return {
+        items,
+        totalItems: items.length,
+        completedCount,
+        triggeredCount: triggered.length,
+        delayedCount: delayedItems.length,
+        onTimeCount: onTimeItems.length,
+        maxDelay,
+        lastDelay: lastTriggered ? (lastTriggered.delayMinutes || 0) : 0,
+        activeIdx,
+        activeItem: activeIdx >= 0 ? items[activeIdx] : null,
+        nextItem: activeIdx >= 0 && activeIdx + 1 < items.length ? items[activeIdx + 1] : (activeIdx === -1 && items.length > 0 ? items[0] : null)
+      };
+    }
+
+    function renderDelayBadge(delayMinutes, size = 'sm') {
+      if (delayMinutes === null || delayMinutes === undefined) {
+        return `<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-elevated text-slate-400 border border-line">MENUNGGU</span>`;
+      }
+      const d = Number(delayMinutes);
+      const sizeCls = size === 'lg'
+        ? 'px-3.5 py-1.5 text-sm font-extrabold tracking-wide'
+        : 'px-2.5 py-0.5 text-xs font-bold';
+
+      if (d > 0) {
+        return `<span class="inline-flex items-center gap-1.5 rounded-md font-mono ${sizeCls} bg-red-600 text-white shadow-sm shadow-red-950/60 animate-delay-badge">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          DELAY +${d} MNT
+        </span>`;
+      }
+      if (d < 0) {
+        return `<span class="inline-flex items-center gap-1 rounded-md font-mono ${sizeCls} bg-sky-500/20 text-sky-300 border border-sky-500/40">
+          LEBIH CEPAT ${d} MNT
+        </span>`;
+      }
+      return `<span class="inline-flex items-center gap-1.5 rounded-md font-mono ${sizeCls} bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        ON TIME
+      </span>`;
+    }
+
+    // ==================== 4. TOAST & ALERT HELPERS ====================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const colors = {
+        success: 'bg-emerald-950/95 border-emerald-600 text-emerald-100',
+        error: 'bg-red-950/95 border-red-600 text-red-100',
+        warning: 'bg-amber-950/95 border-amber-500 text-amber-100',
+        info: 'bg-elevated/95 border-line-strong text-slate-100'
+      };
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-sm font-medium flex items-center justify-between gap-3 transition-all duration-200 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 220);
+      }, 3400);
+    }
+
+    function showGlobalAlert(htmlMessage) {
+      const el = document.getElementById('global-alert');
+      document.getElementById('global-alert-text').innerHTML = htmlMessage;
+      el.classList.remove('d-none');
+    }
+
+    function hideGlobalAlert() {
+      document.getElementById('global-alert').classList.add('d-none');
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('d-none');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('d-none');
+    }
+
+    function openConfirm({ title, message, okText = 'Ya, Lanjutkan', danger = false, onConfirm }) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      const okBtn = document.getElementById('btn-confirm-ok');
+      okBtn.textContent = okText;
+      okBtn.className = danger
+        ? 'px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors'
+        : 'px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors';
+      state.confirmCallback = onConfirm;
+      openModal('modal-confirm');
+    }
+
+    // ==================== 5. FIREBASE REALTIME LISTENERS ====================
+    // Connection Status
+    onValue(ref(db, '.info/connected'), (snap) => {
+      state.connected = snap.val() === true;
+      const dot = document.getElementById('sync-dot');
+      const txt = document.getElementById('sync-text');
+      if (state.connected) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-live-dot';
+        txt.textContent = 'LIVE SYNC';
+        txt.className = 'tracking-wide uppercase text-[11px] text-emerald-300 font-bold';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        txt.textContent = 'OFFLINE';
+        txt.className = 'tracking-wide uppercase text-[11px] text-amber-300 font-bold';
+      }
+    });
+
+    // Rooms Live Subscription (Public Read)
+    onValue(
+      ref(db, 'rooms'),
+      (snapshot) => {
+        state.rooms = snapshot.val() || {};
+        state.loaded = true;
+        hideGlobalAlert();
+        document.getElementById('view-loading').classList.add('d-none');
+        syncRouteFromHash();
+        renderAll();
+      },
+      (error) => {
+        state.loaded = true;
+        document.getElementById('view-loading').classList.add('d-none');
+        console.error('Firebase RTDB read error:', error);
+        if (error.code === 'PERMISSION_DENIED') {
+          showGlobalAlert(
+            `<strong>Akses Database Ditolak (PERMISSION_DENIED).</strong> Pastikan Firebase Realtime Database Rules mengizinkan akses baca publik: <code class="font-mono bg-black/40 px-1.5 py-0.5 rounded text-xs">{ "rules": { ".read": true, ".write": "auth != null" } }</code>.`
+          );
+        } else {
+          showGlobalAlert(`Gagal memuat data Firebase: ${escapeHtml(error.message)}`);
+        }
+        renderAll();
+      }
+    );
+
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+      state.user = user;
+      state.isAdmin = Boolean(user);
+      updateAuthUI();
+      renderAll();
+    });
+
+    function updateAuthUI() {
+      const btnLogin = document.getElementById('btn-open-login');
+      const adminBar = document.getElementById('admin-user-bar');
+      const emailLabel = document.getElementById('admin-email-label');
+      const modePill = document.getElementById('monitor-mode-pill');
+
+      if (state.isAdmin) {
+        btnLogin.classList.add('d-none');
+        adminBar.classList.remove('d-none');
+        emailLabel.textContent = state.user.email || 'Admin';
+        modePill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span class="text-amber-300">Mode Admin (Kontrol Aktif)</span>`;
+        modePill.className = 'px-3 py-2 rounded-lg bg-amber-400/10 border border-amber-400/30 text-xs font-semibold flex items-center gap-2';
+      } else {
+        btnLogin.classList.remove('d-none');
+        adminBar.classList.add('d-none');
+        modePill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Mode Viewer (Publik)</span>`;
+        modePill.className = 'px-3 py-2 rounded-lg bg-surface border border-line text-xs font-semibold text-slate-300 flex items-center gap-2';
+      }
+
+      document.querySelectorAll('.admin-only').forEach((el) => {
+        el.classList.toggle('d-none', !state.isAdmin);
+      });
+      document.querySelectorAll('.public-only').forEach((el) => {
+        el.classList.toggle('d-none', state.isAdmin);
+      });
+    }
+
+    // ==================== 6. ROUTING & NAVIGATION ====================
+    function navigateTo(view, roomId = null) {
+      state.view = view;
+      state.selectedRoomId = roomId;
+      if (view === 'room' && roomId) {
+        window.location.hash = `#room/${encodeURIComponent(roomId)}`;
+      } else if (view === 'history') {
+        window.location.hash = '#history';
+      } else {
+        window.location.hash = '#monitor';
+      }
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function syncRouteFromHash() {
+      const hash = window.location.hash || '#monitor';
+      if (hash.startsWith('#room/')) {
+        const id = decodeURIComponent(hash.slice(6));
+        if (state.rooms[id] && state.rooms[id].status !== 'history') {
+          state.view = 'room';
+          state.selectedRoomId = id;
+          return;
+        }
+      } else if (hash === '#history') {
+        state.view = 'history';
+        state.selectedRoomId = null;
+        return;
+      }
+      if (state.view === 'room' && (!state.selectedRoomId || !state.rooms[state.selectedRoomId] || state.rooms[state.selectedRoomId].status === 'history')) {
+        state.view = 'monitor';
+        state.selectedRoomId = null;
+      }
+    }
+
+    window.addEventListener('hashchange', () => {
+      syncRouteFromHash();
+      renderAll();
+    });
+
+    // ==================== 7. RENDERING ENGINE ====================
+    function renderAll() {
+      if (!state.loaded) return;
+
+      const activeRooms = getActiveRoomList();
+      const historyRooms = getHistoryRoomList();
+
+      // Update Nav Badges
+      document.getElementById('badge-active-count').textContent = activeRooms.length;
+      document.getElementById('badge-history-count').textContent = historyRooms.length;
+      document.getElementById('badge-active-count-mobile').textContent = activeRooms.length;
+      document.getElementById('badge-history-count-mobile').textContent = historyRooms.length;
+
+      // Update Nav Active Styling
+      const isMonitorTab = state.view === 'monitor' || state.view === 'room';
+      const isHistoryTab = state.view === 'history';
+
+      setNavBtnStyle('nav-monitor', isMonitorTab);
+      setNavBtnStyle('nav-history', isHistoryTab);
+      setNavBtnStyle('nav-monitor-mobile', isMonitorTab);
+      setNavBtnStyle('nav-history-mobile', isHistoryTab);
+
+      // Toggle Views
+      document.getElementById('view-monitor').classList.toggle('d-none', state.view !== 'monitor');
+      document.getElementById('view-room').classList.toggle('d-none', state.view !== 'room');
+      document.getElementById('view-history').classList.toggle('d-none', state.view !== 'history');
+
+      if (state.view === 'monitor') {
+        renderMasterMonitor(activeRooms, historyRooms);
+      } else if (state.view === 'room') {
+        renderRoomDetail(activeRooms);
+      } else if (state.view === 'history') {
+        renderHistoryView(historyRooms);
+      }
+
+      // Refresh History Modal if open
+      if (state.historyDetailRoomId && !document.getElementById('modal-history-detail').classList.contains('d-none')) {
+        renderHistoryDetailModal(state.historyDetailRoomId);
+      }
+
+      // Apply admin/public visibility classes for dynamically rendered nodes
+      updateAuthUI();
+      // Immediately tick live timers so there is zero 1-second blank flash
+      tickLiveTimers();
+    }
+
+    function setNavBtnStyle(id, active) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (active) {
+        el.classList.add('bg-elevated', 'text-white', 'border', 'border-line-strong');
+        el.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-elevated/50', 'border-transparent');
+      } else {
+        el.classList.remove('bg-elevated', 'text-white', 'border-line-strong');
+        el.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-elevated/50', 'border', 'border-transparent');
+      }
+    }
+
+    // ---------- 7A. MASTER MONITOR RENDER ----------
+    function renderMasterMonitor(activeRooms, historyRooms) {
+      const liveRooms = activeRooms.filter(r => r.showState === 'live');
+      const delayedRooms = activeRooms.filter(r => r.showState === 'live' && (r.currentDelayMinutes || 0) > 0);
+
+      document.getElementById('stat-total-rooms').textContent = activeRooms.length;
+      document.getElementById('stat-live-rooms').textContent = liveRooms.length;
+      document.getElementById('stat-history-rooms').textContent = historyRooms.length;
+
+      const delayValEl = document.getElementById('stat-delayed-rooms');
+      const delayCardEl = document.getElementById('stat-delay-card');
+      delayValEl.textContent = delayedRooms.length;
+      if (delayedRooms.length > 0) {
+        delayValEl.className = 'font-mono text-2xl sm:text-3xl font-extrabold text-red-400 mt-1 tabular-nums';
+        delayCardEl.className = 'bg-red-950/40 border border-red-700/80 rounded-xl p-4 transition-colors';
+      } else {
+        delayValEl.className = 'font-mono text-2xl sm:text-3xl font-extrabold text-slate-300 mt-1 tabular-nums';
+        delayCardEl.className = 'bg-surface border border-line rounded-xl p-4 transition-colors';
+      }
+
+      const grid = document.getElementById('monitor-rooms-grid');
+      const emptyEl = document.getElementById('monitor-empty');
+
+      if (activeRooms.length === 0) {
+        grid.innerHTML = '';
+        emptyEl.classList.remove('d-none');
+        return;
+      }
+
+      emptyEl.classList.add('d-none');
+      grid.innerHTML = activeRooms.map(room => {
+        const stats = computeRoomStats(room);
+        const isLive = room.showState === 'live' && stats.activeItem;
+        const delayMin = isLive ? (stats.activeItem.delayMinutes || 0) : 0;
+        const isDelayed = isLive && delayMin > 0;
+        const isLastCue = isLive && stats.activeIdx === stats.totalItems - 1;
+
+        const cardBorder = isDelayed
+          ? 'border-red-600/90 shadow-lg shadow-red-950/30'
+          : isLive
+            ? 'border-emerald-600/60'
+            : 'border-line';
+
+        const topStrip = isDelayed
+          ? 'bg-red-600'
+          : isLive
+            ? 'bg-emerald-500'
+            : 'bg-slate-600';
+
+        const statusBadge = isLive
+          ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-extrabold uppercase tracking-wider ${isDelayed ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'}">
+               <span class="w-1.5 h-1.5 rounded-full ${isDelayed ? 'bg-white' : 'bg-emerald-400'} animate-live-dot"></span>
+               LIVE
+             </span>`
+          : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-elevated text-slate-400 border border-line">
+               STANDBY
+             </span>`;
+
+        const activeBlock = isLive
+          ? `
+            <div class="rounded-xl p-4 border ${isDelayed ? 'bg-red-950/45 border-red-700/80' : 'bg-canvas/90 border-line'} space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-bold uppercase tracking-wider ${isDelayed ? 'text-red-300' : 'text-emerald-400'}">
+                  CUE #${stats.activeIdx + 1} / ${stats.totalItems} &bull; SEDANG BERJALAN
+                </span>
+                ${renderDelayBadge(delayMin, 'sm')}
+              </div>
+
+              <div>
+                <div class="text-lg font-extrabold text-white leading-snug line-clamp-2">${escapeHtml(stats.activeItem.title)}</div>
+                <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
+                  <span class="flex items-center gap-1">
+                    <span class="text-slate-500 font-semibold">PIC:</span>
+                    <span class="font-semibold text-slate-100">${escapeHtml(stats.activeItem.pic || '-')}</span>
+                  </span>
+                  <span class="font-mono text-slate-400">
+                    Rencana <strong class="text-slate-200">${escapeHtml(stats.activeItem.startTime)}</strong>
+                    &rarr; Aktual <strong class="${isDelayed ? 'text-red-300' : 'text-emerald-300'}">${escapeHtml((stats.activeItem.actualStartTime || '').slice(0, 5) || '--:--')}</strong>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Live Timer & Progress -->
+              <div class="pt-1 space-y-1.5">
+                <div class="flex items-baseline justify-between font-mono text-xs">
+                  <span class="text-slate-400">SISA WAKTU (${stats.activeItem.duration} mnt)</span>
+                  <span class="live-remaining-timer font-extrabold text-base tabular-nums text-white"
+                        data-start-ts="${stats.activeItem.actualStartTs || ''}"
+                        data-duration-min="${stats.activeItem.duration || 0}">--:--</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-elevated overflow-hidden">
+                  <div class="live-progress-bar h-full rounded-full bg-emerald-400 transition-all duration-500"
+                       data-start-ts="${stats.activeItem.actualStartTs || ''}"
+                       data-duration-min="${stats.activeItem.duration || 0}"
+                       style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          `
+          : `
+            <div class="rounded-xl p-4 border border-line bg-canvas/60 text-center space-y-1.5">
+              <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Menunggu Mulai</div>
+              <div class="text-sm font-semibold text-slate-200">
+                ${stats.totalItems > 0
+                  ? `Sesi #1: ${escapeHtml(stats.items[0].title)} (${escapeHtml(stats.items[0].startTime)})`
+                  : 'Belum ada item rundown'}
+              </div>
+              <div class="text-xs text-slate-500">${stats.totalItems} item terdaftar</div>
+            </div>
+          `;
+
+        const nextBlock = stats.nextItem
+          ? `
+            <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg bg-elevated/60 border border-line/80 text-xs">
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">NEXT UP</span>
+                <span class="font-semibold text-slate-100 truncate block">${escapeHtml(stats.nextItem.title)}</span>
+              </div>
+              <div class="text-right shrink-0 font-mono">
+                <div class="font-bold text-slate-200">${escapeHtml(stats.nextItem.startTime)}</div>
+                <div class="text-[11px] text-slate-400">${escapeHtml(stats.nextItem.pic || '')}</div>
+              </div>
+            </div>
+          `
+          : isLive
+            ? `<div class="px-3.5 py-2.5 rounded-lg bg-elevated/40 border border-line/60 text-xs text-slate-400 flex items-center justify-between">
+                 <span>Sesi terakhir sedang berlangsung</span>
+                 <span class="font-mono text-emerald-400 font-semibold">FINAL CUE</span>
+               </div>`
+            : '';
+
+        // Quick Admin Cue Button on Master Monitor card
+        const quickCueBtn = state.isAdmin && stats.totalItems > 0
+          ? isLastCue
+            ? `<button type="button" data-action="finish-room" data-room-id="${escapeHtml(room.id)}" class="px-3.5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold uppercase tracking-wide transition-colors shrink-0">
+                 Selesai &rarr; History
+               </button>`
+            : `<button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}" class="px-3.5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold uppercase tracking-wide transition-colors shrink-0">
+                 ${isLive ? 'NEXT CUE &rarr;' : 'MULAI SHOW'}
+               </button>`
+          : '';
+
+        return `
+          <article class="bg-surface border ${cardBorder} rounded-2xl overflow-hidden flex flex-col transition-all">
+            <div class="h-1.5 w-full ${topStrip}"></div>
+            <div class="p-5 flex-1 flex flex-col gap-4">
+              <!-- Card Header -->
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-lg font-extrabold text-white tracking-tight truncate">${escapeHtml(room.name)}</h2>
+                    ${statusBadge}
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 truncate">
+                    ${escapeHtml(room.eventTitle || 'Event Live')}${room.location ? ` &bull; ${escapeHtml(room.location)}` : ''}
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="font-mono text-xs font-semibold text-slate-400">${stats.completedCount}/${stats.totalItems}</span>
+                </div>
+              </div>
+
+              <!-- Active Session Spotlight -->
+              ${activeBlock}
+
+              <!-- Next Up -->
+              ${nextBlock}
+
+              <!-- Footer Actions -->
+              <div class="mt-auto pt-2 border-t border-line/80 flex items-center justify-between gap-2">
+                <button type="button" data-action="open-room" data-room-id="${escapeHtml(room.id)}" class="flex-1 px-3.5 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs sm:text-sm font-semibold text-white transition-colors text-center">
+                  Buka Rundown Ruangan
+                </button>
+                ${quickCueBtn}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // ---------- 7B. ROOM DETAIL / LIVE CUE RENDER ----------
+    function renderRoomDetail(activeRooms) {
+      const room = state.rooms[state.selectedRoomId];
+      if (!room) {
+        navigateTo('monitor');
+        return;
+      }
+
+      // Quick Room Switcher
+      const switcher = document.getElementById('quick-room-switcher');
+      switcher.innerHTML = activeRooms.map(r => {
+        const isCurrent = r.id === state.selectedRoomId;
+        const isDelayed = r.showState === 'live' && (r.currentDelayMinutes || 0) > 0;
+        const isLive = r.showState === 'live';
+        const dot = isDelayed
+          ? '<span class="w-2 h-2 rounded-full bg-red-500 animate-live-dot"></span>'
+          : isLive
+            ? '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-live-dot"></span>'
+            : '<span class="w-2 h-2 rounded-full bg-slate-500"></span>';
+
+        return `<button type="button" data-action="open-room" data-room-id="${escapeHtml(r.id)}" class="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 border ${
+          isCurrent
+            ? 'bg-elevated text-white border-amber-400/70'
+            : 'bg-surface text-slate-400 hover:text-white border-line'
+        }">${dot}<span>${escapeHtml(r.name)}</span></button>`;
+      }).join('');
+
+      const stats = computeRoomStats(room);
+      const isLive = room.showState === 'live' && stats.activeItem;
+      const delayMin = isLive ? (stats.activeItem.delayMinutes || 0) : 0;
+      const isDelayed = isLive && delayMin > 0;
+      const isLastCue = isLive && stats.activeIdx === stats.totalItems - 1;
+
+      document.getElementById('room-item-progress-pill').textContent =
+        `${stats.completedCount} / ${stats.totalItems} Selesai`;
+
+      // Render Live Control Console
+      const consoleEl = document.getElementById('room-live-console');
+      consoleEl.className = `rounded-2xl border overflow-hidden transition-colors ${
+        isDelayed
+          ? 'border-red-600 bg-gradient-to-br from-red-950/60 via-surface to-surface shadow-xl shadow-red-950/30'
+          : isLive
+            ? 'border-emerald-600/60 bg-surface'
+            : 'border-line bg-surface'
+      }`;
+
+      const topBarColor = isDelayed ? 'bg-red-600' : isLive ? 'bg-emerald-500' : 'bg-slate-600';
+
+      // Big Admin Action Control
+      let adminCueControlHtml = '';
+      if (state.isAdmin) {
+        if (stats.totalItems === 0) {
+          adminCueControlHtml = `
+            <div class="rounded-xl border border-dashed border-line-strong bg-canvas/60 p-4 text-center">
+              <p class="text-xs text-slate-400 mb-3">Tambahkan minimal 1 item rundown untuk memulai Live Cue.</p>
+              <button type="button" id="btn-console-add-item" class="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-sm transition-colors">
+                + Tambah Sesi Pertama
+              </button>
+            </div>
+          `;
+        } else if (!isLive) {
+          adminCueControlHtml = `
+            <button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}"
+              class="w-full py-5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-amber-950/30 flex flex-col items-center justify-center gap-1">
+              <span class="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                MULAI SHOW (CUE #1)
+              </span>
+              <span class="text-xs font-bold text-slate-900/80 truncate max-w-full">
+                ${escapeHtml(stats.items[0].startTime)} &bull; ${escapeHtml(stats.items[0].title)}
+              </span>
+            </button>
+          `;
+        } else if (isLastCue) {
+          adminCueControlHtml = `
+            <div class="space-y-2.5">
+              <button type="button" data-action="finish-room" data-room-id="${escapeHtml(room.id)}"
+                class="w-full py-5 px-6 rounded-xl bg-emerald-400 hover:bg-emerald-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg flex flex-col items-center justify-center gap-1">
+                <span class="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  SELESAIKAN & PINDAH KE HISTORY
+                </span>
+                <span class="text-xs font-bold text-slate-900/80">Ini adalah sesi terakhir di ruangan ini</span>
+              </button>
+              ${stats.activeIdx > 0 ? `
+                <button type="button" data-action="prev-cue" data-room-id="${escapeHtml(room.id)}"
+                  class="w-full py-2 px-3 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
+                  &larr; Kembali ke Cue Sebelumnya (#${stats.activeIdx})
+                </button>` : ''}
+            </div>
+          `;
+        } else {
+          adminCueControlHtml = `
+            <div class="space-y-2.5">
+              <button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}"
+                class="w-full py-5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-amber-950/30 flex flex-col items-center justify-center gap-1">
+                <span class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
+                  NEXT CUE
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                </span>
+                <span class="text-xs font-bold text-slate-900/85 truncate max-w-full">
+                  Cue #${stats.activeIdx + 2}: ${escapeHtml(stats.nextItem.title)} (${escapeHtml(stats.nextItem.startTime)})
+                </span>
+              </button>
+              <div class="flex items-center justify-between gap-2">
+                ${stats.activeIdx > 0 ? `
+                  <button type="button" data-action="prev-cue" data-room-id="${escapeHtml(room.id)}"
+                    class="flex-1 py-2 px-3 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
+                    &larr; Prev Cue
+                  </button>` : `<div class="flex-1"></div>`}
+                <span class="text-[11px] font-mono text-slate-500 hidden sm:inline">Shortcut: Shift + &rarr;</span>
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        // Viewer Next-Up Panel
+        adminCueControlHtml = stats.nextItem
+          ? `
+            <div class="rounded-xl bg-canvas/80 border border-line p-4 h-full flex flex-col justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">SESI BERIKUTNYA (NEXT UP)</div>
+              <div class="text-base font-bold text-white mt-1.5 leading-snug">${escapeHtml(stats.nextItem.title)}</div>
+              <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-300 font-mono">
+                <span>Jam: <strong class="text-amber-300">${escapeHtml(stats.nextItem.startTime)}</strong></span>
+                <span>Durasi: <strong>${stats.nextItem.duration} mnt</strong></span>
+              </div>
+              <div class="mt-1 text-xs text-slate-400">PIC: <strong class="text-slate-200">${escapeHtml(stats.nextItem.pic || '-')}</strong></div>
+            </div>
+          `
+          : `
+            <div class="rounded-xl bg-canvas/70 border border-line p-4 h-full flex flex-col justify-center items-center text-center">
+              <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Status Rundown</div>
+              <div class="text-sm font-semibold text-slate-200 mt-1">${isLive ? 'Sesi terakhir sedang berlangsung' : 'Menunggu admin memulai show'}</div>
+            </div>
+          `;
+      }
+
+      consoleEl.innerHTML = `
+        <div class="h-1.5 w-full ${topBarColor}"></div>
+        <div class="p-5 sm:p-6 space-y-5">
+          <!-- Room Meta Header -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-line/80">
+            <div>
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">${escapeHtml(room.name)}</h1>
+                ${isLive
+                  ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider ${isDelayed ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'}"><span class="w-2 h-2 rounded-full ${isDelayed ? 'bg-white' : 'bg-emerald-400'} animate-live-dot"></span>ON AIR</span>`
+                  : `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-elevated text-slate-400 border border-line">STANDBY</span>`
+                }
+              </div>
+              <p class="text-sm text-slate-400 mt-1">
+                ${escapeHtml(room.eventTitle || 'Event Live')}${room.location ? ` &bull; ${escapeHtml(room.location)}` : ''}${room.date ? ` &bull; ${formatDateReadable(room.date)}` : ''}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2.5 flex-wrap">
+              ${isLive ? renderDelayBadge(delayMin, 'lg') : ''}
+            </div>
+          </div>
+
+          <!-- 3-Column Live Stage Deck -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+
+            <!-- Active Cue Info -->
+            <div class="lg:col-span-5 flex flex-col justify-between rounded-xl p-4 sm:p-5 border ${isDelayed ? 'bg-red-950/50 border-red-700/80' : 'bg-canvas/85 border-line'}">
+              ${isLive ? `
+                <div>
+                  <div class="text-[11px] font-bold uppercase tracking-wider ${isDelayed ? 'text-red-300' : 'text-emerald-400'}">
+                    CUE AKTIF #${stats.activeIdx + 1} DARI ${stats.totalItems}
+                  </div>
+                  <div class="text-xl sm:text-2xl font-extrabold text-white mt-1.5 leading-snug">
+                    ${escapeHtml(stats.activeItem.title)}
+                  </div>
+                  ${stats.activeItem.notes ? `<p class="text-xs text-slate-300 mt-2 leading-relaxed bg-elevated/60 px-3 py-2 rounded-lg border border-line/70">${escapeHtml(stats.activeItem.notes)}</p>` : ''}
+                </div>
+                <div class="mt-4 pt-3 border-t border-line/70 grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span class="text-slate-400 block text-[11px]">PIC</span>
+                    <span class="font-bold text-white truncate block mt-0.5">${escapeHtml(stats.activeItem.pic || '-')}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[11px]">Jam Rencana</span>
+                    <span class="font-mono font-bold text-slate-100 block mt-0.5">${escapeHtml(stats.activeItem.startTime)}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[11px]">Mulai Aktual</span>
+                    <span class="font-mono font-bold ${isDelayed ? 'text-red-300' : 'text-emerald-300'} block mt-0.5">${escapeHtml(stats.activeItem.actualStartTime || '--:--:--')}</span>
+                  </div>
+                </div>
+              ` : `
+                <div class="my-auto py-4 text-center">
+                  <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Standby Mode</div>
+                  <div class="text-lg font-bold text-slate-200 mt-1">Show Belum Dimulai</div>
+                  <p class="text-xs text-slate-400 mt-1">Tekan tombol Mulai Show (Admin) untuk memulai Cue #1 dan mengaktifkan kalkulasi waktu real-time.</p>
+                </div>
+              `}
+            </div>
+
+            <!-- Live Countdown & Progress -->
+            <div class="lg:col-span-3 rounded-xl p-4 sm:p-5 border border-line bg-canvas/85 flex flex-col justify-between">
+              ${isLive ? `
+                <div>
+                  <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <span>SISA DURASI</span>
+                    <span class="font-mono text-slate-300">${stats.activeItem.duration} MNT</span>
+                  </div>
+                  <div class="live-remaining-timer font-mono text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums text-white mt-2"
+                       data-start-ts="${stats.activeItem.actualStartTs || ''}"
+                       data-duration-min="${stats.activeItem.duration || 0}">--:--</div>
+                  <div class="live-overtime-label d-none mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-600 text-white font-mono text-[11px] font-extrabold uppercase">
+                    OVERTIME
+                  </div>
+                </div>
+                <div class="mt-4 space-y-2">
+                  <div class="w-full h-2.5 rounded-full bg-elevated overflow-hidden">
+                    <div class="live-progress-bar h-full rounded-full bg-emerald-400 transition-all duration-500"
+                         data-start-ts="${stats.activeItem.actualStartTs || ''}"
+                         data-duration-min="${stats.activeItem.duration || 0}"
+                         style="width: 0%"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                    <span>BERJALAN</span>
+                    <span class="live-elapsed-timer font-semibold text-slate-200 tabular-nums"
+                          data-start-ts="${stats.activeItem.actualStartTs || ''}">00:00</span>
+                  </div>
+                </div>
+              ` : `
+                <div class="my-auto text-center py-4">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">TIMER DURASI</div>
+                  <div class="font-mono text-4xl font-extrabold text-slate-600 mt-1 tabular-nums">00:00</div>
+                </div>
+              `}
+            </div>
+
+            <!-- Big NEXT CUE (Admin) or Next Up (Viewer) -->
+            <div class="lg:col-span-4 flex flex-col justify-center">
+              ${adminCueControlHtml}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Bind console quick add button if present
+      const consoleAddBtn = document.getElementById('btn-console-add-item');
+      if (consoleAddBtn) {
+        consoleAddBtn.addEventListener('click', () => openItemModal(null));
+      }
+
+      // Render Rundown Table Rows
+      const tbody = document.getElementById('room-rundown-tbody');
+      const emptyEl = document.getElementById('room-items-empty');
+
+      if (stats.totalItems === 0) {
+        tbody.innerHTML = '';
+        emptyEl.classList.remove('d-none');
+        return;
+      }
+
+      emptyEl.classList.add('d-none');
+      const currentRoomDelay = isLive ? (room.currentDelayMinutes || 0) : 0;
+
+      tbody.innerHTML = stats.items.map((item, idx) => {
+        const isActive = item.id === room.activeItemId && room.showState === 'live';
+        const isCompleted = item.cueState === 'completed';
+        const itemDelay = typeof item.delayMinutes === 'number' ? item.delayMinutes : null;
+        const hasDelay = itemDelay !== null && itemDelay > 0;
+        const plannedEnd = addMinutesToHHMM(item.startTime, item.duration);
+
+        // Projected start time if show is running delayed and item is upcoming
+        const showProjected = !isActive && !isCompleted && isLive && currentRoomDelay > 0;
+        const projectedStart = showProjected ? addMinutesToHHMM(item.startTime, currentRoomDelay) : '';
+
+        let rowClass = 'hover:bg-elevated/40 transition-colors';
+        if (isActive) {
+          rowClass = hasDelay ? 'cue-row-active-delay' : 'cue-row-active-ok';
+        } else if (isCompleted) {
+          rowClass = hasDelay ? 'cue-row-completed-delay opacity-85' : 'opacity-60 hover:opacity-85 transition-opacity';
+        }
+
+        const numCell = isActive
+          ? `<div class="inline-flex flex-col items-center">
+               <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold font-mono ${hasDelay ? 'bg-red-600 text-white' : 'bg-emerald-500 text-slate-950'}">LIVE</span>
+               <span class="font-mono text-xs font-bold text-white mt-0.5">${idx + 1}</span>
+             </div>`
+          : isCompleted
+            ? `<div class="inline-flex flex-col items-center">
+                 <span class="font-mono text-xs font-semibold text-slate-500">${idx + 1}</span>
+                 <svg class="w-3.5 h-3.5 ${hasDelay ? 'text-red-400' : 'text-emerald-500'} mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"></polyline></svg>
+               </div>`
+            : `<span class="font-mono text-xs font-bold text-slate-400">${idx + 1}</span>`;
+
+        const actualCell = (isActive || isCompleted) && item.actualStartTime
+          ? `<div class="space-y-1">
+               <div class="font-mono text-xs ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-200'}">
+                 Aktual: <strong>${escapeHtml(item.actualStartTime.slice(0, 5))}</strong>${item.actualEndTime ? ` &ndash; ${escapeHtml(item.actualEndTime.slice(0, 5))}` : ''}
+               </div>
+               <div>${renderDelayBadge(itemDelay, 'sm')}</div>
+             </div>`
+          : `<span class="font-mono text-xs text-slate-500">&mdash;</span>`;
+
+        const adminActionsCell = state.isAdmin
+          ? `<td class="py-3.5 pl-2 pr-4 text-right whitespace-nowrap">
+               <div class="inline-flex items-center gap-1">
+                 ${!isActive ? `
+                   <button type="button" data-action="jump-cue" data-item-id="${escapeHtml(item.id)}" class="p-1.5 rounded-md bg-elevated hover:bg-amber-400 hover:text-slate-950 text-amber-400 border border-line transition-colors" title="Aktifkan Cue Ini Sekarang">
+                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                   </button>` : ''}
+                 <button type="button" data-action="move-item-up" data-item-id="${escapeHtml(item.id)}" ${idx === 0 ? 'disabled' : ''} class="p-1.5 rounded-md bg-elevated hover:bg-slate-700 disabled:opacity-30 text-slate-300 border border-line transition-colors" title="Geser Naik">
+                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                 </button>
+                 <button type="button" data-action="move-item-down" data-item-id="${escapeHtml(item.id)}" ${idx === stats.totalItems - 1 ? 'disabled' : ''} class="p-1.5 rounded-md bg-elevated hover:bg-slate-700 disabled:opacity-30 text-slate-300 border border-line transition-colors" title="Geser Turun">
+                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                 </button>
+                 <button type="button" data-action="edit-item" data-item-id="${escapeHtml(item.id)}" class="p-1.5 rounded-md bg-elevated hover:bg-slate-700 text-slate-200 border border-line transition-colors" title="Edit Sesi">
+                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                 </button>
+                 <button type="button" data-action="delete-item" data-item-id="${escapeHtml(item.id)}" class="p-1.5 rounded-md bg-elevated hover:bg-red-900 hover:border-red-700 hover:text-red-200 text-slate-400 border border-line transition-colors" title="Hapus Sesi">
+                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>
+                 </button>
+               </div>
+             </td>`
+          : '';
+
+        return `
+          <tr ${isActive ? 'id="active-cue-row"' : ''} class="${rowClass}">
+            <td class="py-3.5 pl-4 pr-2 text-center align-top">${numCell}</td>
+            <td class="py-3.5 px-3 align-top font-mono">
+              <div class="font-bold text-sm ${isActive ? 'text-white' : 'text-slate-100'}">${escapeHtml(item.startTime)}</div>
+              <div class="text-[11px] text-slate-500">&ndash; ${escapeHtml(plannedEnd)}</div>
+              ${showProjected ? `<div class="mt-1 inline-block px-1.5 py-0.5 rounded bg-red-950/90 border border-red-700/70 text-[10px] font-bold text-red-300">Est. ${escapeHtml(projectedStart)}</div>` : ''}
+            </td>
+            <td class="py-3.5 px-3 align-top font-mono">
+              <span class="inline-block px-2 py-0.5 rounded bg-elevated border border-line text-xs font-bold text-slate-200">${item.duration} mnt</span>
+            </td>
+            <td class="py-3.5 px-3 align-top">
+              <div class="font-bold ${isActive ? 'text-base text-white' : 'text-slate-100'} ${hasDelay && isActive ? 'text-red-100' : ''}">
+                ${escapeHtml(item.title)}
+              </div>
+              ${item.notes ? `<div class="text-xs text-slate-400 mt-1 leading-relaxed">${escapeHtml(item.notes)}</div>` : ''}
+            </td>
+            <td class="py-3.5 px-3 align-top">
+              <span class="text-xs font-semibold text-slate-200">${escapeHtml(item.pic || '-')}</span>
+            </td>
+            <td class="py-3.5 px-3 align-top">
+              ${actualCell}
+            </td>
+            ${adminActionsCell}
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ---------- 7C. HISTORY VIEW RENDER ----------
+    function renderHistoryView(historyRooms) {
+      const listEl = document.getElementById('history-list');
+      const emptyEl = document.getElementById('history-empty');
+
+      if (historyRooms.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('d-none');
+        return;
+      }
+
+      emptyEl.classList.add('d-none');
+      listEl.innerHTML = historyRooms.map(room => {
+        const stats = computeRoomStats(room);
+        const hasAnyDelay = stats.delayedCount > 0;
+        const onTimeRate = stats.triggeredCount > 0
+          ? Math.round((stats.onTimeCount / stats.triggeredCount) * 100)
+          : 100;
+
+        return `
+          <article class="bg-surface border ${hasAnyDelay ? 'border-red-800/70' : 'border-line'} rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="space-y-1.5 min-w-0">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h2 class="text-lg font-extrabold text-white truncate">${escapeHtml(room.name)}</h2>
+                <span class="px-2 py-0.5 rounded bg-elevated border border-line text-[11px] font-bold uppercase tracking-wider text-slate-300">SELESAI</span>
+                ${hasAnyDelay
+                  ? `<span class="px-2.5 py-0.5 rounded bg-red-600 text-white font-mono text-xs font-bold">MAX DELAY +${stats.maxDelay} MNT</span>`
+                  : `<span class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-xs font-bold">ALL ON TIME</span>`
+                }
+              </div>
+              <p class="text-sm text-slate-400">
+                ${escapeHtml(room.eventTitle || 'Event')}${room.location ? ` &bull; ${escapeHtml(room.location)}` : ''} &bull; Selesai: <span class="text-slate-300 font-medium">${formatDateTimeReadable(room.completedAt)}</span>
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 sm:gap-5 shrink-0">
+              <div class="flex items-center gap-4 px-4 py-2.5 rounded-xl bg-canvas border border-line font-mono text-xs">
+                <div>
+                  <span class="text-slate-500 block text-[10px]">SESI</span>
+                  <strong class="text-white text-sm">${stats.totalItems}</strong>
+                </div>
+                <div class="w-px h-7 bg-line"></div>
+                <div>
+                  <span class="text-slate-500 block text-[10px]">ON TIME</span>
+                  <strong class="text-emerald-400 text-sm">${onTimeRate}%</strong>
+                </div>
+                <div class="w-px h-7 bg-line"></div>
+                <div>
+                  <span class="text-slate-500 block text-[10px]">DELAYED</span>
+                  <strong class="${hasAnyDelay ? 'text-red-400' : 'text-slate-300'} text-sm">${stats.delayedCount} sesi</strong>
+                </div>
+              </div>
+
+              <button type="button" data-action="open-history-detail" data-room-id="${escapeHtml(room.id)}" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs sm:text-sm font-semibold text-white transition-colors">
+                Lihat Riwayat Delay
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderHistoryDetailModal(roomId) {
+      const room = state.rooms[roomId];
+      if (!room) {
+        closeModal('modal-history-detail');
+        return;
+      }
+      state.historyDetailRoomId = roomId;
+      const stats = computeRoomStats(room);
+
+      document.getElementById('history-modal-title').textContent = room.name;
+      document.getElementById('history-modal-subtitle').textContent =
+        `${room.eventTitle || 'Event'}${room.location ? ` • ${room.location}` : ''} • Selesai ${formatDateTimeReadable(room.completedAt)}`;
+
+      const body = document.getElementById('history-modal-body');
+      body.innerHTML = `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3.5 rounded-xl bg-canvas border border-line">
+            <div class="text-[11px] font-semibold uppercase text-slate-400">Total Sesi</div>
+            <div class="font-mono text-xl font-extrabold text-white mt-0.5">${stats.totalItems}</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-canvas border border-line">
+            <div class="text-[11px] font-semibold uppercase text-slate-400">Sesi On Time</div>
+            <div class="font-mono text-xl font-extrabold text-emerald-400 mt-0.5">${stats.onTimeCount}</div>
+          </div>
+          <div class="p-3.5 rounded-xl ${stats.delayedCount > 0 ? 'bg-red-950/50 border-red-700/80' : 'bg-canvas border-line'} border">
+            <div class="text-[11px] font-semibold uppercase text-slate-400">Sesi Delay</div>
+            <div class="font-mono text-xl font-extrabold ${stats.delayedCount > 0 ? 'text-red-400' : 'text-slate-300'} mt-0.5">${stats.delayedCount}</div>
+          </div>
+          <div class="p-3.5 rounded-xl ${stats.maxDelay > 0 ? 'bg-red-950/50 border-red-700/80' : 'bg-canvas border-line'} border">
+            <div class="text-[11px] font-semibold uppercase text-slate-400">Delay Terlama</div>
+            <div class="font-mono text-xl font-extrabold ${stats.maxDelay > 0 ? 'text-red-400' : 'text-emerald-400'} mt-0.5">${stats.maxDelay > 0 ? `+${stats.maxDelay} mnt` : '0 mnt'}</div>
+          </div>
+        </div>
+
+        <div class="border border-line rounded-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[640px] text-xs sm:text-sm">
+              <thead>
+                <tr class="bg-elevated/80 border-b border-line text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <th class="py-3 pl-4 pr-2 w-10">#</th>
+                  <th class="py-3 px-3">Rencana</th>
+                  <th class="py-3 px-3">Aktual</th>
+                  <th class="py-3 px-3">Nama Sesi</th>
+                  <th class="py-3 px-3">PIC</th>
+                  <th class="py-3 pl-3 pr-4 text-right">Status Keterlambatan</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line/70">
+                ${stats.items.map((item, idx) => {
+                  const hasDelay = typeof item.delayMinutes === 'number' && item.delayMinutes > 0;
+                  return `
+                    <tr class="${hasDelay ? 'bg-red-950/35' : ''}">
+                      <td class="py-3 pl-4 pr-2 font-mono text-slate-400">${idx + 1}</td>
+                      <td class="py-3 px-3 font-mono text-slate-200">${escapeHtml(item.startTime)} <span class="text-slate-500">(${item.duration}m)</span></td>
+                      <td class="py-3 px-3 font-mono ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-300'}">${escapeHtml(item.actualStartTime ? item.actualStartTime.slice(0, 5) : '-')}</td>
+                      <td class="py-3 px-3 font-semibold text-white">${escapeHtml(item.title)}</td>
+                      <td class="py-3 px-3 text-slate-300">${escapeHtml(item.pic || '-')}</td>
+                      <td class="py-3 pl-3 pr-4 text-right">${renderDelayBadge(item.delayMinutes, 'sm')}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      const adminActions = document.getElementById('history-modal-admin-actions');
+      if (state.isAdmin) {
+        adminActions.innerHTML = `
+          <button type="button" data-action="restore-room" data-room-id="${escapeHtml(roomId)}" class="px-3.5 py-2 rounded-lg bg-surface hover:bg-elevated border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
+            Aktifkan Kembali
+          </button>
+          <button type="button" data-action="purge-history-room" data-room-id="${escapeHtml(roomId)}" class="px-3.5 py-2 rounded-lg bg-red-950/70 hover:bg-red-900 border border-red-800 text-xs font-semibold text-red-200 transition-colors">
+            Hapus Permanen
+          </button>
+        `;
+      } else {
+        adminActions.innerHTML = '';
+      }
+    }
+
+    // ==================== 8. LIVE 1-SECOND CLOCK & TIMER ENGINE ====================
+    function tickLiveTimers() {
+      const now = new Date();
+      const nowMs = now.getTime();
+      document.getElementById('header-clock').textContent = formatHHMMSS(now);
+
+      // Update Remaining Countdown Timers
+      document.querySelectorAll('.live-remaining-timer').forEach((el) => {
+        const startTs = Number(el.dataset.startTs);
+        const durMin = Number(el.dataset.durationMin);
+        if (!startTs || !durMin) return;
+
+        const elapsedSec = Math.max(0, Math.floor((nowMs - startTs) / 1000));
+        const totalSec = durMin * 60;
+        const remainingSec = totalSec - elapsedSec;
+
+        el.textContent = formatCountdown(remainingSec);
+
+        const parent = el.parentElement;
+        const overtimeBadge = parent ? parent.querySelector('.live-overtime-label') : null;
+
+        if (remainingSec < 0) {
+          el.classList.remove('text-white', 'text-amber-300');
+          el.classList.add('text-red-400');
+          if (overtimeBadge) overtimeBadge.classList.remove('d-none');
+        } else if (remainingSec <= 120) {
+          el.classList.remove('text-white', 'text-red-400');
+          el.classList.add('text-amber-300');
+          if (overtimeBadge) overtimeBadge.classList.add('d-none');
+        } else {
+          el.classList.remove('text-red-400', 'text-amber-300');
+          el.classList.add('text-white');
+          if (overtimeBadge) overtimeBadge.classList.add('d-none');
+        }
+      });
+
+      // Update Elapsed Timers
+      document.querySelectorAll('.live-elapsed-timer').forEach((el) => {
+        const startTs = Number(el.dataset.startTs);
+        if (!startTs) return;
+        const elapsedSec = Math.max(0, Math.floor((nowMs - startTs) / 1000));
+        el.textContent = formatCountdown(elapsedSec);
+      });
+
+      // Update Progress Bars
+      document.querySelectorAll('.live-progress-bar').forEach((el) => {
+        const startTs = Number(el.dataset.startTs);
+        const durMin = Number(el.dataset.durationMin);
+        if (!startTs || !durMin) return;
+
+        const elapsedSec = Math.max(0, (nowMs - startTs) / 1000);
+        const pct = Math.min(100, (elapsedSec / (durMin * 60)) * 100);
+        el.style.width = `${pct.toFixed(1)}%`;
+
+        if (elapsedSec > durMin * 60) {
+          el.className = 'live-progress-bar h-full rounded-full bg-red-500 transition-all duration-500';
+        } else if (pct >= 85) {
+          el.className = 'live-progress-bar h-full rounded-full bg-amber-400 transition-all duration-500';
+        } else {
+          el.className = 'live-progress-bar h-full rounded-full bg-emerald-400 transition-all duration-500';
+        }
+      });
+    }
+
+    setInterval(tickLiveTimers, 1000);
+    tickLiveTimers();
+
+    // ==================== 9. FIREBASE WRITE OPERATIONS (ADMIN ONLY) ====================
+    function requireAdmin() {
+      if (!state.isAdmin) {
+        showToast('Silakan login sebagai Admin terlebih dahulu.', 'warning');
+        openModal('modal-login');
+        return false;
+      }
+      return true;
+    }
+
+    function handleWriteError(err, fallbackMsg) {
+      console.error(err);
+      if (err && err.code === 'PERMISSION_DENIED') {
+        showToast('Izin ditolak oleh Firebase Database Rules.', 'error');
+      } else {
+        showToast(fallbackMsg || err.message || 'Terjadi kesalahan saat menyimpan.', 'error');
+      }
+    }
+
+    // Trigger NEXT CUE (or START SHOW if standby)
+    async function triggerNextCue(roomId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+
+      const items = getSortedItems(room);
+      if (items.length === 0) {
+        showToast('Belum ada sesi di ruangan ini.', 'warning');
+        return;
+      }
+
+      const now = new Date();
+      const nowTs = now.getTime();
+      const nowStr = formatHHMMSS(now);
+      const currentIdx = items.findIndex(i => i.id === room.activeItemId);
+
+      const updates = {};
+      let targetItem = null;
+
+      if (room.showState !== 'live' || currentIdx === -1) {
+        // Start show at Cue #1
+        targetItem = items[0];
+        const delayMin = calculateDelayMinutes(targetItem.startTime, now);
+        updates[`rooms/${roomId}/showState`] = 'live';
+        updates[`rooms/${roomId}/startedAt`] = room.startedAt || nowTs;
+        updates[`rooms/${roomId}/activeItemId`] = targetItem.id;
+        updates[`rooms/${roomId}/currentDelayMinutes`] = delayMin;
+        updates[`rooms/${roomId}/items/${targetItem.id}/cueState`] = 'active';
+        updates[`rooms/${roomId}/items/${targetItem.id}/actualStartTs`] = nowTs;
+        updates[`rooms/${roomId}/items/${targetItem.id}/actualStartTime`] = nowStr;
+        updates[`rooms/${roomId}/items/${targetItem.id}/actualEndTs`] = null;
+        updates[`rooms/${roomId}/items/${targetItem.id}/actualEndTime`] = null;
+        updates[`rooms/${roomId}/items/${targetItem.id}/delayMinutes`] = delayMin;
+
+        const logKey = push(ref(db, `rooms/${roomId}/delayLog`)).key;
+        updates[`rooms/${roomId}/delayLog/${logKey}`] = {
+          itemId: targetItem.id,
+          title: targetItem.title,
+          pic: targetItem.pic || '',
+          plannedStart: targetItem.startTime,
+          actualStart: nowStr,
+          delayMinutes: delayMin,
+          timestamp: nowTs
+        };
+
+        try {
+          await update(ref(db), updates);
+          showToast(
+            delayMin > 0
+              ? `Show dimulai: ${targetItem.title} (DELAY +${delayMin} mnt)`
+              : `Show dimulai: ${targetItem.title} (ON TIME)`,
+            delayMin > 0 ? 'error' : 'success'
+          );
+        } catch (err) {
+          handleWriteError(err, 'Gagal memulai show.');
+        }
+        return;
+      }
+
+      // Already live -> advance to next cue
+      if (currentIdx >= items.length - 1) {
+        confirmFinishRoom(roomId);
+        return;
+      }
+
+      const prevItem = items[currentIdx];
+      targetItem = items[currentIdx + 1];
+      const delayMin = calculateDelayMinutes(targetItem.startTime, now);
+
+      updates[`rooms/${roomId}/items/${prevItem.id}/cueState`] = 'completed';
+      updates[`rooms/${roomId}/items/${prevItem.id}/actualEndTs`] = nowTs;
+      updates[`rooms/${roomId}/items/${prevItem.id}/actualEndTime`] = nowStr;
+
+      updates[`rooms/${roomId}/activeItemId`] = targetItem.id;
+      updates[`rooms/${roomId}/currentDelayMinutes`] = delayMin;
+      updates[`rooms/${roomId}/items/${targetItem.id}/cueState`] = 'active';
+      updates[`rooms/${roomId}/items/${targetItem.id}/actualStartTs`] = nowTs;
+      updates[`rooms/${roomId}/items/${targetItem.id}/actualStartTime`] = nowStr;
+      updates[`rooms/${roomId}/items/${targetItem.id}/actualEndTs`] = null;
+      updates[`rooms/${roomId}/items/${targetItem.id}/actualEndTime`] = null;
+      updates[`rooms/${roomId}/items/${targetItem.id}/delayMinutes`] = delayMin;
+
+      const logKey = push(ref(db, `rooms/${roomId}/delayLog`)).key;
+      updates[`rooms/${roomId}/delayLog/${logKey}`] = {
+        itemId: targetItem.id,
+        title: targetItem.title,
+        pic: targetItem.pic || '',
+        plannedStart: targetItem.startTime,
+        actualStart: nowStr,
+        delayMinutes: delayMin,
+        timestamp: nowTs
+      };
+
+      try {
+        await update(ref(db), updates);
+        showToast(
+          delayMin > 0
+            ? `NEXT CUE: ${targetItem.title} — DELAY +${delayMin} mnt`
+            : `NEXT CUE: ${targetItem.title} — ON TIME`,
+          delayMin > 0 ? 'error' : 'success'
+        );
+      } catch (err) {
+        handleWriteError(err, 'Gagal memindahkan ke cue berikutnya.');
+      }
+    }
+
+    // Trigger PREV CUE (Undo accidental next cue)
+    async function triggerPrevCue(roomId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+      const items = getSortedItems(room);
+      const currentIdx = items.findIndex(i => i.id === room.activeItemId);
+      if (currentIdx <= 0) return;
+
+      const currentItem = items[currentIdx];
+      const prevItem = items[currentIdx - 1];
+      const updates = {};
+
+      updates[`rooms/${roomId}/items/${currentItem.id}/cueState`] = 'pending';
+      updates[`rooms/${roomId}/items/${currentItem.id}/actualStartTs`] = null;
+      updates[`rooms/${roomId}/items/${currentItem.id}/actualStartTime`] = null;
+      updates[`rooms/${roomId}/items/${currentItem.id}/actualEndTs`] = null;
+      updates[`rooms/${roomId}/items/${currentItem.id}/actualEndTime`] = null;
+      updates[`rooms/${roomId}/items/${currentItem.id}/delayMinutes`] = null;
+
+      updates[`rooms/${roomId}/items/${prevItem.id}/cueState`] = 'active';
+      updates[`rooms/${roomId}/items/${prevItem.id}/actualEndTs`] = null;
+      updates[`rooms/${roomId}/items/${prevItem.id}/actualEndTime`] = null;
+
+      updates[`rooms/${roomId}/activeItemId`] = prevItem.id;
+      updates[`rooms/${roomId}/currentDelayMinutes`] = prevItem.delayMinutes || 0;
+
+      try {
+        await update(ref(db), updates);
+        showToast(`Kembali ke Cue #${currentIdx}: ${prevItem.title}`, 'info');
+      } catch (err) {
+        handleWriteError(err, 'Gagal kembali ke cue sebelumnya.');
+      }
+    }
+
+    // Jump directly to any specific Cue
+    async function jumpToCue(roomId, itemId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+      const items = getSortedItems(room);
+      const targetIdx = items.findIndex(i => i.id === itemId);
+      if (targetIdx === -1) return;
+
+      const now = new Date();
+      const nowTs = now.getTime();
+      const nowStr = formatHHMMSS(now);
+      const targetItem = items[targetIdx];
+      const delayMin = calculateDelayMinutes(targetItem.startTime, now);
+
+      const updates = {};
+      updates[`rooms/${roomId}/showState`] = 'live';
+      updates[`rooms/${roomId}/startedAt`] = room.startedAt || nowTs;
+      updates[`rooms/${roomId}/activeItemId`] = targetItem.id;
+      updates[`rooms/${roomId}/currentDelayMinutes`] = delayMin;
+
+      items.forEach((it, idx) => {
+        if (idx < targetIdx) {
+          updates[`rooms/${roomId}/items/${it.id}/cueState`] = 'completed';
+          if (it.id === room.activeItemId && !it.actualEndTs) {
+            updates[`rooms/${roomId}/items/${it.id}/actualEndTs`] = nowTs;
+            updates[`rooms/${roomId}/items/${it.id}/actualEndTime`] = nowStr;
+          }
+        } else if (idx === targetIdx) {
+          updates[`rooms/${roomId}/items/${it.id}/cueState`] = 'active';
+          updates[`rooms/${roomId}/items/${it.id}/actualStartTs`] = nowTs;
+          updates[`rooms/${roomId}/items/${it.id}/actualStartTime`] = nowStr;
+          updates[`rooms/${roomId}/items/${it.id}/actualEndTs`] = null;
+          updates[`rooms/${roomId}/items/${it.id}/actualEndTime`] = null;
+          updates[`rooms/${roomId}/items/${it.id}/delayMinutes`] = delayMin;
+        } else {
+          updates[`rooms/${roomId}/items/${it.id}/cueState`] = 'pending';
+          updates[`rooms/${roomId}/items/${it.id}/actualStartTs`] = null;
+          updates[`rooms/${roomId}/items/${it.id}/actualStartTime`] = null;
+          updates[`rooms/${roomId}/items/${it.id}/actualEndTs`] = null;
+          updates[`rooms/${roomId}/items/${it.id}/actualEndTime`] = null;
+          updates[`rooms/${roomId}/items/${it.id}/delayMinutes`] = null;
+        }
+      });
+
+      const logKey = push(ref(db, `rooms/${roomId}/delayLog`)).key;
+      updates[`rooms/${roomId}/delayLog/${logKey}`] = {
+        itemId: targetItem.id,
+        title: targetItem.title,
+        pic: targetItem.pic || '',
+        plannedStart: targetItem.startTime,
+        actualStart: nowStr,
+        delayMinutes: delayMin,
+        timestamp: nowTs
+      };
+
+      try {
+        await update(ref(db), updates);
+        showToast(
+          `Aktif: Cue #${targetIdx + 1} (${targetItem.title})${delayMin > 0 ? ` — DELAY +${delayMin} mnt` : ''}`,
+          delayMin > 0 ? 'error' : 'success'
+        );
+      } catch (err) {
+        handleWriteError(err, 'Gagal mengaktifkan cue.');
+      }
+    }
+
+    // Finish Room -> Move to History (DO NOT DELETE)
+    function confirmFinishRoom(roomId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+      const stats = computeRoomStats(room);
+
+      openConfirm({
+        title: 'Selesaikan Ruangan & Pindahkan ke History?',
+        message: `Event "${room.name}" tidak akan dihapus, melainkan dipindahkan ke tab History lengkap dengan catatan keterlambatan (${stats.delayedCount} sesi delay, maks +${stats.maxDelay} mnt).`,
+        okText: 'Selesaikan & Arsipkan',
+        danger: false,
+        onConfirm: async () => {
+          const now = new Date();
+          const nowTs = now.getTime();
+          const nowStr = formatHHMMSS(now);
+          const updates = {};
+
+          if (room.activeItemId && room.items && room.items[room.activeItemId]) {
+            updates[`rooms/${roomId}/items/${room.activeItemId}/cueState`] = 'completed';
+            updates[`rooms/${roomId}/items/${room.activeItemId}/actualEndTs`] = nowTs;
+            updates[`rooms/${roomId}/items/${room.activeItemId}/actualEndTime`] = nowStr;
+          }
+
+          updates[`rooms/${roomId}/status`] = 'history';
+          updates[`rooms/${roomId}/showState`] = 'completed';
+          updates[`rooms/${roomId}/activeItemId`] = null;
+          updates[`rooms/${roomId}/completedAt`] = nowTs;
+          updates[`rooms/${roomId}/historySummary`] = {
+            totalItems: stats.totalItems,
+            delayedCount: stats.delayedCount,
+            onTimeCount: stats.onTimeCount,
+            maxDelayMinutes: stats.maxDelay
+          };
+
+          try {
+            await update(ref(db), updates);
+            showToast(`"${room.name}" dipindahkan ke History.`, 'success');
+            navigateTo('history');
+          } catch (err) {
+            handleWriteError(err, 'Gagal memindahkan ruangan ke History.');
+          }
+        }
+      });
+    }
+
+    // Reset Show back to Standby
+    function confirmResetRoom(roomId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+      openConfirm({
+        title: 'Reset Status Show ke Standby?',
+        message: `Semua waktu aktual dan status keterlambatan di "${room.name}" akan direset ke posisi awal (Standby). Daftar item rundown tetap tersimpan.`,
+        okText: 'Reset Show',
+        danger: true,
+        onConfirm: async () => {
+          const updates = {
+            [`rooms/${roomId}/showState`]: 'standby',
+            [`rooms/${roomId}/activeItemId`]: null,
+            [`rooms/${roomId}/currentDelayMinutes`]: 0,
+            [`rooms/${roomId}/startedAt`]: null,
+            [`rooms/${roomId}/delayLog`]: null
+          };
+          getSortedItems(room).forEach((item) => {
+            updates[`rooms/${roomId}/items/${item.id}/cueState`] = 'pending';
+            updates[`rooms/${roomId}/items/${item.id}/actualStartTs`] = null;
+            updates[`rooms/${roomId}/items/${item.id}/actualStartTime`] = null;
+            updates[`rooms/${roomId}/items/${item.id}/actualEndTs`] = null;
+            updates[`rooms/${roomId}/items/${item.id}/actualEndTime`] = null;
+            updates[`rooms/${roomId}/items/${item.id}/delayMinutes`] = null;
+          });
+          try {
+            await update(ref(db), updates);
+            showToast('Show berhasil direset ke Standby.', 'info');
+          } catch (err) {
+            handleWriteError(err, 'Gagal mereset show.');
+          }
+        }
+      });
+    }
+
+    // Restore room from History back to Active
+    async function restoreHistoryRoom(roomId) {
+      if (!requireAdmin()) return;
+      try {
+        await update(ref(db), {
+          [`rooms/${roomId}/status`]: 'active',
+          [`rooms/${roomId}/showState`]: 'standby',
+          [`rooms/${roomId}/completedAt`]: null
+        });
+        closeModal('modal-history-detail');
+        showToast('Ruangan dipulihkan ke Master Monitor.', 'success');
+        navigateTo('room', roomId);
+      } catch (err) {
+        handleWriteError(err, 'Gagal memulihkan ruangan.');
+      }
+    }
+
+    // Permanently delete room from History
+    function confirmPurgeHistoryRoom(roomId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+      openConfirm({
+        title: 'Hapus Permanen dari History?',
+        message: `Data arsip dan riwayat keterlambatan "${room.name}" akan dihapus permanen dari Firebase. Tindakan ini tidak dapat dibatalkan.`,
+        okText: 'Hapus Permanen',
+        danger: true,
+        onConfirm: async () => {
+          try {
+            await remove(ref(db, `rooms/${roomId}`));
+            closeModal('modal-history-detail');
+            showToast('Riwayat ruangan dihapus permanen.', 'info');
+          } catch (err) {
+            handleWriteError(err, 'Gagal menghapus riwayat.');
+          }
+        }
+      });
+    }
+
+    // Reorder Item Up / Down
+    async function moveItem(roomId, itemId, direction) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room) return;
+      const items = getSortedItems(room);
+      const idx = items.findIndex(i => i.id === itemId);
+      const swapIdx = idx + direction;
+      if (idx === -1 || swapIdx < 0 || swapIdx >= items.length) return;
+
+      const updates = {};
+      items.forEach((item, i) => {
+        let newOrder = i;
+        if (i === idx) newOrder = swapIdx;
+        else if (i === swapIdx) newOrder = idx;
+        updates[`rooms/${roomId}/items/${item.id}/order`] = newOrder;
+      });
+
+      try {
+        await update(ref(db), updates);
+      } catch (err) {
+        handleWriteError(err, 'Gagal mengubah urutan sesi.');
+      }
+    }
+
+    // Delete Rundown Item
+    function confirmDeleteItem(roomId, itemId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      const item = room?.items?.[itemId];
+      if (!item) return;
+
+      openConfirm({
+        title: 'Hapus Item Rundown?',
+        message: `Hapus sesi "${item.title}" (${item.startTime}) dari ruangan "${room.name}"?`,
+        okText: 'Hapus Sesi',
+        danger: true,
+        onConfirm: async () => {
+          const updates = {
+            [`rooms/${roomId}/items/${itemId}`]: null
+          };
+          if (room.activeItemId === itemId) {
+            updates[`rooms/${roomId}/activeItemId`] = null;
+            updates[`rooms/${roomId}/showState`] = 'standby';
+            updates[`rooms/${roomId}/currentDelayMinutes`] = 0;
+          }
+          try {
+            await update(ref(db), updates);
+            showToast('Item rundown dihapus.', 'info');
+          } catch (err) {
+            handleWriteError(err, 'Gagal menghapus item.');
+          }
+        }
+      });
+    }
+
+    // Seed Sample Multi-Room Event (Helpful for quick testing)
+    async function seedDemoEvent() {
+      if (!requireAdmin()) return;
+      const now = new Date();
+      // Schedule sample sessions near current time so user immediately sees realistic Delay / On Time behavior!
+      const baseTime1 = formatHHMM(new Date(now.getTime() - 10 * 60000)); // 10 min ago
+      const baseTime2 = formatHHMM(new Date(now.getTime() - 2 * 60000));  // 2 min ago
+
+      const r1Ref = push(ref(db, 'rooms'));
+      const r2Ref = push(ref(db, 'rooms'));
+
+      const makeItems = (startHHMM, defs) => {
+        const obj = {};
+        let cursor = startHHMM;
+        defs.forEach((d, idx) => {
+          const id = `cue_${idx + 1}_${Date.now()}`;
+          obj[id] = {
+            id,
+            order: idx,
+            startTime: cursor,
+            duration: d.duration,
+            title: d.title,
+            pic: d.pic,
+            notes: d.notes || '',
+            cueState: 'pending'
+          };
+          cursor = addMinutesToHHMM(cursor, d.duration);
+        });
+        return obj;
+      };
+
+      const r1Items = makeItems(baseTime1, [
+        { duration: 10, title: 'Open Gate & Registrasi Peserta', pic: 'Tim Registrasi (Dina)', notes: 'Play BGM upbeat, LED Welcome Screen ON' },
+        { duration: 15, title: 'Opening Remarks & Sambutan Ketua', pic: 'MC Raka / Dir. Andi', notes: 'Mic handheld 2x, lighting full bright' },
+        { duration: 25, title: 'Keynote Speech: Future of Live Tech', pic: 'Stage Mgr Budi', notes: 'Clicker & HDMI laptop pembicara ready' },
+        { duration: 20, title: 'Panel Discussion & Q&A Interaktif', pic: 'LO Nadia / Audio Dimas', notes: '4 kursi sofa di tengah stage, 2 mic wireless' }
+      ]);
+
+      const r2Items = makeItems(baseTime2, [
+        { duration: 15, title: 'Workshop Check-in & Setup Perangkat', pic: 'Crew Fajar', notes: 'Pastikan Wi-Fi & proyektor terhubung' },
+        { duration: 30, title: 'Sesi Praktik: Real-Time Production Flow', pic: 'Trainer Sinta', notes: 'Screen share utama di LCD' },
+        { duration: 15, title: 'Wrap-up & Foto Bersama', pic: 'Dokumentasi Reza', notes: 'Posisi foto di backdrop kiri' }
+      ]);
+
+      const updates = {
+        [`rooms/${r1Ref.key}`]: {
+          id: r1Ref.key,
+          name: 'Main Ballroom — Stage A',
+          eventTitle: 'Indonesia Tech Summit 2026',
+          location: 'Lantai 3, Hall Utama',
+          date: todayISO(),
+          status: 'active',
+          showState: 'standby',
+          activeItemId: null,
+          currentDelayMinutes: 0,
+          createdAt: Date.now(),
+          createdBy: state.user?.email || 'admin',
+          items: r1Items
+        },
+        [`rooms/${r2Ref.key}`]: {
+          id: r2Ref.key,
+          name: 'Breakout Room B',
+          eventTitle: 'Indonesia Tech Summit 2026',
+          location: 'Lantai 2, Ruang Merpati',
+          date: todayISO(),
+          status: 'active',
+          showState: 'standby',
+          activeItemId: null,
+          currentDelayMinutes: 0,
+          createdAt: Date.now() + 1,
+          createdBy: state.user?.email || 'admin',
+          items: r2Items
+        }
+      };
+
+      try {
+        await update(ref(db), updates);
+        showToast('2 ruangan contoh berhasil ditambahkan!', 'success');
+      } catch (err) {
+        handleWriteError(err, 'Gagal memuat contoh event.');
+      }
+    }
+
+    // Export History Room to CSV
+    function exportHistoryCSV(roomId) {
+      const room = state.rooms[roomId];
+      if (!room) return;
+      const items = getSortedItems(room);
+      const header = ['No', 'Jam Rencana', 'Durasi (Mnt)', 'Jam Aktual', 'Status/Delay (Mnt)', 'Nama Sesi', 'PIC', 'Catatan'];
+      const rows = items.map((it, idx) => {
+        const d = typeof it.delayMinutes === 'number'
+          ? (it.delayMinutes > 0 ? `DELAY +${it.delayMinutes}` : it.delayMinutes < 0 ? `EARLY ${it.delayMinutes}` : 'ON TIME')
+          : '-';
+        return [
+          idx + 1,
+          it.startTime || '',
+          it.duration || '',
+          it.actualStartTime || '-',
+          d,
+          it.title || '',
+          it.pic || '',
+          it.notes || ''
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      });
+
+      const csv = [header.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `rundown-history-${(room.name || 'event').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==================== 10. MODAL FORM OPENERS ====================
+    function openRoomModal(roomId = null) {
+      if (!requireAdmin()) return;
+      const isEdit = Boolean(roomId && state.rooms[roomId]);
+      document.getElementById('modal-room-title').textContent = isEdit ? 'Edit Informasi Ruangan' : 'Tambah Ruangan Baru';
+      document.getElementById('room-form-id').value = isEdit ? roomId : '';
+
+      if (isEdit) {
+        const r = state.rooms[roomId];
+        document.getElementById('room-input-name').value = r.name || '';
+        document.getElementById('room-input-event').value = r.eventTitle || '';
+        document.getElementById('room-input-location').value = r.location || '';
+        document.getElementById('room-input-date').value = r.date || todayISO();
+      } else {
+        document.getElementById('room-input-name').value = '';
+        document.getElementById('room-input-event').value = '';
+        document.getElementById('room-input-location').value = '';
+        document.getElementById('room-input-date').value = todayISO();
+      }
+      openModal('modal-room');
+      setTimeout(() => document.getElementById('room-input-name').focus(), 40);
+    }
+
+    function openItemModal(itemId = null) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[state.selectedRoomId];
+      if (!room) return;
+
+      const isEdit = Boolean(itemId && room.items && room.items[itemId]);
+      document.getElementById('modal-item-title').textContent = isEdit ? 'Edit Item Rundown' : 'Tambah Item Rundown';
+      document.getElementById('item-form-id').value = isEdit ? itemId : '';
+
+      if (isEdit) {
+        const item = room.items[itemId];
+        document.getElementById('item-input-start').value = item.startTime || '09:00';
+        document.getElementById('item-input-duration').value = item.duration || 15;
+        document.getElementById('item-input-title').value = item.title || '';
+        document.getElementById('item-input-pic').value = item.pic || '';
+        document.getElementById('item-input-notes').value = item.notes || '';
+      } else {
+        // Smart default: auto-calculate start time from last item's end time
+        const items = getSortedItems(room);
+        let defaultStart = formatHHMM(new Date());
+        if (items.length > 0) {
+          const last = items[items.length - 1];
+          defaultStart = addMinutesToHHMM(last.startTime, last.duration) || defaultStart;
+        }
+        document.getElementById('item-input-start').value = defaultStart;
+        document.getElementById('item-input-duration').value = 15;
+        document.getElementById('item-input-title').value = '';
+        document.getElementById('item-input-pic').value = '';
+        document.getElementById('item-input-notes').value = '';
+      }
+      openModal('modal-item');
+      setTimeout(() => document.getElementById('item-input-title').focus(), 40);
+    }
+
+    // ==================== 11. EVENT LISTENERS ====================
+
+    // Navigation buttons
+    document.getElementById('btn-brand-home').addEventListener('click', () => navigateTo('monitor'));
+    document.getElementById('nav-monitor').addEventListener('click', () => navigateTo('monitor'));
+    document.getElementById('nav-history').addEventListener('click', () => navigateTo('history'));
+    document.getElementById('nav-monitor-mobile').addEventListener('click', () => navigateTo('monitor'));
+    document.getElementById('nav-history-mobile').addEventListener('click', () => navigateTo('history'));
+    document.getElementById('btn-back-monitor').addEventListener('click', () => navigateTo('monitor'));
+    document.getElementById('btn-close-alert').addEventListener('click', hideGlobalAlert);
+
+    // Auth buttons
+    document.getElementById('btn-open-login').addEventListener('click', () => {
+      document.getElementById('login-error').classList.add('d-none');
+      document.getElementById('form-login').reset();
+      openModal('modal-login');
+      setTimeout(() => document.getElementById('login-email').focus(), 40);
+    });
+    document.getElementById('btn-empty-login').addEventListener('click', () => {
+      document.getElementById('btn-open-login').click();
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        showToast('Berhasil logout. Kembali ke Mode Viewer Publik.', 'info');
+      } catch (err) {
+        showToast('Gagal logout: ' + err.message, 'error');
+      }
+    });
+
+    // Login Form Submit
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errBox = document.getElementById('login-error');
+      const submitBtn = document.getElementById('btn-submit-login');
+
+      errBox.classList.add('d-none');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Memproses...';
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        closeModal('modal-login');
+        showToast('Login Admin berhasil. Kontrol manajemen aktif.', 'success');
+      } catch (err) {
+        let msg = 'Login gagal. Periksa kembali email dan password Anda.';
+        if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+          msg = 'Email atau password tidak sesuai.';
+        } else if (err.code === 'auth/too-many-requests') {
+          msg = 'Terlalu banyak percobaan login. Silakan coba beberapa saat lagi.';
+        } else if (err.code === 'auth/network-request-failed') {
+          msg = 'Koneksi internet bermasalah. Coba lagi.';
+        }
+        errBox.textContent = msg;
+        errBox.classList.remove('d-none');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Masuk Admin';
+      }
+    });
+
+    // Room Form Submit (Add / Edit)
+    document.getElementById('form-room').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!requireAdmin()) return;
+
+      const existingId = document.getElementById('room-form-id').value;
+      const name = document.getElementById('room-input-name').value.trim();
+      const eventTitle = document.getElementById('room-input-event').value.trim();
+      const location = document.getElementById('room-input-location').value.trim();
+      const date = document.getElementById('room-input-date').value || todayISO();
+
+      if (!name || !eventTitle) return;
+
+      try {
+        if (existingId) {
+          await update(ref(db, `rooms/${existingId}`), { name, eventTitle, location, date });
+          closeModal('modal-room');
+          showToast('Informasi ruangan diperbarui.', 'success');
+        } else {
+          const newRef = push(ref(db, 'rooms'));
+          await set(newRef, {
+            id: newRef.key,
+            name,
+            eventTitle,
+            location,
+            date,
+            status: 'active',
+            showState: 'standby',
+            activeItemId: null,
+            currentDelayMinutes: 0,
+            createdAt: Date.now(),
+            createdBy: state.user?.email || 'admin'
+          });
+          closeModal('modal-room');
+          showToast(`Ruangan "${name}" berhasil dibuat.`, 'success');
+          navigateTo('room', newRef.key);
+        }
+      } catch (err) {
+        handleWriteError(err, 'Gagal menyimpan ruangan.');
+      }
+    });
+
+    // Item Form Submit (Add / Edit)
+    document.getElementById('form-item').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!requireAdmin()) return;
+      const roomId = state.selectedRoomId;
+      const room = state.rooms[roomId];
+      if (!room) return;
+
+      const existingId = document.getElementById('item-form-id').value;
+      const startTime = document.getElementById('item-input-start').value;
+      const duration = Math.max(1, parseInt(document.getElementById('item-input-duration').value, 10) || 15);
+      const title = document.getElementById('item-input-title').value.trim();
+      const pic = document.getElementById('item-input-pic').value.trim();
+      const notes = document.getElementById('item-input-notes').value.trim();
+
+      if (!startTime || !title || !pic) return;
+
+      try {
+        if (existingId) {
+          const existingItem = room.items?.[existingId] || {};
+          const payload = { startTime, duration, title, pic, notes };
+          // If this item already has an actualStartTs, recalculate delay against the edited planned time
+          if (existingItem.actualStartTs) {
+            const recalcDelay = calculateDelayMinutes(startTime, new Date(existingItem.actualStartTs));
+            payload.delayMinutes = recalcDelay;
+            if (room.activeItemId === existingId) {
+              await update(ref(db), {
+                [`rooms/${roomId}/currentDelayMinutes`]: recalcDelay,
+                [`rooms/${roomId}/items/${existingId}/startTime`]: startTime,
+                [`rooms/${roomId}/items/${existingId}/duration`]: duration,
+                [`rooms/${roomId}/items/${existingId}/title`]: title,
+                [`rooms/${roomId}/items/${existingId}/pic`]: pic,
+                [`rooms/${roomId}/items/${existingId}/notes`]: notes,
+                [`rooms/${roomId}/items/${existingId}/delayMinutes`]: recalcDelay
+              });
+              closeModal('modal-item');
+              showToast('Item rundown diperbarui.', 'success');
+              return;
+            }
+          }
+          await update(ref(db, `rooms/${roomId}/items/${existingId}`), payload);
+          closeModal('modal-item');
+          showToast('Item rundown diperbarui.', 'success');
+        } else {
+          const items = getSortedItems(room);
+          const nextOrder = items.length;
+          const newRef = push(ref(db, `rooms/${roomId}/items`));
+          await set(newRef, {
+            id: newRef.key,
+            order: nextOrder,
+            startTime,
+            duration,
+            title,
+            pic,
+            notes,
+            cueState: 'pending'
+          });
+          closeModal('modal-item');
+          showToast(`Sesi "${title}" ditambahkan.`, 'success');
+        }
+      } catch (err) {
+        handleWriteError(err, 'Gagal menyimpan item rundown.');
+      }
+    });
+
+    // Top-level Admin Buttons
+    document.getElementById('btn-add-room').addEventListener('click', () => openRoomModal(null));
+    document.getElementById('btn-empty-add-room').addEventListener('click', () => openRoomModal(null));
+    document.getElementById('btn-seed-demo').addEventListener('click', seedDemoEvent);
+    document.getElementById('btn-empty-seed').addEventListener('click', seedDemoEvent);
+    document.getElementById('btn-room-edit').addEventListener('click', () => openRoomModal(state.selectedRoomId));
+    document.getElementById('btn-room-reset').addEventListener('click', () => confirmResetRoom(state.selectedRoomId));
+    document.getElementById('btn-room-finish').addEventListener('click', () => confirmFinishRoom(state.selectedRoomId));
+    document.getElementById('btn-add-item').addEventListener('click', () => openItemModal(null));
+    document.getElementById('btn-export-history-csv').addEventListener('click', () => {
+      if (state.historyDetailRoomId) exportHistoryCSV(state.historyDetailRoomId);
+    });
+
+    document.getElementById('btn-scroll-active').addEventListener('click', () => {
+      const activeRow = document.getElementById('active-cue-row');
+      if (activeRow) {
+        activeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        showToast('Belum ada sesi aktif di ruangan ini.', 'info');
+      }
+    });
+
+    // History Search
+    document.getElementById('history-search').addEventListener('input', (e) => {
+      state.historySearch = e.target.value;
+      renderHistoryView(getHistoryRoomList());
+    });
+
+    // Confirm Modal Buttons
+    document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+      state.confirmCallback = null;
+      closeModal('modal-confirm');
+    });
+    document.getElementById('btn-confirm-ok').addEventListener('click', async () => {
+      const cb = state.confirmCallback;
+      state.confirmCallback = null;
+      closeModal('modal-confirm');
+      if (typeof cb === 'function') await cb();
+    });
+
+    // Generic Modal Close buttons & backdrop click
+    document.addEventListener('click', (e) => {
+      const closeBtn = e.target.closest('[data-close-modal]');
+      if (closeBtn) {
+        closeModal(closeBtn.dataset.closeModal);
+        return;
+      }
+
+      if (e.target.classList.contains('modal-backdrop')) {
+        e.target.classList.add('d-none');
+        return;
+      }
+
+      // Delegated dynamic actions
+      const actionEl = e.target.closest('[data-action]');
+      if (!actionEl) return;
+
+      const action = actionEl.dataset.action;
+      const roomId = actionEl.dataset.roomId || state.selectedRoomId;
+      const itemId = actionEl.dataset.itemId;
+
+      switch (action) {
+        case 'open-room':
+          navigateTo('room', roomId);
+          break;
+        case 'next-cue':
+          triggerNextCue(roomId);
+          break;
+        case 'prev-cue':
+          triggerPrevCue(roomId);
+          break;
+        case 'jump-cue':
+          jumpToCue(roomId, itemId);
+          break;
+        case 'finish-room':
+          confirmFinishRoom(roomId);
+          break;
+        case 'edit-item':
+          openItemModal(itemId);
+          break;
+        case 'delete-item':
+          confirmDeleteItem(roomId, itemId);
+          break;
+        case 'move-item-up':
+          moveItem(roomId, itemId, -1);
+          break;
+        case 'move-item-down':
+          moveItem(roomId, itemId, 1);
+          break;
+        case 'open-history-detail':
+          renderHistoryDetailModal(roomId);
+          openModal('modal-history-detail');
+          break;
+        case 'restore-room':
+          restoreHistoryRoom(roomId);
+          break;
+        case 'purge-history-room':
+          confirmPurgeHistoryRoom(roomId);
+          break;
+      }
+    });
+
+    // Keyboard Shortcuts: ESC closes modals, Shift + ArrowRight triggers NEXT CUE for Admin in Room View
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-confirm'].forEach(closeModal);
+        return;
+      }
+      const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-confirm']
+        .some(id => !document.getElementById(id).classList.contains('d-none'));
+
+      if (e.shiftKey && e.key === 'ArrowRight' && !isInputFocused && !anyModalOpen && state.isAdmin && state.view === 'room' && state.selectedRoomId) {
+        e.preventDefault();
+        triggerNextCue(state.selectedRoomId);
+      }
+    });
+  </script>
+</body>
+</html>
