@@ -11,6 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
+  <!-- SheetJS CDN (untuk baca file Excel .xlsx/.xls/.csv secara lokal & instan) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -358,13 +361,22 @@
           <span id="room-item-progress-pill" class="font-mono text-xs px-2.5 py-1 rounded-md bg-surface border border-line text-slate-300">0 / 0 Sesi</span>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button id="btn-scroll-active" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-200 transition-colors flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <circle cx="12" cy="12" r="10"></circle>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
             <span>Fokus Sesi Aktif</span>
+          </button>
+
+          <button id="btn-import-room" type="button" class="admin-only d-none px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-amber-400/50 hover:border-amber-400 text-xs font-bold text-amber-300 transition-colors flex items-center gap-1.5" title="Upload Foto, Paste Screenshot, atau File Excel/CSV">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Import Foto / File</span>
           </button>
 
           <button id="btn-add-item" type="button" class="admin-only d-none px-3.5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5">
@@ -552,9 +564,19 @@
               <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Daftar Rundown Awal</h4>
               <p class="text-[11px] text-slate-400">Jam sesi berikutnya otomatis mengikuti jam selesai sesi di atasnya (kecuali yang dicentang Fixed Time).</p>
             </div>
-            <button id="btn-add-draft-row" type="button" class="px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-bold text-amber-300 transition-colors flex items-center gap-1.5">
-              <span>+ Tambah Baris Sesi</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btn-import-draft" type="button" class="px-3 py-1.5 rounded-lg bg-surface hover:bg-elevated border border-amber-400/50 hover:border-amber-400 text-xs font-bold text-amber-300 transition-colors flex items-center gap-1.5" title="Upload Foto, Paste Screenshot, atau File Excel/CSV">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>Import Foto / File</span>
+              </button>
+              <button id="btn-add-draft-row" type="button" class="px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-bold text-slate-100 transition-colors flex items-center gap-1.5">
+                <span>+ Tambah Baris Sesi</span>
+              </button>
+            </div>
           </div>
 
           <div class="border border-line rounded-xl overflow-hidden bg-canvas/60">
@@ -712,7 +734,159 @@
     </div>
   </div>
 
-  <!-- Modal 5: Confirm Action -->
+  <!-- Modal 5: Import Rundown (Foto / Paste Screenshot / PDF / Excel / CSV) -->
+  <div id="modal-import" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-5xl w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-line flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h3 class="text-base font-bold text-white">Import Rundown Otomatis</h3>
+            <span id="import-ai-status-pill" class="px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase tracking-wide bg-elevated text-slate-400 border border-line">CEK AI KEY...</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Upload foto/PDF, tekan <strong class="text-slate-200 font-mono">Ctrl+V</strong> untuk paste screenshot, atau upload file Excel/CSV.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-toggle-apikey" type="button" class="px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-slate-200 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+            <span>API Key AI</span>
+          </button>
+          <button type="button" data-close-modal="modal-import" class="text-slate-400 hover:text-white text-2xl leading-none px-1">&times;</button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 overflow-y-auto space-y-5 flex-1">
+
+        <!-- Collapsible Gemini API Key Settings (Admin-Only, Stored in Firebase /adminSecrets) -->
+        <div id="import-apikey-panel" class="d-none rounded-xl bg-canvas border border-amber-400/40 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-amber-300">Pengaturan Gemini API Key (Untuk Scan Foto / PDF)</h4>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                Disimpan aman di Firebase khusus Admin (<code class="font-mono text-slate-300">/adminSecrets/geminiApiKey</code>). File Excel/CSV tetap bisa dibaca instan tanpa API Key.
+              </p>
+            </div>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-amber-400 hover:text-amber-300 underline">
+              Buat API Key Gratis (Google AI Studio) &rarr;
+            </a>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="import-apikey-input" type="password" autocomplete="off" placeholder="Tempel Gemini API Key Anda (contoh: AIzaSy...)" class="flex-1 px-3.5 py-2 rounded-lg bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs sm:text-sm text-white font-mono placeholder-slate-500" />
+            <button id="btn-save-apikey" type="button" class="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold transition-colors shrink-0">
+              Simpan Key
+            </button>
+            <button id="btn-clear-apikey" type="button" class="px-3 py-2 rounded-lg bg-elevated hover:bg-red-950 hover:text-red-200 border border-line text-xs font-semibold text-slate-300 transition-colors shrink-0">
+              Hapus Key
+            </button>
+          </div>
+          <p id="import-apikey-hint" class="text-[11px] text-slate-500"></p>
+        </div>
+
+        <!-- Upload / Drag & Drop / Paste Zone -->
+        <div id="import-dropzone" tabindex="0" class="rounded-2xl border-2 border-dashed border-line-strong hover:border-amber-400/80 bg-canvas/70 p-6 sm:p-8 text-center transition-colors cursor-pointer focus:outline-none focus:border-amber-400">
+          <input id="import-file-input" type="file" accept=".png,.jpg,.jpeg,.webp,.pdf,.xlsx,.xls,.csv" class="d-none" />
+
+          <div id="import-dropzone-empty" class="space-y-2.5">
+            <div class="w-12 h-12 mx-auto rounded-xl bg-elevated border border-line flex items-center justify-center text-amber-400">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="text-sm font-bold text-white">Klik untuk pilih file, tarik ke sini, atau tekan <span class="px-1.5 py-0.5 rounded bg-elevated border border-line font-mono text-amber-300 text-xs">Ctrl + V</span> untuk paste foto</div>
+            <p class="text-xs text-slate-400 max-w-xl mx-auto">
+              Mendukung <strong class="text-slate-200">Foto / Screenshot</strong> (JPG, PNG, WEBP), <strong class="text-slate-200">PDF</strong> (via Gemini AI), serta <strong class="text-slate-200">Excel / CSV / Copy-Paste Google Sheets</strong> (instan &amp; gratis tanpa API Key).
+            </p>
+          </div>
+
+          <!-- Selected File / Image Preview -->
+          <div id="import-selected-preview" class="d-none space-y-3">
+            <img id="import-image-thumb" src="" alt="Preview Rundown" class="d-none max-h-56 mx-auto rounded-xl border border-line-strong object-contain bg-black/40" />
+            <div id="import-file-badge" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-elevated border border-line text-xs font-mono text-slate-200"></div>
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <button id="btn-run-ai-parse" type="button" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-extrabold transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span>Baca Rundown dengan AI</span>
+              </button>
+              <button id="btn-change-import-file" type="button" class="px-3.5 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
+                Ganti File / Foto
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="import-loading" class="d-none py-6 flex flex-col items-center justify-center gap-3 text-amber-300">
+          <div class="w-8 h-8 rounded-full border-2 border-line-strong border-t-amber-400 animate-spin"></div>
+          <p id="import-loading-text" class="text-xs sm:text-sm font-semibold">AI sedang membaca tabel rundown...</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="import-error" class="d-none p-3.5 rounded-xl bg-red-950/80 border border-red-700 text-xs text-red-200 leading-relaxed"></div>
+
+        <!-- Editable Parsed Result Preview -->
+        <div id="import-preview-section" class="d-none space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-300">Hasil Pembacaan (Bisa Diedit Sebelum Disimpan)</h4>
+              <span id="import-preview-count" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[11px] font-bold">0 sesi</span>
+            </div>
+            <button id="btn-import-add-row" type="button" class="px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
+              + Tambah Baris
+            </button>
+          </div>
+
+          <div class="border border-line rounded-xl overflow-hidden bg-canvas/60">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse min-w-[760px] text-xs">
+                <thead>
+                  <tr class="bg-elevated/80 border-b border-line text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <th class="py-2.5 px-2.5 w-10 text-center">#</th>
+                    <th class="py-2.5 px-2 w-28">Jam Mulai</th>
+                    <th class="py-2.5 px-2 w-20">Durasi</th>
+                    <th class="py-2.5 px-2">Nama Sesi *</th>
+                    <th class="py-2.5 px-2 w-36">PIC *</th>
+                    <th class="py-2.5 px-2 w-40">Catatan / Lokasi</th>
+                    <th class="py-2.5 px-2 w-24 text-center">Fixed Time</th>
+                    <th class="py-2.5 px-2 w-12 text-center">Hapus</th>
+                  </tr>
+                </thead>
+                <tbody id="import-preview-tbody" class="divide-y divide-line/70">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-3.5 border-t border-line bg-elevated/50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div class="text-[11px] text-slate-400">
+          Tips: Pastikan kolom <strong class="text-slate-200">Jam Mulai</strong>, <strong class="text-slate-200">Durasi</strong>, dan <strong class="text-slate-200">Nama Sesi</strong> sudah sesuai sebelum disimpan.
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button type="button" data-close-modal="modal-import" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-xs sm:text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+          <button id="btn-apply-import" type="button" disabled class="px-5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs sm:text-sm font-bold transition-colors">
+            Masukkan ke Rundown
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Confirm Action -->
   <div id="modal-confirm" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
     <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
       <div class="px-6 py-4 border-b border-line">
@@ -748,6 +922,7 @@
       getDatabase,
       ref,
       onValue,
+      get,
       set,
       push,
       update,
@@ -782,6 +957,10 @@
       historySearch: '',
       rooms: {}, // raw Firebase object
       draftItems: [], // optional inline rundown items when creating a new room
+      geminiApiKey: '', // loaded securely from /adminSecrets/geminiApiKey for Admin only
+      importTarget: 'room', // 'draft' | 'room'
+      importPendingFile: null, // { file, kind: 'image'|'pdf'|'spreadsheet', previewUrl }
+      importItems: [], // editable parsed rows inside modal-import
       confirmCallback: null
     };
 
@@ -1205,11 +1384,13 @@
           recordAdminActivity(true);
         }
         startAdminIdleMonitor();
+        loadAdminGeminiApiKey();
       } else {
         stopAdminIdleMonitor();
         clearAdminActivity();
         state.user = null;
         state.isAdmin = false;
+        state.geminiApiKey = '';
       }
       updateAuthUI();
       renderAll();
@@ -3316,6 +3497,14 @@
           }
           break;
         }
+        case 'remove-import-row': {
+          const iIdx = Number(actionEl.dataset.importIdx);
+          if (!Number.isNaN(iIdx)) {
+            state.importItems.splice(iIdx, 1);
+            renderImportPreviewRows();
+          }
+          break;
+        }
         case 'open-history-detail':
           renderHistoryDetailModal(roomId);
           openModal('modal-history-detail');
@@ -3337,16 +3526,890 @@
           closeModal('modal-confirm');
           return;
         }
+        if (!document.getElementById('modal-import').classList.contains('d-none')) {
+          closeModal('modal-import');
+          return;
+        }
         ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail'].forEach(closeModal);
         return;
       }
       const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-confirm']
+      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-confirm']
         .some(id => !document.getElementById(id).classList.contains('d-none'));
 
       if (e.shiftKey && e.key === 'ArrowRight' && !isInputFocused && !anyModalOpen && state.isAdmin && state.view === 'room' && state.selectedRoomId) {
         e.preventDefault();
         triggerNextCue(state.selectedRoomId);
+      }
+    });
+
+    // ==================== 12. SMART RUNDOWN IMPORTER (AI VISION + EXCEL/CSV + PASTE) ====================
+    const LOCAL_GEMINI_KEY_FALLBACK = 'rundown_admin_gemini_key_fallback';
+
+    function updateApiKeyStatusUI() {
+      const pill = document.getElementById('import-ai-status-pill');
+      const hint = document.getElementById('import-apikey-hint');
+      const input = document.getElementById('import-apikey-input');
+      if (!pill) return;
+      if (state.geminiApiKey) {
+        pill.textContent = 'AI READY';
+        pill.className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        if (input && !input.value) input.placeholder = 'API Key tersimpan (masukkan key baru untuk mengganti)';
+        if (hint) hint.textContent = 'Status: Gemini API Key aktif dan siap digunakan untuk scan foto / PDF.';
+      } else {
+        pill.textContent = 'API KEY BELUM DIISI';
+        pill.className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase tracking-wide bg-amber-500/15 text-amber-300 border border-amber-500/40';
+        if (input) input.placeholder = 'Tempel Gemini API Key Anda (contoh: AIzaSy...)';
+        if (hint) hint.textContent = 'Status: Belum ada Gemini API Key. Diperlukan hanya untuk scan Foto/PDF (Excel/CSV tetap jalan tanpa API Key).';
+      }
+    }
+
+    async function loadAdminGeminiApiKey() {
+      if (!state.isAdmin) {
+        state.geminiApiKey = '';
+        updateApiKeyStatusUI();
+        return;
+      }
+      try {
+        const snap = await get(ref(db, 'adminSecrets/geminiApiKey'));
+        const val = snap.val();
+        if (val && typeof val === 'string') {
+          state.geminiApiKey = val.trim();
+          updateApiKeyStatusUI();
+          return;
+        }
+      } catch (err) {
+        console.warn('Could not read /adminSecrets/geminiApiKey from Firebase:', err.code || err.message);
+      }
+      try {
+        const localKey = localStorage.getItem(LOCAL_GEMINI_KEY_FALLBACK);
+        if (localKey) state.geminiApiKey = localKey.trim();
+      } catch (_) {}
+      updateApiKeyStatusUI();
+    }
+
+    async function saveAdminGeminiApiKey() {
+      if (!requireAdmin()) return;
+      const input = document.getElementById('import-apikey-input');
+      const key = (input.value || '').trim();
+      if (!key) {
+        showToast('Masukkan Gemini API Key terlebih dahulu.', 'warning');
+        return;
+      }
+      state.geminiApiKey = key;
+      try {
+        await set(ref(db, 'adminSecrets/geminiApiKey'), key);
+        try { localStorage.removeItem(LOCAL_GEMINI_KEY_FALLBACK); } catch (_) {}
+        input.value = '';
+        updateApiKeyStatusUI();
+        document.getElementById('import-apikey-panel').classList.add('d-none');
+        showToast('Gemini API Key berhasil disimpan aman di Firebase khusus Admin.', 'success');
+      } catch (err) {
+        // Fallback to localStorage if Firebase Rules restrict root /adminSecrets
+        try {
+          localStorage.setItem(LOCAL_GEMINI_KEY_FALLBACK, key);
+          input.value = '';
+          updateApiKeyStatusUI();
+          document.getElementById('import-apikey-panel').classList.add('d-none');
+          showToast('API Key disimpan di browser ini (tambahkan akses /adminSecrets di Firebase Rules untuk sinkron lintas perangkat).', 'warning');
+        } catch (_) {
+          handleWriteError(err, 'Gagal menyimpan API Key.');
+        }
+      }
+    }
+
+    async function clearAdminGeminiApiKey() {
+      if (!requireAdmin()) return;
+      state.geminiApiKey = '';
+      try { await remove(ref(db, 'adminSecrets/geminiApiKey')); } catch (_) {}
+      try { localStorage.removeItem(LOCAL_GEMINI_KEY_FALLBACK); } catch (_) {}
+      document.getElementById('import-apikey-input').value = '';
+      updateApiKeyStatusUI();
+      showToast('Gemini API Key dihapus.', 'info');
+    }
+
+    // ---- Time & Table Normalization Helpers ----
+    function normalizeTimeHHMM(raw) {
+      if (raw === null || raw === undefined || raw === '') return '';
+      // Excel numeric time fraction (0.0 to 1.0, or datetime > 1)
+      if (typeof raw === 'number' && !Number.isNaN(raw)) {
+        const frac = raw >= 1 ? raw % 1 : raw;
+        const totalMin = Math.round(frac * 24 * 60) % 1440;
+        if (totalMin >= 0) {
+          return `${pad2(Math.floor(totalMin / 60))}:${pad2(totalMin % 60)}`;
+        }
+      }
+      const str = String(raw).trim();
+      // Match first HH:mm or HH.mm (e.g. "08.00", "8:30", "08.00 WIB", "08.00 - 09.00")
+      const match = str.match(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/);
+      if (match) {
+        return `${pad2(Number(match[1]))}:${pad2(Number(match[2]))}`;
+      }
+      return '';
+    }
+
+    function extractTimeRange(raw) {
+      if (raw === null || raw === undefined) return { start: '', end: '' };
+      if (typeof raw === 'number') return { start: normalizeTimeHHMM(raw), end: '' };
+      const str = String(raw).trim();
+      const matches = [...str.matchAll(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/g)];
+      if (matches.length >= 2) {
+        return {
+          start: `${pad2(Number(matches[0][1]))}:${pad2(Number(matches[0][2]))}`,
+          end: `${pad2(Number(matches[1][1]))}:${pad2(Number(matches[1][2]))}`
+        };
+      }
+      if (matches.length === 1) {
+        return { start: `${pad2(Number(matches[0][1]))}:${pad2(Number(matches[0][2]))}`, end: '' };
+      }
+      return { start: '', end: '' };
+    }
+
+    function diffMinutesHHMM(startHHMM, endHHMM) {
+      if (!startHHMM || !endHHMM) return 0;
+      const [sh, sm] = startHHMM.split(':').map(Number);
+      const [eh, em] = endHHMM.split(':').map(Number);
+      let diff = (eh * 60 + em) - (sh * 60 + sm);
+      if (diff <= 0) diff += 1440;
+      return diff > 0 && diff <= 1440 ? diff : 0;
+    }
+
+    function parseDurationMinutes(raw) {
+      if (raw === null || raw === undefined || raw === '') return 0;
+      if (typeof raw === 'number' && !Number.isNaN(raw)) {
+        return Math.round(raw);
+      }
+      const str = String(raw).trim().toLowerCase();
+      // Handle "1 jam 30 menit" or "1.5 jam"
+      const jamMatch = str.match(/(\d+(?:[.,]\d+)?)\s*(?:jam|hr|hour)/);
+      const minMatch = str.match(/(\d+)\s*(?:menit|mnt|min|')/);
+      if (jamMatch) {
+        const hrs = parseFloat(jamMatch[1].replace(',', '.'));
+        const extraMin = minMatch ? parseInt(minMatch[1], 10) : 0;
+        return Math.round(hrs * 60) + extraMin;
+      }
+      const numMatch = str.match(/\d+/);
+      return numMatch ? parseInt(numMatch[0], 10) : 0;
+    }
+
+    // ---- Smart Matrix Parser for Excel (.xlsx/.xls), CSV, and Copy-Pasted Google Sheets ----
+    function parseTableMatrixToItems(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return [];
+
+      // 1. Find header row (if present)
+      let headerIdx = -1;
+      const colMap = { start: -1, end: -1, duration: -1, title: -1, pic: -1, location: -1, notes: -1 };
+
+      for (let r = 0; r < Math.min(matrix.length, 10); r++) {
+        const row = matrix[r] || [];
+        const lowerCells = row.map(c => String(c ?? '').trim().toLowerCase());
+        const score = lowerCells.filter(c =>
+          /^(jam|waktu|time|mulai|start|durasi|duration|acara|sesi|agenda|kegiatan|program|pic|pj|penanggung|narasumber|lokasi|tempat|venue|catatan|keterangan|notes)/.test(c)
+        ).length;
+
+        if (score >= 2) {
+          headerIdx = r;
+          lowerCells.forEach((cell, cIdx) => {
+            if (!cell) return;
+            if (/^(jam|waktu|time|mulai|start)/.test(cell) && colMap.start === -1) {
+              colMap.start = cIdx;
+            } else if (/^(selesai|end|akhir)/.test(cell) && colMap.end === -1) {
+              colMap.end = cIdx;
+            } else if (/^(durasi|duration|menit|mnt)/.test(cell) && colMap.duration === -1) {
+              colMap.duration = cIdx;
+            } else if (/^(acara|sesi|agenda|kegiatan|program|nama sesi|rundown|aktivitas)/.test(cell) && colMap.title === -1) {
+              colMap.title = cIdx;
+            } else if (/^(pic|pj|penanggung|narasumber|speaker|mc|pengisi)/.test(cell) && colMap.pic === -1) {
+              colMap.pic = cIdx;
+            } else if (/^(lokasi|tempat|venue|ruang)/.test(cell) && colMap.location === -1) {
+              colMap.location = cIdx;
+            } else if (/^(catatan|keterangan|notes|note|cue|teknis)/.test(cell) && colMap.notes === -1) {
+              colMap.notes = cIdx;
+            }
+          });
+
+          // Handle merged "JAM" spanning 2 columns (start in colMap.start, end in colMap.start + 1)
+          if (colMap.start >= 0 && colMap.end === -1) {
+            const nextHeader = lowerCells[colMap.start + 1] || '';
+            const nextIsSameMergedOrBlank = nextHeader === '' || nextHeader === lowerCells[colMap.start];
+            if (nextIsSameMergedOrBlank) {
+              // Verify data rows have a time in colMap.start + 1
+              for (let probe = r + 1; probe < Math.min(matrix.length, r + 5); probe++) {
+                const probeVal = (matrix[probe] || [])[colMap.start + 1];
+                if (normalizeTimeHHMM(probeVal)) {
+                  colMap.end = colMap.start + 1;
+                  break;
+                }
+              }
+            }
+          }
+          break;
+        }
+      }
+
+      const startRow = headerIdx >= 0 ? headerIdx + 1 : 0;
+      const parsed = [];
+
+      for (let r = startRow; r < matrix.length; r++) {
+        const row = matrix[r] || [];
+        const nonEmpty = row.filter(c => String(c ?? '').trim() !== '');
+        if (nonEmpty.length === 0) continue; // skip blank separator rows
+
+        let startTime = '';
+        let endTime = '';
+        let duration = 0;
+        let title = '';
+        let pic = '';
+        let notesParts = [];
+
+        if (headerIdx >= 0) {
+          if (colMap.start >= 0) {
+            const rng = extractTimeRange(row[colMap.start]);
+            startTime = rng.start;
+            if (rng.end) endTime = rng.end;
+          }
+          if (!endTime && colMap.end >= 0) {
+            endTime = normalizeTimeHHMM(row[colMap.end]);
+          }
+          if (colMap.duration >= 0) {
+            duration = parseDurationMinutes(row[colMap.duration]);
+          }
+          if (colMap.title >= 0) {
+            title = String(row[colMap.title] ?? '').trim().replace(/\r?\n+/g, ' / ');
+          }
+          if (colMap.pic >= 0) {
+            pic = String(row[colMap.pic] ?? '').trim().replace(/\r?\n+/g, ', ');
+          }
+          if (colMap.location >= 0) {
+            const loc = String(row[colMap.location] ?? '').trim();
+            if (loc) notesParts.push(`Lokasi: ${loc}`);
+          }
+          if (colMap.notes >= 0) {
+            const nt = String(row[colMap.notes] ?? '').trim();
+            if (nt) notesParts.push(nt);
+          }
+        } else {
+          // Heuristic fallback when headerless rows are pasted
+          const times = [];
+          const texts = [];
+          row.forEach((cell) => {
+            const rng = extractTimeRange(cell);
+            if (rng.start) {
+              times.push(rng.start);
+              if (rng.end) times.push(rng.end);
+            } else if (!duration && /^\s*\d{1,3}\s*(?:mnt|menit|min|')?\s*$/i.test(String(cell ?? ''))) {
+              duration = parseDurationMinutes(cell);
+            } else {
+              const t = String(cell ?? '').trim();
+              if (t) texts.push(t);
+            }
+          });
+          startTime = times[0] || '';
+          endTime = times[1] || '';
+          title = texts[0] || '';
+          pic = texts[1] || '';
+          if (texts.length > 2) notesParts.push(texts.slice(2).join(' • '));
+        }
+
+        // Skip rows that have neither a valid time nor a session title
+        if (!title && !startTime) continue;
+        if (!title) continue;
+
+        if (!duration && startTime && endTime) {
+          duration = diffMinutesHHMM(startTime, endTime);
+        }
+        if (!duration || duration < 1) duration = 15;
+
+        if (!startTime && parsed.length > 0) {
+          const prev = parsed[parsed.length - 1];
+          startTime = addMinutesToHHMM(prev.startTime, prev.duration) || '09:00';
+        } else if (!startTime) {
+          startTime = '09:00';
+        }
+
+        parsed.push({
+          startTime,
+          duration,
+          title,
+          pic: pic || '-',
+          notes: notesParts.join(' • '),
+          hardTime: false
+        });
+      }
+
+      return parsed;
+    }
+
+    async function parseSpreadsheetFile(file) {
+      if (typeof XLSX === 'undefined') {
+        throw new Error('Library pembaca Excel (SheetJS) belum selesai dimuat. Periksa koneksi internet dan coba lagi.');
+      }
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const ws = workbook.Sheets[firstSheetName];
+      const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+
+      // Expand merged cells so values like merged LOKASI ("LH") propagate to every spanned row
+      if (Array.isArray(ws['!merges'])) {
+        ws['!merges'].forEach((merge) => {
+          const topVal = matrix[merge.s.r]?.[merge.s.c];
+          if (topVal === undefined || topVal === '') return;
+          for (let r = merge.s.r; r <= merge.e.r; r++) {
+            if (!matrix[r]) matrix[r] = [];
+            for (let c = merge.s.c; c <= merge.e.c; c++) {
+              if (r === merge.s.r && c === merge.s.c) continue;
+              // Do not copy horizontal JAM header over col+1? Copying is handled cleanly in header detector!
+              if (matrix[r][c] === '' || matrix[r][c] === undefined) {
+                matrix[r][c] = topVal;
+              }
+            }
+          }
+        });
+      }
+
+      return parseTableMatrixToItems(matrix);
+    }
+
+    // ---- Image Compression & Gemini AI Vision Parser ----
+    function prepareFileForGemini(file) {
+      return new Promise((resolve, reject) => {
+        if (file.type === 'application/pdf') {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64 = String(reader.result).split(',')[1];
+            resolve({ mimeType: 'application/pdf', data: base64 });
+          };
+          reader.onerror = () => reject(new Error('Gagal membaca file PDF.'));
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        // Compress large images to max 1800px crisp JPEG for fast & reliable AI reading
+        const img = new Image();
+        const objUrl = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(objUrl);
+          const maxDim = 1800;
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width >= height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          resolve({ mimeType: 'image/jpeg', data: dataUrl.split(',')[1] });
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(objUrl);
+          reject(new Error('Gagal memuat gambar. Pastikan file berupa JPG, PNG, atau WEBP yang valid.'));
+        };
+        img.src = objUrl;
+      });
+    }
+
+    async function parseWithGeminiAI(file) {
+      const apiKey = (state.geminiApiKey || '').trim();
+      if (!apiKey) {
+        document.getElementById('import-apikey-panel').classList.remove('d-none');
+        throw new Error('Gemini API Key belum diisi. Silakan masukkan API Key gratis Anda di kotak "Pengaturan Gemini API Key" di atas lalu klik Simpan Key.');
+      }
+
+      const inlinePart = await prepareFileForGemini(file);
+      const prompt = `Kamu adalah asisten ekstraksi data rundown event profesional.
+Baca seluruh tabel/daftar rundown dari gambar atau dokumen ini dan ubah menjadi JSON murni dengan format tepat seperti berikut:
+{
+  "items": [
+    {
+      "startTime": "08:00",
+      "duration": 60,
+      "title": "Nama sesi atau acara",
+      "pic": "Nama PIC / PJ / Pengisi Acara",
+      "notes": "Lokasi atau keterangan tambahan jika ada"
+    }
+  ]
+}
+
+Aturan wajib:
+1. "startTime": WAJIB format 24 jam "HH:mm" menggunakan titik dua (contoh: "08.00" -> "08:00", "9.05" -> "09:05").
+2. "duration": angka bulat menit (integer). Ambil dari kolom DURASI jika ada; jika tidak ada kolom durasi, hitung selisih jam selesai dikurangi jam mulai. Jika keduanya tidak jelas, isi 15.
+3. "title": gabungkan beberapa baris/poin di dalam satu sel ACARA menjadi satu string rapi dipisahkan " / " atau "; ".
+4. "pic": ambil dari kolom PIC / PJ / Pengisi Acara / Narasumber. Jika kosong pada baris tersebut, isi "-".
+5. "notes": jika ada kolom LOKASI / TEMPAT / CATATAN / KETERANGAN, masukkan ke sini (misal "Lokasi: LH"). Jika sel lokasi di-merge untuk beberapa baris, salin nilai lokasi tersebut ke semua baris yang dicakupnya! Jika tidak ada, isi "".
+6. Abaikan baris judul banner atas, baris header kolom, dan baris kosong/pembatas warna.
+7. Kembalikan HANYA JSON valid tanpa teks tambahan atau markdown.`;
+
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+      let lastError = null;
+
+      for (const model of models) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const resp = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inlineData: inlinePart }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              responseMimeType: 'application/json'
+            }
+          })
+        });
+
+        if (resp.status === 404) {
+          lastError = new Error(`Model ${model} tidak tersedia.`);
+          continue;
+        }
+
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          const msg = data?.error?.message || `HTTP ${resp.status}`;
+          if (resp.status === 400 || resp.status === 403) {
+            throw new Error(`API Key ditolak atau tidak valid (${msg}). Cek kembali Gemini API Key Anda.`);
+          }
+          if (resp.status === 429) {
+            throw new Error('Kuota gratis Gemini API sedang penuh sementara (Rate Limit). Tunggu 1 menit lalu coba lagi.');
+          }
+          throw new Error(`Gagal memproses AI: ${msg}`);
+        }
+
+        const rawText = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+        const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+        let json;
+        try {
+          json = JSON.parse(cleaned);
+        } catch (_) {
+          const objMatch = cleaned.match(/\{[\s\S]*\}/);
+          if (!objMatch) throw new Error('AI tidak mengembalikan format JSON yang valid. Coba foto yang lebih jelas/terang.');
+          json = JSON.parse(objMatch[0]);
+        }
+
+        const rawItems = Array.isArray(json) ? json : (Array.isArray(json.items) ? json.items : []);
+        return rawItems
+          .filter(it => it && (it.title || it.acara || it.name))
+          .map((it, idx, arr) => {
+            let st = normalizeTimeHHMM(it.startTime || it.start || it.jamMulai);
+            const dur = Math.max(1, parseDurationMinutes(it.duration || it.durasi) || 15);
+            if (!st && idx > 0 && arr[idx - 1]._normStart) {
+              st = addMinutesToHHMM(arr[idx - 1]._normStart, arr[idx - 1]._normDur) || '09:00';
+            }
+            if (!st) st = '09:00';
+            it._normStart = st;
+            it._normDur = dur;
+            return {
+              startTime: st,
+              duration: dur,
+              title: String(it.title || it.acara || it.name || '').trim(),
+              pic: String(it.pic || it.pj || '-').trim() || '-',
+              notes: String(it.notes || it.lokasi || it.catatan || '').trim(),
+              hardTime: false
+            };
+          });
+      }
+
+      throw lastError || new Error('Gagal menghubungi layanan Gemini AI.');
+    }
+
+    // ---- Modal Import UI & State Control ----
+    function setImportError(msg) {
+      const el = document.getElementById('import-error');
+      if (msg) {
+        el.textContent = msg;
+        el.classList.remove('d-none');
+      } else {
+        el.textContent = '';
+        el.classList.add('d-none');
+      }
+    }
+
+    function setImportLoading(isLoading, text = 'AI sedang membaca tabel rundown...') {
+      const el = document.getElementById('import-loading');
+      document.getElementById('import-loading-text').textContent = text;
+      el.classList.toggle('d-none', !isLoading);
+      const runBtn = document.getElementById('btn-run-ai-parse');
+      if (runBtn) runBtn.disabled = isLoading;
+    }
+
+    function resetImportModalState() {
+      if (state.importPendingFile?.previewUrl) {
+        URL.revokeObjectURL(state.importPendingFile.previewUrl);
+      }
+      state.importPendingFile = null;
+      state.importItems = [];
+      document.getElementById('import-file-input').value = '';
+      document.getElementById('import-dropzone-empty').classList.remove('d-none');
+      document.getElementById('import-selected-preview').classList.add('d-none');
+      document.getElementById('import-image-thumb').classList.add('d-none');
+      document.getElementById('import-preview-section').classList.add('d-none');
+      document.getElementById('btn-apply-import').disabled = true;
+      setImportError('');
+      setImportLoading(false);
+    }
+
+    function openImportModal(target = 'room') {
+      if (!requireAdmin()) return;
+      state.importTarget = target;
+      resetImportModalState();
+      updateApiKeyStatusUI();
+      document.getElementById('btn-apply-import').textContent =
+        target === 'draft' ? 'Masukkan ke Tabel Rundown Awal' : 'Simpan ke Rundown Ruangan';
+      openModal('modal-import');
+      setTimeout(() => document.getElementById('import-dropzone').focus(), 40);
+    }
+
+    function renderImportPreviewRows() {
+      const section = document.getElementById('import-preview-section');
+      const tbody = document.getElementById('import-preview-tbody');
+      const countBadge = document.getElementById('import-preview-count');
+      const applyBtn = document.getElementById('btn-apply-import');
+
+      countBadge.textContent = `${state.importItems.length} sesi`;
+      applyBtn.disabled = state.importItems.length === 0;
+
+      if (state.importItems.length === 0) {
+        section.classList.add('d-none');
+        tbody.innerHTML = '';
+        return;
+      }
+
+      section.classList.remove('d-none');
+      tbody.innerHTML = state.importItems.map((row, idx) => {
+        const endTime = addMinutesToHHMM(row.startTime, row.duration);
+        return `
+          <tr class="align-top">
+            <td class="py-2.5 px-2.5 text-center font-mono text-slate-400 font-bold pt-3.5">${idx + 1}</td>
+            <td class="py-2 px-2">
+              <input type="time" data-import-idx="${idx}" data-import-field="startTime" value="${escapeHtml(row.startTime)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+              <div class="text-[10px] font-mono text-slate-500 mt-0.5">&ndash; ${escapeHtml(endTime || '--:--')}</div>
+            </td>
+            <td class="py-2 px-2">
+              <input type="number" min="1" max="1440" data-import-idx="${idx}" data-import-field="duration" value="${escapeHtml(row.duration)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+            </td>
+            <td class="py-2 px-2">
+              <input type="text" data-import-idx="${idx}" data-import-field="title" value="${escapeHtml(row.title)}" placeholder="Nama sesi..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white" />
+            </td>
+            <td class="py-2 px-2">
+              <input type="text" data-import-idx="${idx}" data-import-field="pic" value="${escapeHtml(row.pic)}" placeholder="PIC..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white" />
+            </td>
+            <td class="py-2 px-2">
+              <input type="text" data-import-idx="${idx}" data-import-field="notes" value="${escapeHtml(row.notes)}" placeholder="Opsional..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white" />
+            </td>
+            <td class="py-2.5 px-2 text-center">
+              <label class="inline-flex flex-col items-center gap-1 cursor-pointer select-none">
+                <input type="checkbox" data-import-idx="${idx}" data-import-field="hardTime" ${row.hardTime ? 'checked' : ''} class="w-4 h-4 rounded accent-orange-500 cursor-pointer" />
+                ${row.hardTime ? `<span class="px-1 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 font-mono text-[9px] font-bold">FIXED</span>` : `<span class="text-[10px] text-slate-500">Auto</span>`}
+              </label>
+            </td>
+            <td class="py-2.5 px-2 text-center">
+              <button type="button" data-action="remove-import-row" data-import-idx="${idx}" class="p-1.5 rounded bg-elevated hover:bg-red-900 hover:text-red-200 text-slate-400 border border-line transition-colors" title="Hapus Baris">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function handleSelectedImportFile(file, autoRun = false) {
+      if (!file) return;
+      setImportError('');
+
+      const ext = (file.name || '').split('.').pop().toLowerCase();
+      const isExcelOrCsv = ['xlsx', 'xls', 'csv'].includes(ext) ||
+        ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type);
+      const isImage = file.type.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(ext);
+      const isPdf = file.type === 'application/pdf' || ext === 'pdf';
+
+      if (!isExcelOrCsv && !isImage && !isPdf) {
+        setImportError('Format file tidak didukung. Gunakan foto (JPG, PNG, WEBP), PDF, atau Excel/CSV (.xlsx, .xls, .csv).');
+        return;
+      }
+
+      if (state.importPendingFile?.previewUrl) {
+        URL.revokeObjectURL(state.importPendingFile.previewUrl);
+      }
+
+      const previewUrl = isImage ? URL.createObjectURL(file) : null;
+      state.importPendingFile = {
+        file,
+        kind: isExcelOrCsv ? 'spreadsheet' : (isPdf ? 'pdf' : 'image'),
+        previewUrl
+      };
+
+      document.getElementById('import-dropzone-empty').classList.add('d-none');
+      document.getElementById('import-selected-preview').classList.remove('d-none');
+
+      const thumb = document.getElementById('import-image-thumb');
+      if (isImage && previewUrl) {
+        thumb.src = previewUrl;
+        thumb.classList.remove('d-none');
+      } else {
+        thumb.classList.add('d-none');
+      }
+
+      const sizeKB = Math.max(1, Math.round(file.size / 1024));
+      document.getElementById('import-file-badge').textContent = `${file.name || 'Screenshot Pasted'} (${sizeKB} KB)`;
+
+      const runBtn = document.getElementById('btn-run-ai-parse');
+      if (isExcelOrCsv) {
+        runBtn.classList.add('d-none');
+        setImportLoading(true, 'Membaca file Excel / CSV...');
+        try {
+          const items = await parseSpreadsheetFile(file);
+          if (items.length === 0) {
+            setImportError('Tidak ada baris rundown yang terbaca di file ini. Pastikan ada kolom Jam dan Nama Acara/Sesi.');
+          } else {
+            state.importItems = items;
+            renderImportPreviewRows();
+            showToast(`${items.length} sesi berhasil dibaca dari file spreadsheet!`, 'success');
+          }
+        } catch (err) {
+          setImportError(err.message || 'Gagal membaca file Excel/CSV.');
+        } finally {
+          setImportLoading(false);
+        }
+        return;
+      }
+
+      // Image or PDF -> AI Vision
+      runBtn.classList.remove('d-none');
+      if (autoRun && state.geminiApiKey) {
+        await runAiImportParse();
+      } else if (!state.geminiApiKey) {
+        document.getElementById('import-apikey-panel').classList.remove('d-none');
+      }
+    }
+
+    async function runAiImportParse() {
+      if (!state.importPendingFile) return;
+      setImportError('');
+      setImportLoading(true, 'AI sedang membaca tabel rundown dari gambar/dokumen...');
+      try {
+        const items = await parseWithGeminiAI(state.importPendingFile.file);
+        if (items.length === 0) {
+          setImportError('AI tidak menemukan data rundown di gambar ini. Pastikan foto jelas, tidak terpotong, dan berisi kolom Jam & Nama Sesi.');
+        } else {
+          state.importItems = items;
+          renderImportPreviewRows();
+          showToast(`AI berhasil membaca ${items.length} sesi rundown! Silakan periksa sebelum disimpan.`, 'success');
+        }
+      } catch (err) {
+        setImportError(err.message || 'Gagal membaca rundown dengan AI.');
+      } finally {
+        setImportLoading(false);
+      }
+    }
+
+    async function applyImportedItems() {
+      if (!requireAdmin() || state.importItems.length === 0) return;
+
+      const cleaned = [];
+      for (let i = 0; i < state.importItems.length; i++) {
+        const r = state.importItems[i];
+        const title = (r.title || '').trim();
+        if (!r.startTime || !title) {
+          showToast(`Lengkapi Jam Mulai dan Nama Sesi pada baris #${i + 1}.`, 'warning');
+          return;
+        }
+        cleaned.push({
+          startTime: r.startTime,
+          duration: Math.max(1, parseInt(r.duration, 10) || 15),
+          title,
+          pic: (r.pic || '-').trim() || '-',
+          notes: (r.notes || '').trim(),
+          hardTime: Boolean(r.hardTime)
+        });
+      }
+
+      if (state.importTarget === 'draft') {
+        // If draft only has 1 blank starter row, replace it cleanly
+        const onlyBlankStarter =
+          state.draftItems.length === 1 &&
+          !(state.draftItems[0].title || '').trim() &&
+          !(state.draftItems[0].pic || '').trim();
+        if (onlyBlankStarter) {
+          state.draftItems = cleaned;
+        } else {
+          state.draftItems = state.draftItems.concat(cleaned);
+        }
+        renderDraftRundownRows();
+        closeModal('modal-import');
+        showToast(`${cleaned.length} sesi dimasukkan ke Daftar Rundown Awal.`, 'success');
+        return;
+      }
+
+      // Target === 'room' -> append directly to Firebase Realtime Database
+      const roomId = state.selectedRoomId;
+      const room = state.rooms[roomId];
+      if (!room) return;
+
+      const existingItems = getSortedItems(room);
+      const startOrder = existingItems.length;
+      const updates = {};
+
+      cleaned.forEach((r, idx) => {
+        const newItemRef = push(ref(db, `rooms/${roomId}/items`));
+        updates[`rooms/${roomId}/items/${newItemRef.key}`] = {
+          id: newItemRef.key,
+          order: startOrder + idx,
+          startTime: r.startTime,
+          duration: r.duration,
+          title: r.title,
+          pic: r.pic,
+          notes: r.notes,
+          hardTime: r.hardTime,
+          cueState: 'pending'
+        };
+      });
+
+      try {
+        await update(ref(db), updates);
+        closeModal('modal-import');
+        showToast(`${cleaned.length} sesi berhasil ditambahkan ke rundown ruangan!`, 'success');
+      } catch (err) {
+        handleWriteError(err, 'Gagal menyimpan hasil import ke Firebase.');
+      }
+    }
+
+    // ---- Import Modal Event Listeners ----
+    document.getElementById('btn-import-draft').addEventListener('click', () => openImportModal('draft'));
+    document.getElementById('btn-import-room').addEventListener('click', () => openImportModal('room'));
+    document.getElementById('btn-toggle-apikey').addEventListener('click', () => {
+      document.getElementById('import-apikey-panel').classList.toggle('d-none');
+    });
+    document.getElementById('btn-save-apikey').addEventListener('click', saveAdminGeminiApiKey);
+    document.getElementById('btn-clear-apikey').addEventListener('click', clearAdminGeminiApiKey);
+    document.getElementById('btn-run-ai-parse').addEventListener('click', runAiImportParse);
+    document.getElementById('btn-apply-import').addEventListener('click', applyImportedItems);
+
+    document.getElementById('btn-import-add-row').addEventListener('click', () => {
+      const last = state.importItems[state.importItems.length - 1];
+      const nextStart = last ? (addMinutesToHHMM(last.startTime, last.duration) || '09:00') : formatHHMM(new Date());
+      state.importItems.push({ startTime: nextStart, duration: 15, title: '', pic: '-', notes: '', hardTime: false });
+      renderImportPreviewRows();
+    });
+
+    const importDropzone = document.getElementById('import-dropzone');
+    const importFileInput = document.getElementById('import-file-input');
+
+    importDropzone.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      importFileInput.click();
+    });
+    document.getElementById('btn-change-import-file').addEventListener('click', () => {
+      importFileInput.click();
+    });
+    importFileInput.addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if (f) handleSelectedImportFile(f, false);
+    });
+
+    importDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      importDropzone.classList.add('border-amber-400', 'bg-amber-400/5');
+    });
+    importDropzone.addEventListener('dragleave', () => {
+      importDropzone.classList.remove('border-amber-400', 'bg-amber-400/5');
+    });
+    importDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      importDropzone.classList.remove('border-amber-400', 'bg-amber-400/5');
+      const f = e.dataTransfer?.files?.[0];
+      if (f) handleSelectedImportFile(f, false);
+    });
+
+    // Global Ctrl+V / Cmd+V Paste Listener when Modal Import is open
+    document.addEventListener('paste', (e) => {
+      const modalEl = document.getElementById('modal-import');
+      if (modalEl.classList.contains('d-none')) return;
+      const activeTag = document.activeElement?.tagName;
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (const item of items) {
+          if (item.type && item.type.startsWith('image/')) {
+            e.preventDefault();
+            const blob = item.getAsFile();
+            if (blob) {
+              const ext = item.type.split('/')[1] || 'png';
+              const pastedFile = new File([blob], `screenshot-rundown.${ext}`, { type: item.type });
+              handleSelectedImportFile(pastedFile, true);
+            }
+            return;
+          }
+        }
+      }
+
+      // Also support direct copy-paste of cells from Google Sheets / Excel (TSV)
+      const text = e.clipboardData?.getData('text/plain') || '';
+      if (text.includes('\t') && text.includes('\n')) {
+        e.preventDefault();
+        const matrix = text
+          .split(/\r?\n/)
+          .map(line => line.split('\t'));
+        const parsed = parseTableMatrixToItems(matrix);
+        if (parsed.length > 0) {
+          setImportError('');
+          state.importItems = parsed;
+          renderImportPreviewRows();
+          showToast(`${parsed.length} sesi terbaca dari hasil copy-paste Sheets/Excel!`, 'success');
+        } else {
+          setImportError('Teks tabel yang di-paste belum terbaca sebagai rundown. Pastikan menyertakan kolom Jam dan Nama Sesi.');
+        }
+      }
+    });
+
+    // Editable Preview Table listeners inside Modal Import
+    document.getElementById('import-preview-tbody').addEventListener('input', (e) => {
+      const target = e.target;
+      const idx = Number(target.dataset.importIdx);
+      const field = target.dataset.importField;
+      if (Number.isNaN(idx) || !field || !state.importItems[idx]) return;
+      if (field === 'duration') {
+        state.importItems[idx].duration = Math.max(1, parseInt(target.value, 10) || 1);
+      } else if (field !== 'hardTime') {
+        state.importItems[idx][field] = target.value;
+      }
+    });
+
+    document.getElementById('import-preview-tbody').addEventListener('change', (e) => {
+      const target = e.target;
+      const idx = Number(target.dataset.importIdx);
+      const field = target.dataset.importField;
+      if (Number.isNaN(idx) || !field || !state.importItems[idx]) return;
+      if (field === 'hardTime') {
+        state.importItems[idx].hardTime = target.checked;
+        renderImportPreviewRows();
+      } else if (field === 'startTime' || field === 'duration') {
+        if (field === 'duration') {
+          state.importItems[idx].duration = Math.max(1, parseInt(target.value, 10) || 1);
+        } else {
+          state.importItems[idx].startTime = target.value;
+        }
+        for (let i = idx + 1; i < state.importItems.length; i++) {
+          if (state.importItems[i].hardTime) break;
+          const prev = state.importItems[i - 1];
+          const nextStart = addMinutesToHHMM(prev.startTime, prev.duration);
+          if (nextStart) state.importItems[i].startTime = nextStart;
+        }
+        renderImportPreviewRows();
       }
     });
   </script>
