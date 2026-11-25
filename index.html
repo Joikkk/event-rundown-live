@@ -685,14 +685,20 @@
           <textarea id="item-input-notes" rows="2" placeholder="Contoh: Mic handheld 2x, bumper video play, lampu dimmer 50%" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500 resize-none"></textarea>
         </div>
 
-        <!-- Actual End Time Editor (ONLY visible for COMPLETED items) -->
-        <div id="item-actual-end-wrap" class="d-none rounded-xl bg-elevated/60 border border-line-strong p-3.5 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <label for="item-input-actual-end" class="text-xs font-bold uppercase tracking-wider text-amber-300">Edit Jam Selesai Aktual</label>
-            <span id="item-actual-start-info" class="font-mono text-[11px] text-slate-400">Mulai Aktual: --:--</span>
+        <!-- Actual Time Editor (Start: active/completed; End: ONLY completed) -->
+        <div id="item-actual-time-wrap" class="d-none rounded-xl bg-elevated/60 border border-line-strong p-3.5 space-y-2.5">
+          <div class="text-xs font-bold uppercase tracking-wider text-amber-300">Koreksi Waktu Aktual</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="item-input-actual-start" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1">Jam Mulai Aktual</label>
+              <input id="item-input-actual-start" type="time" class="w-full px-3 py-2 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+            </div>
+            <div id="item-actual-end-col" class="d-none">
+              <label for="item-input-actual-end" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1">Jam Selesai Aktual</label>
+              <input id="item-input-actual-end" type="time" class="w-full px-3 py-2 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+            </div>
           </div>
-          <input id="item-input-actual-end" type="time" class="w-full px-3.5 py-2 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
-          <p class="text-[11px] text-slate-400">Hanya tersedia untuk sesi yang sudah selesai (sudah ditekan Next Cue) jika perlu koreksi jam selesai aktual.</p>
+          <p id="item-actual-time-hint" class="text-[11px] text-slate-400">Status On Time / Delay otomatis dihitung ulang berdasarkan Jam Mulai Aktual.</p>
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2.5">
@@ -1025,18 +1031,43 @@
       return `${pad2(Math.floor(total / 60))}:${pad2(total % 60)}`;
     }
 
+    function parsePlannedTimestamp(plannedHHMM, eventDateISO = null, fallbackDate = new Date()) {
+      if (!plannedHHMM || !/^\d{2}:\d{2}$/.test(plannedHHMM)) return null;
+      const [pH, pM] = plannedHHMM.split(':').map(Number);
+      if (eventDateISO && /^\d{4}-\d{2}-\d{2}$/.test(eventDateISO)) {
+        const [y, m, d] = eventDateISO.split('-').map(Number);
+        return new Date(y, m - 1, d, pH, pM, 0, 0).getTime();
+      }
+      return new Date(fallbackDate.getFullYear(), fallbackDate.getMonth(), fallbackDate.getDate(), pH, pM, 0, 0).getTime();
+    }
+
     /**
-     * Automatic Delay Calculation:
-     * Difference in minutes between actual trigger time and planned HH:mm start time.
-     * Positive = DELAY, 0 = ON TIME, Negative = EARLY.
+     * Automatic Delay Calculation (Date + Time Aware):
+     * Compares actual trigger date/time against event date + planned HH:mm start time.
+     * Positive = DELAY, 0 = ON TIME, Negative = EARLY (including days before event date).
      */
-    function calculateDelayMinutes(plannedHHMM, actualDate = new Date()) {
+    function calculateDelayMinutes(plannedHHMM, actualDate = new Date(), eventDateISO = null) {
       if (!plannedHHMM || !/^\d{2}:\d{2}$/.test(plannedHHMM)) return 0;
+      const actualFloor = new Date(
+        actualDate.getFullYear(),
+        actualDate.getMonth(),
+        actualDate.getDate(),
+        actualDate.getHours(),
+        actualDate.getMinutes(),
+        0,
+        0
+      ).getTime();
+
+      if (eventDateISO && /^\d{4}-\d{2}-\d{2}$/.test(eventDateISO)) {
+        const plannedTs = parsePlannedTimestamp(plannedHHMM, eventDateISO, actualDate);
+        return Math.round((actualFloor - plannedTs) / 60000);
+      }
+
       const [pH, pM] = plannedHHMM.split(':').map(Number);
       const plannedMin = pH * 60 + pM;
       const actualMin = actualDate.getHours() * 60 + actualDate.getMinutes();
       let diff = actualMin - plannedMin;
-      // Handle midnight crossover cleanly
+      // Handle midnight crossover cleanly when no event date is set
       if (diff < -720) diff += 1440;
       if (diff > 720) diff -= 1440;
       return diff;
@@ -1111,6 +1142,21 @@
       };
     }
 
+    function formatDelayDuration(absMinutes, isEarly = false) {
+      const m = Math.abs(Math.round(absMinutes));
+      if (m >= 1440) {
+        const days = Math.floor(m / 1440);
+        const hrs = Math.floor((m % 1440) / 60);
+        return hrs > 0 ? `${days} HARI ${hrs}J` : `${days} HARI`;
+      }
+      if (isEarly && m >= 60) {
+        const hrs = Math.floor(m / 60);
+        const rem = m % 60;
+        return rem > 0 ? `${hrs}J ${rem}M` : `${hrs} JAM`;
+      }
+      return `${m} MNT`;
+    }
+
     function renderDelayBadge(delayMinutes, size = 'sm') {
       if (delayMinutes === null || delayMinutes === undefined) {
         return `<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-elevated text-slate-400 border border-line">MENUNGGU</span>`;
@@ -1123,12 +1169,12 @@
       if (d > 0) {
         return `<span class="inline-flex items-center gap-1.5 rounded-md font-mono ${sizeCls} bg-red-600 text-white shadow-sm shadow-red-950/60 animate-delay-badge">
           <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          DELAY +${d} MNT
+          DELAY +${formatDelayDuration(d, false)}
         </span>`;
       }
       if (d < 0) {
         return `<span class="inline-flex items-center gap-1 rounded-md font-mono ${sizeCls} bg-sky-500/20 text-sky-300 border border-sky-500/40">
-          LEBIH CEPAT ${d} MNT
+          LEBIH CEPAT ${formatDelayDuration(d, true)}
         </span>`;
       }
       return `<span class="inline-flex items-center gap-1.5 rounded-md font-mono ${sizeCls} bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
@@ -1153,6 +1199,13 @@
       const prevEnd = addMinutesToHHMM(prev.startTime, prev.duration);
       if (!prevEnd || startTime === prevEnd) return { hasGap: false, prevEnd, prevTitle: prev.title };
       return { hasGap: true, prevEnd, prevTitle: prev.title };
+    }
+
+    function buildActualStartTimestamp(hhmm, referenceStartTs) {
+      if (!hhmm || !/^\d{2}:\d{2}$/.test(hhmm)) return null;
+      const [h, m] = hhmm.split(':').map(Number);
+      const base = referenceStartTs ? new Date(referenceStartTs) : new Date();
+      return new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, m, 0, 0).getTime();
     }
 
     function buildActualEndTimestamp(hhmm, referenceStartTs) {
@@ -1579,7 +1632,7 @@
              </span>`
           : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-elevated text-slate-400 border border-line">
                STANDBY
-             </span>`;
+             </span>${room.autoStart ? ` <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/40"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-live-dot"></span>AUTO START</span>` : ''}`;
 
         const activeBlock = isLive
           ? `
@@ -1774,17 +1827,43 @@
             </div>
           `;
         } else if (!isLive) {
+          const isAutoOn = Boolean(room.autoStart);
+          const firstItem = stats.items[0];
+          const scheduleLabel = room.date
+            ? `${formatDateReadable(room.date)}, ${escapeHtml(firstItem.startTime)}`
+            : `pukul ${escapeHtml(firstItem.startTime)}`;
           adminCueControlHtml = `
-            <button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}"
-              class="w-full py-5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-amber-950/30 flex flex-col items-center justify-center gap-1">
-              <span class="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
-                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                MULAI SHOW (CUE #1)
-              </span>
-              <span class="text-xs font-bold text-slate-900/80 truncate max-w-full">
-                ${escapeHtml(stats.items[0].startTime)} &bull; ${escapeHtml(stats.items[0].title)}
-              </span>
-            </button>
+            <div class="space-y-2.5">
+              <button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}"
+                class="w-full py-5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-amber-950/30 flex flex-col items-center justify-center gap-1">
+                <span class="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  MULAI SHOW (CUE #1)
+                </span>
+                <span class="text-xs font-bold text-slate-900/80 truncate max-w-full">
+                  ${escapeHtml(firstItem.startTime)} &bull; ${escapeHtml(firstItem.title)}
+                </span>
+              </button>
+
+              <!-- Auto Start Toggle Switch (ONLY shown before show starts; disappears once LIVE) -->
+              <div class="rounded-xl px-3.5 py-2.5 border ${isAutoOn ? 'bg-emerald-950/35 border-emerald-600/60' : 'bg-canvas/75 border-line'} flex items-center justify-between gap-3 transition-colors">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold ${isAutoOn ? 'text-emerald-300' : 'text-slate-200'}">Auto Start</span>
+                    <span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold ${isAutoOn ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-elevated text-slate-400 border border-line'}">${isAutoOn ? 'ON' : 'OFF'}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5 truncate">
+                    ${isAutoOn ? `Otomatis mulai pada ${scheduleLabel}` : `Mulai otomatis saat ${scheduleLabel} tiba`}
+                  </p>
+                </div>
+                <button type="button" role="switch" aria-checked="${isAutoOn ? 'true' : 'false'}"
+                  data-action="toggle-auto-start" data-room-id="${escapeHtml(room.id)}"
+                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border transition-colors focus:outline-none ${isAutoOn ? 'bg-emerald-500 border-emerald-400' : 'bg-elevated border-line-strong'}"
+                  title="${isAutoOn ? 'Matikan Auto Start' : 'Aktifkan Auto Start'}">
+                  <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${isAutoOn ? 'translate-x-5' : 'translate-x-1'}"></span>
+                </button>
+              </div>
+            </div>
           `;
         } else if (isLastCue) {
           adminCueControlHtml = `
@@ -2007,15 +2086,15 @@
                </div>`
             : `<span class="font-mono text-xs font-bold text-slate-400">${idx + 1}</span>`;
 
-        const canEditActualEnd = state.isAdmin && isCompleted;
+        const canEditActual = state.isAdmin && (isActive || isCompleted);
         const actualEndDisplay = item.actualEndTime ? escapeHtml(item.actualEndTime.slice(0, 5)) : '';
         const actualCell = (isActive || isCompleted) && item.actualStartTime
           ? `<div class="space-y-1">
                <div class="font-mono text-xs flex items-center flex-wrap gap-1 ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-200'}">
                  <span>Aktual: <strong>${escapeHtml(item.actualStartTime.slice(0, 5))}</strong>${actualEndDisplay ? ` &ndash; ${actualEndDisplay}` : ''}</span>
-                 ${canEditActualEnd ? `
-                   <button type="button" data-action="edit-actual-end" data-item-id="${escapeHtml(item.id)}" class="px-1.5 py-0.5 rounded bg-elevated hover:bg-amber-400 hover:text-slate-950 text-amber-300 border border-line text-[10px] font-sans font-bold transition-colors" title="Edit Jam Selesai Aktual">
-                     Edit Selesai
+                 ${canEditActual ? `
+                   <button type="button" data-action="edit-actual-end" data-item-id="${escapeHtml(item.id)}" class="px-1.5 py-0.5 rounded bg-elevated hover:bg-amber-400 hover:text-slate-950 text-amber-300 border border-line text-[10px] font-sans font-bold transition-colors" title="Koreksi Waktu Aktual">
+                     Edit Aktual
                    </button>` : ''}
                </div>
                <div>${renderDelayBadge(itemDelay, 'sm')}</div>
@@ -2290,6 +2369,30 @@
           el.className = 'live-progress-bar h-full rounded-full bg-emerald-400 transition-all duration-500';
         }
       });
+
+      // Check Auto Start for all armed standby rooms (Admin only)
+      checkAutoStartRooms(nowMs);
+    }
+
+    const autoStartInFlight = new Set();
+
+    function checkAutoStartRooms(nowMs = Date.now()) {
+      if (!state.isAdmin || !state.loaded) return;
+      const activeRooms = getActiveRoomList();
+      for (const room of activeRooms) {
+        if (!room.autoStart || room.showState === 'live') continue;
+        if (autoStartInFlight.has(room.id)) continue;
+        const items = getSortedItems(room);
+        if (items.length === 0 || !items[0].startTime) continue;
+
+        const targetTs = parsePlannedTimestamp(items[0].startTime, room.date);
+        if (targetTs !== null && nowMs >= targetTs) {
+          autoStartInFlight.add(room.id);
+          triggerNextCue(room.id, { isAutoStart: true }).finally(() => {
+            setTimeout(() => autoStartInFlight.delete(room.id), 3000);
+          });
+        }
+      }
     }
 
     setInterval(tickLiveTimers, 1000);
@@ -2314,8 +2417,45 @@
       }
     }
 
+    async function toggleAutoStart(roomId) {
+      if (!requireAdmin()) return;
+      const room = state.rooms[roomId];
+      if (!room || room.showState === 'live') return;
+      const items = getSortedItems(room);
+      if (items.length === 0) {
+        showToast('Tambahkan minimal 1 sesi untuk menggunakan Auto Start.', 'warning');
+        return;
+      }
+      const nextVal = !Boolean(room.autoStart);
+      try {
+        await update(ref(db, `rooms/${roomId}`), { autoStart: nextVal });
+        if (nextVal) {
+          const targetTs = parsePlannedTimestamp(items[0].startTime, room.date);
+          if (targetTs !== null && Date.now() >= targetTs) {
+            // Scheduled day & time has already arrived -> trigger immediately!
+            showToast(`Auto Start ON — jadwal mulai sudah tiba, menjalankan Cue #1...`, 'success');
+            if (!autoStartInFlight.has(roomId)) {
+              autoStartInFlight.add(roomId);
+              triggerNextCue(roomId, { isAutoStart: true }).finally(() => {
+                setTimeout(() => autoStartInFlight.delete(roomId), 3000);
+              });
+            }
+          } else {
+            const sched = room.date
+              ? `${formatDateReadable(room.date)} pukul ${items[0].startTime}`
+              : `pukul ${items[0].startTime}`;
+            showToast(`Auto Start diaktifkan. Show akan mulai otomatis pada ${sched}.`, 'success');
+          }
+        } else {
+          showToast('Auto Start dimatikan.', 'info');
+        }
+      } catch (err) {
+        handleWriteError(err, 'Gagal mengubah pengaturan Auto Start.');
+      }
+    }
+
     // Trigger NEXT CUE (or START SHOW if standby)
-    async function triggerNextCue(roomId) {
+    async function triggerNextCue(roomId, options = {}) {
       if (!requireAdmin()) return;
       const room = state.rooms[roomId];
       if (!room) return;
@@ -2337,8 +2477,9 @@
       if (room.showState !== 'live' || currentIdx === -1) {
         // Start show at Cue #1
         targetItem = items[0];
-        const delayMin = calculateDelayMinutes(targetItem.startTime, now);
+        const delayMin = calculateDelayMinutes(targetItem.startTime, now, room.date);
         updates[`rooms/${roomId}/showState`] = 'live';
+        updates[`rooms/${roomId}/autoStart`] = false;
         updates[`rooms/${roomId}/startedAt`] = room.startedAt || nowTs;
         updates[`rooms/${roomId}/activeItemId`] = targetItem.id;
         updates[`rooms/${roomId}/currentDelayMinutes`] = delayMin;
@@ -2362,12 +2503,13 @@
 
         try {
           await update(ref(db), updates);
-          showToast(
-            delayMin > 0
-              ? `Show dimulai: ${targetItem.title} (DELAY +${delayMin} mnt)`
-              : `Show dimulai: ${targetItem.title} (ON TIME)`,
-            delayMin > 0 ? 'error' : 'success'
-          );
+          const prefix = options.isAutoStart ? 'Auto Start' : 'Show dimulai';
+          const statusTxt = delayMin > 0
+            ? `DELAY +${formatDelayDuration(delayMin, false)}`
+            : delayMin < 0
+              ? `LEBIH CEPAT ${formatDelayDuration(delayMin, true)}`
+              : 'ON TIME';
+          showToast(`${prefix}: ${targetItem.title} (${statusTxt})`, delayMin > 0 ? 'error' : 'success');
         } catch (err) {
           handleWriteError(err, 'Gagal memulai show.');
         }
@@ -2382,7 +2524,7 @@
 
       const prevItem = items[currentIdx];
       targetItem = items[currentIdx + 1];
-      const delayMin = calculateDelayMinutes(targetItem.startTime, now);
+      const delayMin = calculateDelayMinutes(targetItem.startTime, now, room.date);
 
       updates[`rooms/${roomId}/items/${prevItem.id}/cueState`] = 'completed';
       updates[`rooms/${roomId}/items/${prevItem.id}/actualEndTs`] = nowTs;
@@ -2410,12 +2552,12 @@
 
       try {
         await update(ref(db), updates);
-        showToast(
-          delayMin > 0
-            ? `NEXT CUE: ${targetItem.title} — DELAY +${delayMin} mnt`
-            : `NEXT CUE: ${targetItem.title} — ON TIME`,
-          delayMin > 0 ? 'error' : 'success'
-        );
+        const statusTxt = delayMin > 0
+          ? `DELAY +${formatDelayDuration(delayMin, false)}`
+          : delayMin < 0
+            ? `LEBIH CEPAT ${formatDelayDuration(delayMin, true)}`
+            : 'ON TIME';
+        showToast(`NEXT CUE: ${targetItem.title} — ${statusTxt}`, delayMin > 0 ? 'error' : 'success');
       } catch (err) {
         handleWriteError(err, 'Gagal memindahkan ke cue berikutnya.');
       }
@@ -2469,10 +2611,11 @@
       const nowTs = now.getTime();
       const nowStr = formatHHMMSS(now);
       const targetItem = items[targetIdx];
-      const delayMin = calculateDelayMinutes(targetItem.startTime, now);
+      const delayMin = calculateDelayMinutes(targetItem.startTime, now, room.date);
 
       const updates = {};
       updates[`rooms/${roomId}/showState`] = 'live';
+      updates[`rooms/${roomId}/autoStart`] = false;
       updates[`rooms/${roomId}/startedAt`] = room.startedAt || nowTs;
       updates[`rooms/${roomId}/activeItemId`] = targetItem.id;
       updates[`rooms/${roomId}/currentDelayMinutes`] = delayMin;
@@ -2584,6 +2727,7 @@
         onConfirm: async () => {
           const updates = {
             [`rooms/${roomId}/showState`]: 'standby',
+            [`rooms/${roomId}/autoStart`]: false,
             [`rooms/${roomId}/activeItemId`]: null,
             [`rooms/${roomId}/currentDelayMinutes`]: 0,
             [`rooms/${roomId}/startedAt`]: null,
@@ -2709,7 +2853,7 @@
         updates[`rooms/${roomId}/items/${item.id}/order`] = i;
         updates[`rooms/${roomId}/items/${item.id}/startTime`] = item.startTime;
         if (item.actualStartTs) {
-          const recalcDelay = calculateDelayMinutes(item.startTime, new Date(item.actualStartTs));
+          const recalcDelay = calculateDelayMinutes(item.startTime, new Date(item.actualStartTs), room.date);
           updates[`rooms/${roomId}/items/${item.id}/delayMinutes`] = recalcDelay;
           if (room.activeItemId === item.id) {
             updates[`rooms/${roomId}/currentDelayMinutes`] = recalcDelay;
@@ -2970,7 +3114,7 @@
       }
     }
 
-    function openItemModal(itemId = null, focusActualEnd = false) {
+    function openItemModal(itemId = null, focusActualTime = false) {
       if (!requireAdmin()) return;
       const room = state.rooms[state.selectedRoomId];
       if (!room) return;
@@ -2983,9 +3127,11 @@
       const cascadeWrap = document.getElementById('item-cascade-wrap');
       const cascadeCheck = document.getElementById('item-input-cascade');
       const hardTimeCheck = document.getElementById('item-input-hardtime');
-      const actualEndWrap = document.getElementById('item-actual-end-wrap');
+      const actualTimeWrap = document.getElementById('item-actual-time-wrap');
+      const actualStartInput = document.getElementById('item-input-actual-start');
+      const actualEndCol = document.getElementById('item-actual-end-col');
       const actualEndInput = document.getElementById('item-input-actual-end');
-      const actualStartInfo = document.getElementById('item-actual-start-info');
+      const actualTimeHint = document.getElementById('item-actual-time-hint');
 
       if (isEdit) {
         const item = room.items[itemId];
@@ -3006,13 +3152,23 @@
           cascadeCheck.checked = false;
         }
 
-        // Actual End Time edit ONLY available if session is COMPLETED (already Next Cue'd)
+        // Actual Start editable for active OR completed; Actual End ONLY for completed
         if (item.cueState === 'completed') {
-          actualEndWrap.classList.remove('d-none');
-          actualStartInfo.textContent = `Mulai Aktual: ${item.actualStartTime ? item.actualStartTime.slice(0, 5) : '--:--'}`;
+          actualTimeWrap.classList.remove('d-none');
+          actualStartInput.value = item.actualStartTime ? item.actualStartTime.slice(0, 5) : '';
+          actualEndCol.classList.remove('d-none');
           actualEndInput.value = item.actualEndTime ? item.actualEndTime.slice(0, 5) : '';
+          actualTimeHint.textContent = 'Sesi sudah selesai — Anda bisa mengoreksi Jam Mulai Aktual maupun Jam Selesai Aktual (status Delay dihitung ulang otomatis).';
+        } else if (item.cueState === 'active') {
+          actualTimeWrap.classList.remove('d-none');
+          actualStartInput.value = item.actualStartTime ? item.actualStartTime.slice(0, 5) : '';
+          actualEndCol.classList.add('d-none');
+          actualEndInput.value = '';
+          actualTimeHint.textContent = 'Sesi sedang berjalan — Anda bisa mengoreksi Jam Mulai Aktual (status On Time / Delay & timer otomatis menyesuaikan).';
         } else {
-          actualEndWrap.classList.add('d-none');
+          actualTimeWrap.classList.add('d-none');
+          actualStartInput.value = '';
+          actualEndCol.classList.add('d-none');
           actualEndInput.value = '';
         }
       } else {
@@ -3030,15 +3186,17 @@
         hardTimeCheck.checked = false;
         cascadeWrap.classList.add('d-none');
         cascadeCheck.checked = false;
-        actualEndWrap.classList.add('d-none');
+        actualTimeWrap.classList.add('d-none');
+        actualStartInput.value = '';
+        actualEndCol.classList.add('d-none');
         actualEndInput.value = '';
       }
 
       updateItemGapWarningUI();
       openModal('modal-item');
       setTimeout(() => {
-        if (focusActualEnd && !actualEndWrap.classList.contains('d-none')) {
-          actualEndInput.focus();
+        if (focusActualTime && !actualTimeWrap.classList.contains('d-none')) {
+          actualStartInput.focus();
         } else {
           document.getElementById('item-input-title').focus();
         }
@@ -3170,7 +3328,26 @@
 
       if (existingId) {
         try {
-          await update(ref(db, `rooms/${existingId}`), { name, eventTitle, location, date });
+          const existingRoom = state.rooms[existingId];
+          const updates = {
+            [`rooms/${existingId}/name`]: name,
+            [`rooms/${existingId}/eventTitle`]: eventTitle,
+            [`rooms/${existingId}/location`]: location,
+            [`rooms/${existingId}/date`]: date
+          };
+          // If event date changed, recalculate delayMinutes for all already-started items
+          if (existingRoom && existingRoom.date !== date && existingRoom.items) {
+            getSortedItems(existingRoom).forEach((it) => {
+              if (it.actualStartTs) {
+                const recalc = calculateDelayMinutes(it.startTime, new Date(it.actualStartTs), date);
+                updates[`rooms/${existingId}/items/${it.id}/delayMinutes`] = recalc;
+                if (existingRoom.activeItemId === it.id) {
+                  updates[`rooms/${existingId}/currentDelayMinutes`] = recalc;
+                }
+              }
+            });
+          }
+          await update(ref(db), updates);
           closeModal('modal-room');
           showToast('Informasi ruangan diperbarui.', 'success');
         } catch (err) {
@@ -3232,6 +3409,7 @@
             date,
             status: 'active',
             showState: 'standby',
+            autoStart: false,
             activeItemId: null,
             currentDelayMinutes: 0,
             createdAt: Date.now(),
@@ -3271,7 +3449,7 @@
       await executeCreateRoom();
     });
 
-    // Item Form Submit (Add / Edit + Gap Warning + Auto-Cascade + Actual End Time Edit)
+    // Item Form Submit (Add / Edit + Gap Warning + Auto-Cascade + Actual Start/End Time Edit)
     document.getElementById('form-item').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!requireAdmin()) return;
@@ -3287,6 +3465,7 @@
       const notes = document.getElementById('item-input-notes').value.trim();
       const hardTime = document.getElementById('item-input-hardtime').checked;
       const shouldCascade = document.getElementById('item-input-cascade').checked;
+      const actualStartHHMM = document.getElementById('item-input-actual-start').value;
       const actualEndHHMM = document.getElementById('item-input-actual-end').value;
 
       if (!startTime || !title || !pic) return;
@@ -3306,9 +3485,24 @@
               [`rooms/${roomId}/items/${existingId}/hardTime`]: hardTime
             };
 
-            // Recalculate delay if item already started
-            if (existingItem.actualStartTs) {
-              const recalcDelay = calculateDelayMinutes(startTime, new Date(existingItem.actualStartTs));
+            let effectiveActualStartTs = existingItem.actualStartTs || null;
+
+            // Allow editing Actual Start Time for ACTIVE or COMPLETED items
+            if ((existingItem.cueState === 'active' || existingItem.cueState === 'completed') && actualStartHHMM) {
+              const prevStartHHMM = existingItem.actualStartTime ? existingItem.actualStartTime.slice(0, 5) : '';
+              if (actualStartHHMM !== prevStartHHMM || !effectiveActualStartTs) {
+                const newStartTs = buildActualStartTimestamp(actualStartHHMM, existingItem.actualStartTs);
+                if (newStartTs) {
+                  effectiveActualStartTs = newStartTs;
+                  updates[`rooms/${roomId}/items/${existingId}/actualStartTime`] = `${actualStartHHMM}:00`;
+                  updates[`rooms/${roomId}/items/${existingId}/actualStartTs`] = newStartTs;
+                }
+              }
+            }
+
+            // Recalculate delay using event date + effective actualStartTs
+            if (effectiveActualStartTs) {
+              const recalcDelay = calculateDelayMinutes(startTime, new Date(effectiveActualStartTs), room.date);
               updates[`rooms/${roomId}/items/${existingId}/delayMinutes`] = recalcDelay;
               if (room.activeItemId === existingId) {
                 updates[`rooms/${roomId}/currentDelayMinutes`] = recalcDelay;
@@ -3317,7 +3511,7 @@
 
             // Allow editing Actual End Time STRICTLY for completed items
             if (existingItem.cueState === 'completed' && actualEndHHMM) {
-              const newEndTs = buildActualEndTimestamp(actualEndHHMM, existingItem.actualStartTs);
+              const newEndTs = buildActualEndTimestamp(actualEndHHMM, effectiveActualStartTs);
               updates[`rooms/${roomId}/items/${existingId}/actualEndTime`] = `${actualEndHHMM}:00`;
               if (newEndTs) {
                 updates[`rooms/${roomId}/items/${existingId}/actualEndTs`] = newEndTs;
@@ -3334,7 +3528,7 @@
                 if (!cursor) break;
                 updates[`rooms/${roomId}/items/${nextIt.id}/startTime`] = cursor;
                 if (nextIt.actualStartTs) {
-                  const nextDelay = calculateDelayMinutes(cursor, new Date(nextIt.actualStartTs));
+                  const nextDelay = calculateDelayMinutes(cursor, new Date(nextIt.actualStartTs), room.date);
                   updates[`rooms/${roomId}/items/${nextIt.id}/delayMinutes`] = nextDelay;
                   if (room.activeItemId === nextIt.id) {
                     updates[`rooms/${roomId}/currentDelayMinutes`] = nextDelay;
@@ -3458,6 +3652,9 @@
           break;
         case 'next-cue':
           triggerNextCue(roomId);
+          break;
+        case 'toggle-auto-start':
+          toggleAutoStart(roomId);
           break;
         case 'prev-cue':
           triggerPrevCue(roomId);
