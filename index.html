@@ -1082,10 +1082,135 @@
       }
     );
 
+    // ==================== 5B. ADMIN INACTIVITY AUTO-LOGOUT (6 JAM) ====================
+    const ADMIN_IDLE_TIMEOUT_MS = 6 * 60 * 60 * 1000; // 6 jam tidak aktif -> auto logout
+    const ADMIN_IDLE_WARN_BEFORE_MS = 5 * 60 * 1000;  // Peringatan 5 menit sebelum logout
+    const ADMIN_ACTIVITY_KEY = 'rundown_admin_last_activity_ts';
+    const ADMIN_ACTIVITY_THROTTLE_MS = 15 * 1000;
+
+    let lastAdminActivityMem = 0;
+    let lastActivityWriteTs = 0;
+    let adminIdleIntervalId = null;
+    let adminIdleWarningShown = false;
+
+    function getStoredAdminActivity() {
+      try {
+        const raw = localStorage.getItem(ADMIN_ACTIVITY_KEY);
+        const parsed = raw ? Number(raw) : 0;
+        if (parsed > 0 && !Number.isNaN(parsed)) return parsed;
+      } catch (_) {}
+      return lastAdminActivityMem;
+    }
+
+    function recordAdminActivity(force = false) {
+      if (!force && !state.isAdmin) return;
+      const now = Date.now();
+      if (!force && now - lastActivityWriteTs < ADMIN_ACTIVITY_THROTTLE_MS) return;
+      lastActivityWriteTs = now;
+      lastAdminActivityMem = now;
+      adminIdleWarningShown = false;
+      try {
+        localStorage.setItem(ADMIN_ACTIVITY_KEY, String(now));
+      } catch (_) {}
+    }
+
+    function clearAdminActivity() {
+      lastAdminActivityMem = 0;
+      lastActivityWriteTs = 0;
+      adminIdleWarningShown = false;
+      try {
+        localStorage.removeItem(ADMIN_ACTIVITY_KEY);
+      } catch (_) {}
+    }
+
+    function stopAdminIdleMonitor() {
+      if (adminIdleIntervalId !== null) {
+        clearInterval(adminIdleIntervalId);
+        adminIdleIntervalId = null;
+      }
+      adminIdleWarningShown = false;
+    }
+
+    async function checkAdminInactivity() {
+      if (!state.isAdmin) return false;
+      const lastTs = getStoredAdminActivity();
+      if (!lastTs) {
+        recordAdminActivity(true);
+        return false;
+      }
+      const idleMs = Date.now() - lastTs;
+      if (idleMs >= ADMIN_IDLE_TIMEOUT_MS) {
+        stopAdminIdleMonitor();
+        clearAdminActivity();
+        ['modal-room', 'modal-item', 'modal-confirm'].forEach(closeModal);
+        try {
+          await signOut(auth);
+        } catch (err) {
+          console.error('Auto-logout error:', err);
+        }
+        showToast('Sesi Admin otomatis logout karena tidak aktif selama 6 jam.', 'warning');
+        return true;
+      }
+      if (!adminIdleWarningShown && ADMIN_IDLE_TIMEOUT_MS - idleMs <= ADMIN_IDLE_WARN_BEFORE_MS) {
+        adminIdleWarningShown = true;
+        showToast('Sesi Admin akan otomatis logout dalam 5 menit jika tidak ada aktivitas.', 'warning');
+      }
+      return false;
+    }
+
+    function startAdminIdleMonitor() {
+      stopAdminIdleMonitor();
+      adminIdleIntervalId = setInterval(() => {
+        checkAdminInactivity();
+      }, 30 * 1000);
+    }
+
+    // Track real user interactions to reset 6-hour idle timer
+    ['pointerdown', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach((evtName) => {
+      window.addEventListener(evtName, () => recordAdminActivity(false), { passive: true });
+    });
+
+    // Immediately verify idle expiry when tab/laptop wakes up from sleep or background
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkAdminInactivity();
+      }
+    });
+    window.addEventListener('focus', () => {
+      checkAdminInactivity();
+    });
+
     // Auth State Listener
-    onAuthStateChanged(auth, (user) => {
-      state.user = user;
-      state.isAdmin = Boolean(user);
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const storedTs = getStoredAdminActivity();
+        if (storedTs && Date.now() - storedTs >= ADMIN_IDLE_TIMEOUT_MS) {
+          stopAdminIdleMonitor();
+          clearAdminActivity();
+          state.user = null;
+          state.isAdmin = false;
+          updateAuthUI();
+          renderAll();
+          try {
+            await signOut(auth);
+          } catch (err) {
+            console.error('Expired session signOut error:', err);
+          }
+          showToast('Sesi Admin telah berakhir (tidak aktif > 6 jam). Silakan login kembali.', 'warning');
+          return;
+        }
+        state.user = user;
+        state.isAdmin = true;
+        if (!storedTs) {
+          recordAdminActivity(true);
+        }
+        startAdminIdleMonitor();
+      } else {
+        stopAdminIdleMonitor();
+        clearAdminActivity();
+        state.user = null;
+        state.isAdmin = false;
+      }
       updateAuthUI();
       renderAll();
     });
@@ -2804,6 +2929,8 @@
 
     document.getElementById('btn-logout').addEventListener('click', async () => {
       try {
+        stopAdminIdleMonitor();
+        clearAdminActivity();
         await signOut(auth);
         showToast('Berhasil logout. Kembali ke Mode Viewer Publik.', 'info');
       } catch (err) {
@@ -2824,10 +2951,13 @@
       submitBtn.textContent = 'Memproses...';
 
       try {
+        // Stamp fresh activity timestamp before sign-in so onAuthStateChanged never sees stale expiry
+        recordAdminActivity(true);
         await signInWithEmailAndPassword(auth, email, password);
         closeModal('modal-login');
-        showToast('Login Admin berhasil. Kontrol manajemen aktif.', 'success');
+        showToast('Login Admin berhasil. Auto-logout aktif jika tidak ada aktivitas selama 6 jam.', 'success');
       } catch (err) {
+        clearAdminActivity();
         let msg = 'Login gagal. Periksa kembali email dan password Anda.';
         if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           msg = 'Email atau password tidak sesuai.';
