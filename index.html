@@ -3919,6 +3919,82 @@
       });
     }
 
+    let cachedGeminiModels = null;
+    let cachedGeminiModelsKey = '';
+
+    async function discoverGeminiModels(apiKey) {
+      if (cachedGeminiModels && cachedGeminiModelsKey === apiKey) {
+        return cachedGeminiModels;
+      }
+      const fallback = [
+        'gemini-flash-latest',
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.0-flash-lite',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-flash'
+      ];
+      try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          const errMsg = errData?.error?.message || `HTTP ${resp.status}`;
+          if (resp.status === 400 || resp.status === 403) {
+            throw new Error(`API Key ditolak oleh Google AI (${errMsg}). Pastikan Anda menggunakan Gemini API Key dari aistudio.google.com/apikey.`);
+          }
+          return fallback;
+        }
+        const data = await resp.json().catch(() => ({}));
+        const list = Array.isArray(data.models) ? data.models : [];
+        const usable = list
+          .filter(m => {
+            const name = (m.name || '').toLowerCase();
+            const methods = m.supportedGenerationMethods || [];
+            return (
+              methods.includes('generateContent') &&
+              name.includes('gemini') &&
+              !name.includes('embedding') &&
+              !name.includes('tts') &&
+              !name.includes('audio') &&
+              !name.includes('image-generation') &&
+              !name.includes('imagen') &&
+              !name.includes('veo') &&
+              !name.includes('aqa') &&
+              !name.includes('robotics') &&
+              !name.includes('computer-use') &&
+              !name.includes('deep-research')
+            );
+          })
+          .map(m => m.name.replace(/^models\//, ''));
+
+        if (usable.length === 0) return fallback;
+
+        const scoreModel = (name) => {
+          const n = name.toLowerCase();
+          let s = 0;
+          if (n.includes('flash')) s += 100;
+          if (n.includes('lite')) s -= 5;
+          if (n.includes('preview') || n.includes('exp')) s -= 12;
+          if (n.includes('thinking')) s -= 20;
+          if (n.includes('pro')) s += 40;
+          const verMatch = n.match(/gemini-(\d+(?:\.\d+)?)/);
+          if (verMatch) s += parseFloat(verMatch[1]) * 10;
+          if (n === 'gemini-flash-latest') s += 110;
+          return s;
+        };
+
+        usable.sort((a, b) => scoreModel(b) - scoreModel(a));
+        const ranked = [...new Set(usable)].slice(0, 8);
+        cachedGeminiModels = ranked;
+        cachedGeminiModelsKey = apiKey;
+        return ranked;
+      } catch (err) {
+        if (err.message && err.message.includes('API Key ditolak')) throw err;
+        return fallback;
+      }
+    }
+
     async function parseWithGeminiAI(file) {
       const apiKey = (state.geminiApiKey || '').trim();
       if (!apiKey) {
@@ -3950,43 +4026,58 @@ Aturan wajib:
 6. Abaikan baris judul banner atas, baris header kolom, dan baris kosong/pembatas warna.
 7. Kembalikan HANYA JSON valid tanpa teks tambahan atau markdown.`;
 
-      const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+      const models = await discoverGeminiModels(apiKey);
       let lastError = null;
+      let rateLimitedCount = 0;
 
       for (const model of models) {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const resp = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inlineData: inlinePart }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: 'application/json'
-            }
-          })
-        });
+        const callModel = async (useJsonMime) => {
+          const genCfg = useJsonMime
+            ? { temperature: 0.1, responseMimeType: 'application/json' }
+            : { temperature: 0.1 };
+          return fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inlineData: inlinePart }
+                ]
+              }],
+              generationConfig: genCfg
+            })
+          });
+        };
+
+        let resp = await callModel(true);
+        let data = await resp.json().catch(() => ({}));
+
+        // Retry without responseMimeType if a specific model does not support JSON mode
+        if (resp.status === 400 && /response_mime_type|json/i.test(data?.error?.message || '')) {
+          resp = await callModel(false);
+          data = await resp.json().catch(() => ({}));
+        }
 
         if (resp.status === 404) {
-          lastError = new Error(`Model ${model} tidak tersedia.`);
+          lastError = new Error(`Model ${model} tidak tersedia (${data?.error?.message || '404'}).`);
           continue;
         }
 
-        const data = await resp.json().catch(() => ({}));
+        if (resp.status === 429) {
+          rateLimitedCount++;
+          lastError = new Error(`Kuota sementara penuh pada model ${model}.`);
+          continue; // Try next available model automatically!
+        }
+
         if (!resp.ok) {
           const msg = data?.error?.message || `HTTP ${resp.status}`;
-          if (resp.status === 400 || resp.status === 403) {
+          if (resp.status === 403 || (resp.status === 400 && /api[_ ]?key/i.test(msg))) {
             throw new Error(`API Key ditolak atau tidak valid (${msg}). Cek kembali Gemini API Key Anda.`);
           }
-          if (resp.status === 429) {
-            throw new Error('Kuota gratis Gemini API sedang penuh sementara (Rate Limit). Tunggu 1 menit lalu coba lagi.');
-          }
-          throw new Error(`Gagal memproses AI: ${msg}`);
+          lastError = new Error(`Gagal pada model ${model}: ${msg}`);
+          continue;
         }
 
         const rawText = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
@@ -3996,7 +4087,10 @@ Aturan wajib:
           json = JSON.parse(cleaned);
         } catch (_) {
           const objMatch = cleaned.match(/\{[\s\S]*\}/);
-          if (!objMatch) throw new Error('AI tidak mengembalikan format JSON yang valid. Coba foto yang lebih jelas/terang.');
+          if (!objMatch) {
+            lastError = new Error('AI tidak mengembalikan format JSON yang valid. Coba foto yang lebih jelas/terang.');
+            continue;
+          }
           json = JSON.parse(objMatch[0]);
         }
 
@@ -4023,6 +4117,9 @@ Aturan wajib:
           });
       }
 
+      if (rateLimitedCount > 0 && rateLimitedCount === models.length) {
+        throw new Error('Kuota gratis Gemini API sedang penuh sementara pada semua model. Tunggu 1 menit lalu coba lagi.');
+      }
       throw lastError || new Error('Gagal menghubungi layanan Gemini AI.');
     }
 
