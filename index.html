@@ -257,13 +257,6 @@
 
         <div class="flex flex-wrap items-center gap-2.5">
           <!-- Admin-Only Controls -->
-          <button id="btn-seed-demo" type="button" class="admin-only d-none px-3.5 py-2.5 rounded-lg bg-surface hover:bg-elevated border border-line-strong text-xs sm:text-sm font-semibold text-slate-200 transition-colors flex items-center gap-2">
-            <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-            </svg>
-            <span>Muat Contoh Event</span>
-          </button>
-
           <button id="btn-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors flex items-center gap-2 shadow-sm">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -316,9 +309,6 @@
           <button id="btn-empty-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
             + Buat Ruangan Pertama
           </button>
-          <button id="btn-empty-seed" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-100 text-sm font-semibold transition-colors">
-            Muat Contoh 2 Ruangan
-          </button>
           <button id="btn-empty-login" type="button" class="public-only px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-100 text-sm font-semibold transition-colors">
             Login Admin
           </button>
@@ -345,13 +335,13 @@
         <!-- Room Admin Controls -->
         <div class="admin-only d-none flex flex-wrap items-center gap-2 shrink-0">
           <button id="btn-room-edit" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-200 transition-colors">
-            Edit Info Ruangan
+            Edit Ruangan
           </button>
-          <button id="btn-room-reset" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-300 transition-colors" title="Reset semua cue kembali ke standby (misal setelah gladi resik)">
+          <button id="btn-room-reset" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-amber-500/15 hover:border-amber-400 hover:text-amber-300 border border-line text-xs font-semibold text-slate-300 transition-colors" title="Reset semua cue kembali ke standby (misal setelah gladi resik)">
             Reset Show
           </button>
-          <button id="btn-room-finish" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-emerald-950 hover:border-emerald-700 hover:text-emerald-200 border border-line text-xs font-semibold text-slate-200 transition-colors">
-            Selesai &rarr; History
+          <button id="btn-room-delete" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-red-600 hover:border-red-500 hover:text-white border border-line text-xs font-semibold text-slate-200 transition-colors" title="Hapus ruangan / event ini">
+            Hapus
           </button>
         </div>
       </div>
@@ -513,23 +503,24 @@
 
   <!-- Modal 2: Add / Edit Room -->
   <div id="modal-room" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-surface border border-line-strong rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
-      <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+    <div id="modal-room-dialog" class="bg-surface border border-line-strong rounded-2xl max-w-lg w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden transition-all">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between shrink-0">
         <h3 id="modal-room-title" class="text-base font-bold text-white">Tambah Ruangan Baru</h3>
         <button type="button" data-close-modal="modal-room" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
       </div>
 
-      <form id="form-room" class="p-6 space-y-4">
+      <form id="form-room" class="p-6 space-y-4 overflow-y-auto flex-1">
         <input id="room-form-id" type="hidden" />
 
-        <div>
-          <label for="room-input-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Ruangan / Stage *</label>
-          <input id="room-input-name" type="text" required placeholder="Contoh: Main Ballroom — Stage A" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
-        </div>
-
-        <div>
-          <label for="room-input-event" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Event / Acara *</label>
-          <input id="room-input-event" type="text" required placeholder="Contoh: Indonesia Tech Summit 2026" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="room-input-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Ruangan / Stage *</label>
+            <input id="room-input-name" type="text" required placeholder="Contoh: Main Ballroom — Stage A" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          </div>
+          <div>
+            <label for="room-input-event" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Event / Acara *</label>
+            <input id="room-input-event" type="text" required placeholder="Contoh: Indonesia Tech Summit 2026" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -540,6 +531,52 @@
           <div>
             <label for="room-input-date" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Tanggal Event</label>
             <input id="room-input-date" type="date" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+          </div>
+        </div>
+
+        <!-- Optional Inline Rundown Creation Toggle (New Room Only) -->
+        <div id="room-draft-rundown-toggle-wrap" class="pt-1 border-t border-line/80">
+          <label class="flex items-start gap-2.5 cursor-pointer select-none py-1">
+            <input id="room-input-with-rundown" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas text-amber-400 focus:ring-amber-400 accent-amber-400 cursor-pointer" />
+            <div>
+              <span class="text-sm font-semibold text-slate-100 block">Langsung buat daftar rundown sekarang <span class="text-xs font-normal text-slate-400">(Opsional)</span></span>
+              <span class="text-xs text-slate-400">Centang jika ingin langsung mengisi sesi rundown bersamaan saat membuat ruangan.</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Collapsible Inline Rundown Builder Table -->
+        <div id="room-draft-rundown-section" class="d-none space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Daftar Rundown Awal</h4>
+              <p class="text-[11px] text-slate-400">Jam sesi berikutnya otomatis mengikuti jam selesai sesi di atasnya (kecuali yang dicentang Fixed Time).</p>
+            </div>
+            <button id="btn-add-draft-row" type="button" class="px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-bold text-amber-300 transition-colors flex items-center gap-1.5">
+              <span>+ Tambah Baris Sesi</span>
+            </button>
+          </div>
+
+          <div class="border border-line rounded-xl overflow-hidden bg-canvas/60">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse min-w-[760px] text-xs">
+                <thead>
+                  <tr class="bg-elevated/80 border-b border-line text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <th class="py-2.5 px-2.5 w-10 text-center">#</th>
+                    <th class="py-2.5 px-2 w-28">Jam Mulai</th>
+                    <th class="py-2.5 px-2 w-20">Durasi</th>
+                    <th class="py-2.5 px-2">Nama Sesi *</th>
+                    <th class="py-2.5 px-2 w-36">PIC *</th>
+                    <th class="py-2.5 px-2 w-40">Catatan</th>
+                    <th class="py-2.5 px-2 w-24 text-center">Fixed Time</th>
+                    <th class="py-2.5 px-2 w-12 text-center">Hapus</th>
+                  </tr>
+                </thead>
+                <tbody id="room-draft-tbody" class="divide-y divide-line/70">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -557,13 +594,13 @@
 
   <!-- Modal 3: Add / Edit Rundown Item -->
   <div id="modal-item" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-surface border border-line-strong rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
-      <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-lg w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between shrink-0">
         <h3 id="modal-item-title" class="text-base font-bold text-white">Tambah Item Rundown</h3>
         <button type="button" data-close-modal="modal-item" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
       </div>
 
-      <form id="form-item" class="p-6 space-y-4">
+      <form id="form-item" class="p-6 space-y-4 overflow-y-auto flex-1">
         <input id="item-form-id" type="hidden" />
 
         <div class="grid grid-cols-2 gap-4">
@@ -574,6 +611,40 @@
           <div>
             <label for="item-input-duration" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Durasi (Menit) *</label>
             <input id="item-input-duration" type="number" min="1" max="1440" required placeholder="15" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+          </div>
+        </div>
+
+        <!-- Live Gap Warning (only shown when non-hard-time start != previous end) -->
+        <div id="item-gap-warning" class="d-none p-3 rounded-lg bg-amber-950/60 border border-amber-500/60 text-xs text-amber-200 leading-relaxed flex items-start gap-2">
+          <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span id="item-gap-warning-text"></span>
+        </div>
+
+        <!-- Hard Time & Auto-Cascade Checkboxes -->
+        <div class="rounded-xl bg-canvas/70 border border-line p-3.5 space-y-2.5">
+          <label class="flex items-start gap-2.5 cursor-pointer select-none">
+            <input id="item-input-hardtime" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas accent-orange-500 cursor-pointer" />
+            <div class="leading-tight">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold text-slate-100">Hard Time (Jam Tetap)</span>
+                <span class="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 text-[10px] font-bold uppercase tracking-wide">FIXED TIME</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Jam mulai bebas diubah tanpa peringatan gap dan tidak akan ikut tergeser oleh sesi di atasnya.</p>
+            </div>
+          </label>
+
+          <div id="item-cascade-wrap" class="d-none pt-2 border-t border-line/70">
+            <label class="flex items-start gap-2.5 cursor-pointer select-none">
+              <input id="item-input-cascade" type="checkbox" checked class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas accent-amber-400 cursor-pointer" />
+              <div class="leading-tight">
+                <span class="text-xs font-bold text-slate-100">Otomatis update jam mulai sesi di bawahnya</span>
+                <p class="text-[11px] text-slate-400 mt-0.5">Sesi berikutnya akan menyesuaikan jam selesai sesi ini (berhenti jika bertemu sesi Fixed Time).</p>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -590,6 +661,16 @@
         <div>
           <label for="item-input-notes" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Catatan Teknis / Cue (Opsional)</label>
           <textarea id="item-input-notes" rows="2" placeholder="Contoh: Mic handheld 2x, bumper video play, lampu dimmer 50%" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500 resize-none"></textarea>
+        </div>
+
+        <!-- Actual End Time Editor (ONLY visible for COMPLETED items) -->
+        <div id="item-actual-end-wrap" class="d-none rounded-xl bg-elevated/60 border border-line-strong p-3.5 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <label for="item-input-actual-end" class="text-xs font-bold uppercase tracking-wider text-amber-300">Edit Jam Selesai Aktual</label>
+            <span id="item-actual-start-info" class="font-mono text-[11px] text-slate-400">Mulai Aktual: --:--</span>
+          </div>
+          <input id="item-input-actual-end" type="time" class="w-full px-3.5 py-2 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+          <p class="text-[11px] text-slate-400">Hanya tersedia untuk sesi yang sudah selesai (sudah ditekan Next Cue) jika perlu koreksi jam selesai aktual.</p>
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2.5">
@@ -700,6 +781,7 @@
       historyDetailRoomId: null,
       historySearch: '',
       rooms: {}, // raw Firebase object
+      draftItems: [], // optional inline rundown items when creating a new room
       confirmCallback: null
     };
 
@@ -874,6 +956,36 @@
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
         ON TIME
       </span>`;
+    }
+
+    function renderFixedTimeBadge() {
+      return `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 font-mono text-[10px] font-bold uppercase tracking-wide shrink-0">FIXED TIME</span>`;
+    }
+
+    function checkItemGap(room, editingItemId, startTime, isHardTime) {
+      if (isHardTime || !startTime || !/^\d{2}:\d{2}$/.test(startTime)) {
+        return { hasGap: false };
+      }
+      const items = getSortedItems(room);
+      const idx = editingItemId ? items.findIndex(i => i.id === editingItemId) : items.length;
+      if (idx <= 0) return { hasGap: false };
+      const prev = items[idx - 1];
+      if (!prev || !prev.startTime) return { hasGap: false };
+      const prevEnd = addMinutesToHHMM(prev.startTime, prev.duration);
+      if (!prevEnd || startTime === prevEnd) return { hasGap: false, prevEnd, prevTitle: prev.title };
+      return { hasGap: true, prevEnd, prevTitle: prev.title };
+    }
+
+    function buildActualEndTimestamp(hhmm, referenceStartTs) {
+      if (!hhmm || !/^\d{2}:\d{2}$/.test(hhmm)) return null;
+      const [h, m] = hhmm.split(':').map(Number);
+      const base = referenceStartTs ? new Date(referenceStartTs) : new Date();
+      const endDate = new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, m, 0, 0);
+      // Handle midnight crossover if end time is earlier than start time by > 12h
+      if (referenceStartTs && endDate.getTime() < referenceStartTs - 12 * 3600 * 1000) {
+        endDate.setDate(endDate.getDate() + 1);
+      }
+      return endDate.getTime();
     }
 
     // ==================== 4. TOAST & ALERT HELPERS ====================
@@ -1285,7 +1397,7 @@
               <!-- Footer Actions -->
               <div class="mt-auto pt-2 border-t border-line/80 flex items-center justify-between gap-2">
                 <button type="button" data-action="open-room" data-room-id="${escapeHtml(room.id)}" class="flex-1 px-3.5 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs sm:text-sm font-semibold text-white transition-colors text-center">
-                  Buka Rundown Ruangan
+                  Buka Detail Ruangan
                 </button>
                 ${quickCueBtn}
               </div>
@@ -1465,8 +1577,11 @@
                   <div class="text-[11px] font-bold uppercase tracking-wider ${isDelayed ? 'text-red-300' : 'text-emerald-400'}">
                     CUE AKTIF #${stats.activeIdx + 1} DARI ${stats.totalItems}
                   </div>
-                  <div class="text-xl sm:text-2xl font-extrabold text-white mt-1.5 leading-snug">
-                    ${escapeHtml(stats.activeItem.title)}
+                  <div class="flex items-center gap-2 flex-wrap mt-1.5">
+                    <div class="text-xl sm:text-2xl font-extrabold text-white leading-snug">
+                      ${escapeHtml(stats.activeItem.title)}
+                    </div>
+                    ${stats.activeItem.hardTime ? renderFixedTimeBadge() : ''}
                   </div>
                   ${stats.activeItem.notes ? `<p class="text-xs text-slate-300 mt-2 leading-relaxed bg-elevated/60 px-3 py-2 rounded-lg border border-line/70">${escapeHtml(stats.activeItem.notes)}</p>` : ''}
                 </div>
@@ -1586,10 +1701,16 @@
                </div>`
             : `<span class="font-mono text-xs font-bold text-slate-400">${idx + 1}</span>`;
 
+        const canEditActualEnd = state.isAdmin && isCompleted;
+        const actualEndDisplay = item.actualEndTime ? escapeHtml(item.actualEndTime.slice(0, 5)) : '';
         const actualCell = (isActive || isCompleted) && item.actualStartTime
           ? `<div class="space-y-1">
-               <div class="font-mono text-xs ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-200'}">
-                 Aktual: <strong>${escapeHtml(item.actualStartTime.slice(0, 5))}</strong>${item.actualEndTime ? ` &ndash; ${escapeHtml(item.actualEndTime.slice(0, 5))}` : ''}
+               <div class="font-mono text-xs flex items-center flex-wrap gap-1 ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-200'}">
+                 <span>Aktual: <strong>${escapeHtml(item.actualStartTime.slice(0, 5))}</strong>${actualEndDisplay ? ` &ndash; ${actualEndDisplay}` : ''}</span>
+                 ${canEditActualEnd ? `
+                   <button type="button" data-action="edit-actual-end" data-item-id="${escapeHtml(item.id)}" class="px-1.5 py-0.5 rounded bg-elevated hover:bg-amber-400 hover:text-slate-950 text-amber-300 border border-line text-[10px] font-sans font-bold transition-colors" title="Edit Jam Selesai Aktual">
+                     Edit Selesai
+                   </button>` : ''}
                </div>
                <div>${renderDelayBadge(itemDelay, 'sm')}</div>
              </div>`
@@ -1630,8 +1751,11 @@
               <span class="inline-block px-2 py-0.5 rounded bg-elevated border border-line text-xs font-bold text-slate-200">${item.duration} mnt</span>
             </td>
             <td class="py-3.5 px-3 align-top">
-              <div class="font-bold ${isActive ? 'text-base text-white' : 'text-slate-100'} ${hasDelay && isActive ? 'text-red-100' : ''}">
-                ${escapeHtml(item.title)}
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold ${isActive ? 'text-base text-white' : 'text-slate-100'} ${hasDelay && isActive ? 'text-red-100' : ''}">
+                  ${escapeHtml(item.title)}
+                </span>
+                ${item.hardTime ? renderFixedTimeBadge() : ''}
               </div>
               ${item.notes ? `<div class="text-xs text-slate-400 mt-1 leading-relaxed">${escapeHtml(item.notes)}</div>` : ''}
             </td>
@@ -1759,12 +1883,19 @@
               <tbody class="divide-y divide-line/70">
                 ${stats.items.map((item, idx) => {
                   const hasDelay = typeof item.delayMinutes === 'number' && item.delayMinutes > 0;
+                  const actStart = item.actualStartTime ? item.actualStartTime.slice(0, 5) : '-';
+                  const actEnd = item.actualEndTime ? ` – ${item.actualEndTime.slice(0, 5)}` : '';
                   return `
                     <tr class="${hasDelay ? 'bg-red-950/35' : ''}">
                       <td class="py-3 pl-4 pr-2 font-mono text-slate-400">${idx + 1}</td>
                       <td class="py-3 px-3 font-mono text-slate-200">${escapeHtml(item.startTime)} <span class="text-slate-500">(${item.duration}m)</span></td>
-                      <td class="py-3 px-3 font-mono ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-300'}">${escapeHtml(item.actualStartTime ? item.actualStartTime.slice(0, 5) : '-')}</td>
-                      <td class="py-3 px-3 font-semibold text-white">${escapeHtml(item.title)}</td>
+                      <td class="py-3 px-3 font-mono ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-300'}">${escapeHtml(actStart + actEnd)}</td>
+                      <td class="py-3 px-3 font-semibold text-white">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <span>${escapeHtml(item.title)}</span>
+                          ${item.hardTime ? renderFixedTimeBadge() : ''}
+                        </div>
+                      </td>
                       <td class="py-3 px-3 text-slate-300">${escapeHtml(item.pic || '-')}</td>
                       <td class="py-3 pl-3 pr-4 text-right">${renderDelayBadge(item.delayMinutes, 'sm')}</td>
                     </tr>
@@ -2123,8 +2254,10 @@
 
           try {
             await update(ref(db), updates);
-            showToast(`"${room.name}" dipindahkan ke History.`, 'success');
-            navigateTo('history');
+            showToast(`"${room.name}" selesai & dipindahkan ke History.`, 'success');
+            if (state.view !== 'monitor') {
+              navigateTo('monitor');
+            }
           } catch (err) {
             handleWriteError(err, 'Gagal memindahkan ruangan ke History.');
           }
@@ -2232,8 +2365,61 @@
       });
     }
 
-    // Reorder Item Up / Down
-    async function moveItem(roomId, itemId, direction) {
+    // Reorder Item Up / Down with Automatic Time Recalculation & Hard Time Warning
+    async function executeMoveItem(roomId, items, idx, swapIdx) {
+      const room = state.rooms[roomId];
+      if (!room) return;
+
+      const originalStart0 = items[0]?.startTime || '09:00';
+      const newItems = items.map(it => ({ ...it }));
+      const temp = newItems[idx];
+      newItems[idx] = newItems[swapIdx];
+      newItems[swapIdx] = temp;
+
+      const minIdx = Math.min(idx, swapIdx);
+      const maxIdx = Math.max(idx, swapIdx);
+
+      // Anchor position 0 if involved in swap
+      if (minIdx === 0 && !newItems[0].hardTime) {
+        newItems[0].startTime = originalStart0;
+      }
+
+      // Recalculate startTime from minIdx downward; keep Fixed Time (hardTime) untouched
+      for (let i = Math.max(1, minIdx); i < newItems.length; i++) {
+        if (newItems[i].hardTime) {
+          // Fixed time keeps its own start time; if past swap region, stop cascading further
+          if (i > maxIdx) break;
+          continue;
+        }
+        const prev = newItems[i - 1];
+        const nextStart = addMinutesToHHMM(prev.startTime, prev.duration);
+        if (nextStart) {
+          newItems[i].startTime = nextStart;
+        }
+      }
+
+      const updates = {};
+      newItems.forEach((item, i) => {
+        updates[`rooms/${roomId}/items/${item.id}/order`] = i;
+        updates[`rooms/${roomId}/items/${item.id}/startTime`] = item.startTime;
+        if (item.actualStartTs) {
+          const recalcDelay = calculateDelayMinutes(item.startTime, new Date(item.actualStartTs));
+          updates[`rooms/${roomId}/items/${item.id}/delayMinutes`] = recalcDelay;
+          if (room.activeItemId === item.id) {
+            updates[`rooms/${roomId}/currentDelayMinutes`] = recalcDelay;
+          }
+        }
+      });
+
+      try {
+        await update(ref(db), updates);
+        showToast('Urutan & jam mulai rundown diperbarui.', 'success');
+      } catch (err) {
+        handleWriteError(err, 'Gagal mengubah urutan sesi.');
+      }
+    }
+
+    function moveItem(roomId, itemId, direction) {
       if (!requireAdmin()) return;
       const room = state.rooms[roomId];
       if (!room) return;
@@ -2242,19 +2428,22 @@
       const swapIdx = idx + direction;
       if (idx === -1 || swapIdx < 0 || swapIdx >= items.length) return;
 
-      const updates = {};
-      items.forEach((item, i) => {
-        let newOrder = i;
-        if (i === idx) newOrder = swapIdx;
-        else if (i === swapIdx) newOrder = idx;
-        updates[`rooms/${roomId}/items/${item.id}/order`] = newOrder;
-      });
-
-      try {
-        await update(ref(db), updates);
-      } catch (err) {
-        handleWriteError(err, 'Gagal mengubah urutan sesi.');
+      const movedItem = items[idx];
+      const swappedItem = items[swapIdx];
+      const fixedInvolved = movedItem.hardTime ? movedItem : (swappedItem.hardTime ? swappedItem : null);
+      if (fixedInvolved) {
+        openConfirm({
+          title: 'Pindahkan Sesi Fixed Time?',
+          message: `Perubahan urutan ini akan memindahkan posisi sesi Fixed Time "${fixedInvolved.title}" (${fixedInvolved.startTime}). Apakah kamu yakin ingin melanjutkan? Jam mulai sesi Fixed Time akan tetap dipertahankan.`,
+          okText: 'Ya, Pindahkan',
+          cancelText: 'Batal',
+          danger: false,
+          onConfirm: () => executeMoveItem(roomId, items, idx, swapIdx)
+        });
+        return;
       }
+
+      executeMoveItem(roomId, items, idx, swapIdx);
     }
 
     // Delete Rundown Item
@@ -2288,95 +2477,12 @@
       });
     }
 
-    // Seed Sample Multi-Room Event (Helpful for quick testing)
-    async function seedDemoEvent() {
-      if (!requireAdmin()) return;
-      const now = new Date();
-      // Schedule sample sessions near current time so user immediately sees realistic Delay / On Time behavior!
-      const baseTime1 = formatHHMM(new Date(now.getTime() - 10 * 60000)); // 10 min ago
-      const baseTime2 = formatHHMM(new Date(now.getTime() - 2 * 60000));  // 2 min ago
-
-      const r1Ref = push(ref(db, 'rooms'));
-      const r2Ref = push(ref(db, 'rooms'));
-
-      const makeItems = (startHHMM, defs) => {
-        const obj = {};
-        let cursor = startHHMM;
-        defs.forEach((d, idx) => {
-          const id = `cue_${idx + 1}_${Date.now()}`;
-          obj[id] = {
-            id,
-            order: idx,
-            startTime: cursor,
-            duration: d.duration,
-            title: d.title,
-            pic: d.pic,
-            notes: d.notes || '',
-            cueState: 'pending'
-          };
-          cursor = addMinutesToHHMM(cursor, d.duration);
-        });
-        return obj;
-      };
-
-      const r1Items = makeItems(baseTime1, [
-        { duration: 10, title: 'Open Gate & Registrasi Peserta', pic: 'Tim Registrasi (Dina)', notes: 'Play BGM upbeat, LED Welcome Screen ON' },
-        { duration: 15, title: 'Opening Remarks & Sambutan Ketua', pic: 'MC Raka / Dir. Andi', notes: 'Mic handheld 2x, lighting full bright' },
-        { duration: 25, title: 'Keynote Speech: Future of Live Tech', pic: 'Stage Mgr Budi', notes: 'Clicker & HDMI laptop pembicara ready' },
-        { duration: 20, title: 'Panel Discussion & Q&A Interaktif', pic: 'LO Nadia / Audio Dimas', notes: '4 kursi sofa di tengah stage, 2 mic wireless' }
-      ]);
-
-      const r2Items = makeItems(baseTime2, [
-        { duration: 15, title: 'Workshop Check-in & Setup Perangkat', pic: 'Crew Fajar', notes: 'Pastikan Wi-Fi & proyektor terhubung' },
-        { duration: 30, title: 'Sesi Praktik: Real-Time Production Flow', pic: 'Trainer Sinta', notes: 'Screen share utama di LCD' },
-        { duration: 15, title: 'Wrap-up & Foto Bersama', pic: 'Dokumentasi Reza', notes: 'Posisi foto di backdrop kiri' }
-      ]);
-
-      const updates = {
-        [`rooms/${r1Ref.key}`]: {
-          id: r1Ref.key,
-          name: 'Main Ballroom — Stage A',
-          eventTitle: 'Indonesia Tech Summit 2026',
-          location: 'Lantai 3, Hall Utama',
-          date: todayISO(),
-          status: 'active',
-          showState: 'standby',
-          activeItemId: null,
-          currentDelayMinutes: 0,
-          createdAt: Date.now(),
-          createdBy: state.user?.email || 'admin',
-          items: r1Items
-        },
-        [`rooms/${r2Ref.key}`]: {
-          id: r2Ref.key,
-          name: 'Breakout Room B',
-          eventTitle: 'Indonesia Tech Summit 2026',
-          location: 'Lantai 2, Ruang Merpati',
-          date: todayISO(),
-          status: 'active',
-          showState: 'standby',
-          activeItemId: null,
-          currentDelayMinutes: 0,
-          createdAt: Date.now() + 1,
-          createdBy: state.user?.email || 'admin',
-          items: r2Items
-        }
-      };
-
-      try {
-        await update(ref(db), updates);
-        showToast('2 ruangan contoh berhasil ditambahkan!', 'success');
-      } catch (err) {
-        handleWriteError(err, 'Gagal memuat contoh event.');
-      }
-    }
-
     // Export History Room to CSV
     function exportHistoryCSV(roomId) {
       const room = state.rooms[roomId];
       if (!room) return;
       const items = getSortedItems(room);
-      const header = ['No', 'Jam Rencana', 'Durasi (Mnt)', 'Jam Aktual', 'Status/Delay (Mnt)', 'Nama Sesi', 'PIC', 'Catatan'];
+      const header = ['No', 'Jam Rencana', 'Durasi (Mnt)', 'Fixed Time', 'Mulai Aktual', 'Selesai Aktual', 'Status/Delay (Mnt)', 'Nama Sesi', 'PIC', 'Catatan'];
       const rows = items.map((it, idx) => {
         const d = typeof it.delayMinutes === 'number'
           ? (it.delayMinutes > 0 ? `DELAY +${it.delayMinutes}` : it.delayMinutes < 0 ? `EARLY ${it.delayMinutes}` : 'ON TIME')
@@ -2385,7 +2491,9 @@
           idx + 1,
           it.startTime || '',
           it.duration || '',
+          it.hardTime ? 'Ya' : 'Tidak',
           it.actualStartTime || '-',
+          it.actualEndTime || '-',
           d,
           it.title || '',
           it.pic || '',
@@ -2403,12 +2511,118 @@
       URL.revokeObjectURL(url);
     }
 
-    // ==================== 10. MODAL FORM OPENERS ====================
+    // ==================== 10. MODAL FORM OPENERS & DRAFT RUNDOWN BUILDER ====================
+    function renderDraftRundownRows() {
+      const tbody = document.getElementById('room-draft-tbody');
+      if (!tbody) return;
+      if (state.draftItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-xs text-slate-400">Belum ada baris sesi. Klik "+ Tambah Baris Sesi" di atas.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = state.draftItems.map((row, idx) => {
+        const endTime = addMinutesToHHMM(row.startTime, row.duration);
+        let hasGap = false;
+        let prevEnd = '';
+        if (idx > 0 && !row.hardTime) {
+          const prev = state.draftItems[idx - 1];
+          prevEnd = addMinutesToHHMM(prev.startTime, prev.duration);
+          hasGap = Boolean(prevEnd && row.startTime && row.startTime !== prevEnd);
+        }
+
+        return `
+          <tr class="align-top" data-draft-row="${idx}">
+            <td class="py-2.5 px-2.5 text-center font-mono text-slate-400 font-bold pt-3.5">${idx + 1}</td>
+            <td class="py-2 px-2">
+              <input type="time" data-draft-idx="${idx}" data-draft-field="startTime" value="${escapeHtml(row.startTime)}" class="w-full px-2 py-1.5 rounded bg-surface border ${hasGap ? 'border-amber-500' : 'border-line-strong'} focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+              <div class="text-[10px] font-mono text-slate-500 mt-0.5">&ndash; ${escapeHtml(endTime || '--:--')}</div>
+              ${hasGap ? `<div class="text-[10px] text-amber-400 font-semibold mt-0.5">Gap (prev: ${escapeHtml(prevEnd)})</div>` : ''}
+            </td>
+            <td class="py-2 px-2">
+              <input type="number" min="1" max="1440" data-draft-idx="${idx}" data-draft-field="duration" value="${escapeHtml(row.duration)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+            </td>
+            <td class="py-2 px-2">
+              <input type="text" data-draft-idx="${idx}" data-draft-field="title" value="${escapeHtml(row.title)}" placeholder="Nama sesi..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white placeholder-slate-500" />
+            </td>
+            <td class="py-2 px-2">
+              <input type="text" data-draft-idx="${idx}" data-draft-field="pic" value="${escapeHtml(row.pic)}" placeholder="PIC..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white placeholder-slate-500" />
+            </td>
+            <td class="py-2 px-2">
+              <input type="text" data-draft-idx="${idx}" data-draft-field="notes" value="${escapeHtml(row.notes)}" placeholder="Opsional..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white placeholder-slate-500" />
+            </td>
+            <td class="py-2.5 px-2 text-center">
+              <label class="inline-flex flex-col items-center gap-1 cursor-pointer select-none">
+                <input type="checkbox" data-draft-idx="${idx}" data-draft-field="hardTime" ${row.hardTime ? 'checked' : ''} class="w-4 h-4 rounded accent-orange-500 cursor-pointer" />
+                ${row.hardTime ? `<span class="px-1 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 font-mono text-[9px] font-bold">FIXED</span>` : `<span class="text-[10px] text-slate-500">Auto</span>`}
+              </label>
+            </td>
+            <td class="py-2.5 px-2 text-center">
+              <button type="button" data-action="remove-draft-row" data-draft-idx="${idx}" class="p-1.5 rounded bg-elevated hover:bg-red-900 hover:text-red-200 text-slate-400 border border-line transition-colors" title="Hapus Baris">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function cascadeDraftFrom(startIdx) {
+      for (let i = startIdx + 1; i < state.draftItems.length; i++) {
+        if (state.draftItems[i].hardTime) break;
+        const prev = state.draftItems[i - 1];
+        const nextStart = addMinutesToHHMM(prev.startTime, prev.duration);
+        if (nextStart) state.draftItems[i].startTime = nextStart;
+      }
+    }
+
+    function addDraftRundownRow() {
+      let defaultStart = formatHHMM(new Date());
+      if (state.draftItems.length > 0) {
+        const last = state.draftItems[state.draftItems.length - 1];
+        defaultStart = addMinutesToHHMM(last.startTime, last.duration) || defaultStart;
+      }
+      state.draftItems.push({
+        startTime: defaultStart,
+        duration: 15,
+        title: '',
+        pic: '',
+        notes: '',
+        hardTime: false
+      });
+      renderDraftRundownRows();
+    }
+
+    function updateDraftRundownVisibility() {
+      const checked = document.getElementById('room-input-with-rundown').checked;
+      const section = document.getElementById('room-draft-rundown-section');
+      const dialog = document.getElementById('modal-room-dialog');
+
+      if (checked) {
+        section.classList.remove('d-none');
+        dialog.classList.remove('max-w-lg');
+        dialog.classList.add('max-w-5xl');
+        if (state.draftItems.length === 0) {
+          addDraftRundownRow();
+        } else {
+          renderDraftRundownRows();
+        }
+      } else {
+        section.classList.add('d-none');
+        dialog.classList.remove('max-w-5xl');
+        dialog.classList.add('max-w-lg');
+      }
+    }
+
     function openRoomModal(roomId = null) {
       if (!requireAdmin()) return;
       const isEdit = Boolean(roomId && state.rooms[roomId]);
       document.getElementById('modal-room-title').textContent = isEdit ? 'Edit Informasi Ruangan' : 'Tambah Ruangan Baru';
       document.getElementById('room-form-id').value = isEdit ? roomId : '';
+
+      const toggleWrap = document.getElementById('room-draft-rundown-toggle-wrap');
+      const withRundownCheck = document.getElementById('room-input-with-rundown');
+      withRundownCheck.checked = false;
+      state.draftItems = [];
 
       if (isEdit) {
         const r = state.rooms[roomId];
@@ -2416,35 +2630,87 @@
         document.getElementById('room-input-event').value = r.eventTitle || '';
         document.getElementById('room-input-location').value = r.location || '';
         document.getElementById('room-input-date').value = r.date || todayISO();
+        toggleWrap.classList.add('d-none');
       } else {
         document.getElementById('room-input-name').value = '';
         document.getElementById('room-input-event').value = '';
         document.getElementById('room-input-location').value = '';
         document.getElementById('room-input-date').value = todayISO();
+        toggleWrap.classList.remove('d-none');
       }
+      updateDraftRundownVisibility();
       openModal('modal-room');
       setTimeout(() => document.getElementById('room-input-name').focus(), 40);
     }
 
-    function openItemModal(itemId = null) {
+    function updateItemGapWarningUI() {
+      const room = state.rooms[state.selectedRoomId];
+      const warnBox = document.getElementById('item-gap-warning');
+      const warnText = document.getElementById('item-gap-warning-text');
+      if (!room) {
+        warnBox.classList.add('d-none');
+        return;
+      }
+      const existingId = document.getElementById('item-form-id').value || null;
+      const startTime = document.getElementById('item-input-start').value;
+      const isHardTime = document.getElementById('item-input-hardtime').checked;
+      const gap = checkItemGap(room, existingId, startTime, isHardTime);
+
+      if (gap.hasGap) {
+        warnText.textContent = `Perhatian: Jam mulai (${startTime}) berbeda dengan jam selesai sesi sebelumnya (${gap.prevEnd}), sehingga akan ada gap waktu. Centang "Hard Time" jika sesi ini memang memiliki jam tetap.`;
+        warnBox.classList.remove('d-none');
+      } else {
+        warnBox.classList.add('d-none');
+      }
+    }
+
+    function openItemModal(itemId = null, focusActualEnd = false) {
       if (!requireAdmin()) return;
       const room = state.rooms[state.selectedRoomId];
       if (!room) return;
 
+      const items = getSortedItems(room);
       const isEdit = Boolean(itemId && room.items && room.items[itemId]);
       document.getElementById('modal-item-title').textContent = isEdit ? 'Edit Item Rundown' : 'Tambah Item Rundown';
       document.getElementById('item-form-id').value = isEdit ? itemId : '';
 
+      const cascadeWrap = document.getElementById('item-cascade-wrap');
+      const cascadeCheck = document.getElementById('item-input-cascade');
+      const hardTimeCheck = document.getElementById('item-input-hardtime');
+      const actualEndWrap = document.getElementById('item-actual-end-wrap');
+      const actualEndInput = document.getElementById('item-input-actual-end');
+      const actualStartInfo = document.getElementById('item-actual-start-info');
+
       if (isEdit) {
         const item = room.items[itemId];
+        const idx = items.findIndex(i => i.id === itemId);
         document.getElementById('item-input-start').value = item.startTime || '09:00';
         document.getElementById('item-input-duration').value = item.duration || 15;
         document.getElementById('item-input-title').value = item.title || '';
         document.getElementById('item-input-pic').value = item.pic || '';
         document.getElementById('item-input-notes').value = item.notes || '';
+        hardTimeCheck.checked = Boolean(item.hardTime);
+
+        // Show cascade option if there are items below this item
+        if (idx >= 0 && idx < items.length - 1) {
+          cascadeWrap.classList.remove('d-none');
+          cascadeCheck.checked = true;
+        } else {
+          cascadeWrap.classList.add('d-none');
+          cascadeCheck.checked = false;
+        }
+
+        // Actual End Time edit ONLY available if session is COMPLETED (already Next Cue'd)
+        if (item.cueState === 'completed') {
+          actualEndWrap.classList.remove('d-none');
+          actualStartInfo.textContent = `Mulai Aktual: ${item.actualStartTime ? item.actualStartTime.slice(0, 5) : '--:--'}`;
+          actualEndInput.value = item.actualEndTime ? item.actualEndTime.slice(0, 5) : '';
+        } else {
+          actualEndWrap.classList.add('d-none');
+          actualEndInput.value = '';
+        }
       } else {
         // Smart default: auto-calculate start time from last item's end time
-        const items = getSortedItems(room);
         let defaultStart = formatHHMM(new Date());
         if (items.length > 0) {
           const last = items[items.length - 1];
@@ -2455,9 +2721,22 @@
         document.getElementById('item-input-title').value = '';
         document.getElementById('item-input-pic').value = '';
         document.getElementById('item-input-notes').value = '';
+        hardTimeCheck.checked = false;
+        cascadeWrap.classList.add('d-none');
+        cascadeCheck.checked = false;
+        actualEndWrap.classList.add('d-none');
+        actualEndInput.value = '';
       }
+
+      updateItemGapWarningUI();
       openModal('modal-item');
-      setTimeout(() => document.getElementById('item-input-title').focus(), 40);
+      setTimeout(() => {
+        if (focusActualEnd && !actualEndWrap.classList.contains('d-none')) {
+          actualEndInput.focus();
+        } else {
+          document.getElementById('item-input-title').focus();
+        }
+      }, 40);
     }
 
     // ==================== 11. EVENT LISTENERS ====================
@@ -2470,6 +2749,47 @@
     document.getElementById('nav-history-mobile').addEventListener('click', () => navigateTo('history'));
     document.getElementById('btn-back-monitor').addEventListener('click', () => navigateTo('monitor'));
     document.getElementById('btn-close-alert').addEventListener('click', hideGlobalAlert);
+
+    // Live gap check in Item Modal
+    document.getElementById('item-input-start').addEventListener('input', updateItemGapWarningUI);
+    document.getElementById('item-input-hardtime').addEventListener('change', updateItemGapWarningUI);
+
+    // Inline Draft Rundown controls in Add Room Modal
+    document.getElementById('room-input-with-rundown').addEventListener('change', updateDraftRundownVisibility);
+    document.getElementById('btn-add-draft-row').addEventListener('click', addDraftRundownRow);
+
+    document.getElementById('room-draft-tbody').addEventListener('input', (e) => {
+      const target = e.target;
+      const idx = Number(target.dataset.draftIdx);
+      const field = target.dataset.draftField;
+      if (Number.isNaN(idx) || !field || !state.draftItems[idx]) return;
+
+      if (field === 'duration') {
+        state.draftItems[idx].duration = Math.max(1, parseInt(target.value, 10) || 1);
+      } else if (field !== 'hardTime') {
+        state.draftItems[idx][field] = target.value;
+      }
+    });
+
+    document.getElementById('room-draft-tbody').addEventListener('change', (e) => {
+      const target = e.target;
+      const idx = Number(target.dataset.draftIdx);
+      const field = target.dataset.draftField;
+      if (Number.isNaN(idx) || !field || !state.draftItems[idx]) return;
+
+      if (field === 'hardTime') {
+        state.draftItems[idx].hardTime = target.checked;
+        renderDraftRundownRows();
+      } else if (field === 'startTime' || field === 'duration') {
+        if (field === 'duration') {
+          state.draftItems[idx].duration = Math.max(1, parseInt(target.value, 10) || 1);
+        } else {
+          state.draftItems[idx].startTime = target.value;
+        }
+        cascadeDraftFrom(idx);
+        renderDraftRundownRows();
+      }
+    });
 
     // Auth buttons
     document.getElementById('btn-open-login').addEventListener('click', () => {
@@ -2524,7 +2844,7 @@
       }
     });
 
-    // Room Form Submit (Add / Edit)
+    // Room Form Submit (Add / Edit + Optional Initial Rundown)
     document.getElementById('form-room').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!requireAdmin()) return;
@@ -2537,14 +2857,63 @@
 
       if (!name || !eventTitle) return;
 
-      try {
-        if (existingId) {
+      if (existingId) {
+        try {
           await update(ref(db, `rooms/${existingId}`), { name, eventTitle, location, date });
           closeModal('modal-room');
           showToast('Informasi ruangan diperbarui.', 'success');
-        } else {
+        } catch (err) {
+          handleWriteError(err, 'Gagal menyimpan ruangan.');
+        }
+        return;
+      }
+
+      // Create new room (with optional inline rundown rows)
+      const withRundown = document.getElementById('room-input-with-rundown').checked;
+      let validRows = [];
+      let draftGapRow = null;
+
+      if (withRundown) {
+        const nonEmptyRows = state.draftItems.filter(r =>
+          (r.title || '').trim() || (r.pic || '').trim() || (r.notes || '').trim()
+        );
+        for (let i = 0; i < nonEmptyRows.length; i++) {
+          const r = nonEmptyRows[i];
+          if (!r.startTime || !(r.title || '').trim() || !(r.pic || '').trim()) {
+            showToast(`Lengkapi Jam Mulai, Nama Sesi, dan PIC pada baris rundown #${i + 1}.`, 'warning');
+            return;
+          }
+          if (i > 0 && !r.hardTime) {
+            const prev = nonEmptyRows[i - 1];
+            const prevEnd = addMinutesToHHMM(prev.startTime, prev.duration);
+            if (prevEnd && r.startTime !== prevEnd && !draftGapRow) {
+              draftGapRow = { idx: i + 1, title: r.title.trim(), startTime: r.startTime, prevEnd };
+            }
+          }
+        }
+        validRows = nonEmptyRows;
+      }
+
+      const executeCreateRoom = async () => {
+        try {
           const newRef = push(ref(db, 'rooms'));
-          await set(newRef, {
+          const itemsObj = {};
+          validRows.forEach((r, idx) => {
+            const itemRef = push(ref(db, `rooms/${newRef.key}/items`));
+            itemsObj[itemRef.key] = {
+              id: itemRef.key,
+              order: idx,
+              startTime: r.startTime,
+              duration: Math.max(1, parseInt(r.duration, 10) || 15),
+              title: r.title.trim(),
+              pic: r.pic.trim(),
+              notes: (r.notes || '').trim(),
+              hardTime: Boolean(r.hardTime),
+              cueState: 'pending'
+            };
+          });
+
+          const roomPayload = {
             id: newRef.key,
             name,
             eventTitle,
@@ -2556,17 +2925,42 @@
             currentDelayMinutes: 0,
             createdAt: Date.now(),
             createdBy: state.user?.email || 'admin'
-          });
+          };
+          if (validRows.length > 0) {
+            roomPayload.items = itemsObj;
+          }
+
+          await set(newRef, roomPayload);
+          state.draftItems = [];
           closeModal('modal-room');
-          showToast(`Ruangan "${name}" berhasil dibuat.`, 'success');
+          showToast(
+            validRows.length > 0
+              ? `Ruangan "${name}" dibuat dengan ${validRows.length} sesi rundown.`
+              : `Ruangan "${name}" berhasil dibuat.`,
+            'success'
+          );
           navigateTo('room', newRef.key);
+        } catch (err) {
+          handleWriteError(err, 'Gagal menyimpan ruangan.');
         }
-      } catch (err) {
-        handleWriteError(err, 'Gagal menyimpan ruangan.');
+      };
+
+      if (draftGapRow) {
+        openConfirm({
+          title: 'Terdapat Gap Waktu di Rundown Awal',
+          message: `Baris #${draftGapRow.idx} ("${draftGapRow.title}") dimulai pukul ${draftGapRow.startTime}, berbeda dengan jam selesai sesi sebelumnya (${draftGapRow.prevEnd}). Tetap simpan ruangan dan rundown ini?`,
+          okText: 'Ya, Simpan',
+          cancelText: 'Batal',
+          danger: false,
+          onConfirm: executeCreateRoom
+        });
+        return;
       }
+
+      await executeCreateRoom();
     });
 
-    // Item Form Submit (Add / Edit)
+    // Item Form Submit (Add / Edit + Gap Warning + Auto-Cascade + Actual End Time Edit)
     document.getElementById('form-item').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!requireAdmin()) return;
@@ -2580,65 +2974,120 @@
       const title = document.getElementById('item-input-title').value.trim();
       const pic = document.getElementById('item-input-pic').value.trim();
       const notes = document.getElementById('item-input-notes').value.trim();
+      const hardTime = document.getElementById('item-input-hardtime').checked;
+      const shouldCascade = document.getElementById('item-input-cascade').checked;
+      const actualEndHHMM = document.getElementById('item-input-actual-end').value;
 
       if (!startTime || !title || !pic) return;
 
-      try {
-        if (existingId) {
-          const existingItem = room.items?.[existingId] || {};
-          const payload = { startTime, duration, title, pic, notes };
-          // If this item already has an actualStartTs, recalculate delay against the edited planned time
-          if (existingItem.actualStartTs) {
-            const recalcDelay = calculateDelayMinutes(startTime, new Date(existingItem.actualStartTs));
-            payload.delayMinutes = recalcDelay;
-            if (room.activeItemId === existingId) {
-              await update(ref(db), {
-                [`rooms/${roomId}/currentDelayMinutes`]: recalcDelay,
-                [`rooms/${roomId}/items/${existingId}/startTime`]: startTime,
-                [`rooms/${roomId}/items/${existingId}/duration`]: duration,
-                [`rooms/${roomId}/items/${existingId}/title`]: title,
-                [`rooms/${roomId}/items/${existingId}/pic`]: pic,
-                [`rooms/${roomId}/items/${existingId}/notes`]: notes,
-                [`rooms/${roomId}/items/${existingId}/delayMinutes`]: recalcDelay
-              });
-              closeModal('modal-item');
-              showToast('Item rundown diperbarui.', 'success');
-              return;
+      const saveItemChanges = async () => {
+        try {
+          if (existingId) {
+            const items = getSortedItems(room);
+            const idx = items.findIndex(i => i.id === existingId);
+            const existingItem = room.items?.[existingId] || {};
+            const updates = {
+              [`rooms/${roomId}/items/${existingId}/startTime`]: startTime,
+              [`rooms/${roomId}/items/${existingId}/duration`]: duration,
+              [`rooms/${roomId}/items/${existingId}/title`]: title,
+              [`rooms/${roomId}/items/${existingId}/pic`]: pic,
+              [`rooms/${roomId}/items/${existingId}/notes`]: notes,
+              [`rooms/${roomId}/items/${existingId}/hardTime`]: hardTime
+            };
+
+            // Recalculate delay if item already started
+            if (existingItem.actualStartTs) {
+              const recalcDelay = calculateDelayMinutes(startTime, new Date(existingItem.actualStartTs));
+              updates[`rooms/${roomId}/items/${existingId}/delayMinutes`] = recalcDelay;
+              if (room.activeItemId === existingId) {
+                updates[`rooms/${roomId}/currentDelayMinutes`] = recalcDelay;
+              }
             }
+
+            // Allow editing Actual End Time STRICTLY for completed items
+            if (existingItem.cueState === 'completed' && actualEndHHMM) {
+              const newEndTs = buildActualEndTimestamp(actualEndHHMM, existingItem.actualStartTs);
+              updates[`rooms/${roomId}/items/${existingId}/actualEndTime`] = `${actualEndHHMM}:00`;
+              if (newEndTs) {
+                updates[`rooms/${roomId}/items/${existingId}/actualEndTs`] = newEndTs;
+              }
+            }
+
+            // Auto-cascade subsequent items' startTime (stops at Fixed Time / hardTime)
+            let cascadedCount = 0;
+            if (shouldCascade && idx >= 0 && idx < items.length - 1) {
+              let cursor = addMinutesToHHMM(startTime, duration);
+              for (let i = idx + 1; i < items.length; i++) {
+                const nextIt = items[i];
+                if (nextIt.hardTime) break;
+                if (!cursor) break;
+                updates[`rooms/${roomId}/items/${nextIt.id}/startTime`] = cursor;
+                if (nextIt.actualStartTs) {
+                  const nextDelay = calculateDelayMinutes(cursor, new Date(nextIt.actualStartTs));
+                  updates[`rooms/${roomId}/items/${nextIt.id}/delayMinutes`] = nextDelay;
+                  if (room.activeItemId === nextIt.id) {
+                    updates[`rooms/${roomId}/currentDelayMinutes`] = nextDelay;
+                  }
+                }
+                cursor = addMinutesToHHMM(cursor, nextIt.duration);
+                cascadedCount++;
+              }
+            }
+
+            await update(ref(db), updates);
+            closeModal('modal-item');
+            showToast(
+              cascadedCount > 0
+                ? `Item rundown diperbarui (${cascadedCount} sesi di bawahnya ikut disesuaikan).`
+                : 'Item rundown diperbarui.',
+              'success'
+            );
+          } else {
+            const items = getSortedItems(room);
+            const nextOrder = items.length;
+            const newRef = push(ref(db, `rooms/${roomId}/items`));
+            await set(newRef, {
+              id: newRef.key,
+              order: nextOrder,
+              startTime,
+              duration,
+              title,
+              pic,
+              notes,
+              hardTime,
+              cueState: 'pending'
+            });
+            closeModal('modal-item');
+            showToast(`Sesi "${title}" ditambahkan.`, 'success');
           }
-          await update(ref(db, `rooms/${roomId}/items/${existingId}`), payload);
-          closeModal('modal-item');
-          showToast('Item rundown diperbarui.', 'success');
-        } else {
-          const items = getSortedItems(room);
-          const nextOrder = items.length;
-          const newRef = push(ref(db, `rooms/${roomId}/items`));
-          await set(newRef, {
-            id: newRef.key,
-            order: nextOrder,
-            startTime,
-            duration,
-            title,
-            pic,
-            notes,
-            cueState: 'pending'
-          });
-          closeModal('modal-item');
-          showToast(`Sesi "${title}" ditambahkan.`, 'success');
+        } catch (err) {
+          handleWriteError(err, 'Gagal menyimpan item rundown.');
         }
-      } catch (err) {
-        handleWriteError(err, 'Gagal menyimpan item rundown.');
+      };
+
+      // Check gap for non-Hard-Time sessions before saving
+      const gap = checkItemGap(room, existingId || null, startTime, hardTime);
+      if (gap.hasGap) {
+        openConfirm({
+          title: 'Terdapat Gap / Selisih Waktu',
+          message: `Jam mulai sesi ini (${startTime}) berbeda dengan jam selesai sesi sebelumnya "${gap.prevTitle}" (${gap.prevEnd}), sehingga akan ada gap waktu. Tetap simpan perubahan?`,
+          okText: 'Ya, Simpan',
+          cancelText: 'Batal',
+          danger: false,
+          onConfirm: saveItemChanges
+        });
+        return;
       }
+
+      await saveItemChanges();
     });
 
     // Top-level Admin Buttons
     document.getElementById('btn-add-room').addEventListener('click', () => openRoomModal(null));
     document.getElementById('btn-empty-add-room').addEventListener('click', () => openRoomModal(null));
-    document.getElementById('btn-seed-demo').addEventListener('click', seedDemoEvent);
-    document.getElementById('btn-empty-seed').addEventListener('click', seedDemoEvent);
     document.getElementById('btn-room-edit').addEventListener('click', () => openRoomModal(state.selectedRoomId));
     document.getElementById('btn-room-reset').addEventListener('click', () => confirmResetRoom(state.selectedRoomId));
-    document.getElementById('btn-room-finish').addEventListener('click', () => confirmFinishRoom(state.selectedRoomId));
+    document.getElementById('btn-room-delete').addEventListener('click', () => confirmDeleteRoom(state.selectedRoomId));
     document.getElementById('btn-add-item').addEventListener('click', () => openItemModal(null));
     document.getElementById('btn-export-history-csv').addEventListener('click', () => {
       if (state.historyDetailRoomId) exportHistoryCSV(state.historyDetailRoomId);
@@ -2712,7 +3161,10 @@
           confirmDeleteRoom(roomId);
           break;
         case 'edit-item':
-          openItemModal(itemId);
+          openItemModal(itemId, false);
+          break;
+        case 'edit-actual-end':
+          openItemModal(itemId, true);
           break;
         case 'delete-item':
           confirmDeleteItem(roomId, itemId);
@@ -2723,6 +3175,17 @@
         case 'move-item-down':
           moveItem(roomId, itemId, 1);
           break;
+        case 'remove-draft-row': {
+          const dIdx = Number(actionEl.dataset.draftIdx);
+          if (!Number.isNaN(dIdx)) {
+            state.draftItems.splice(dIdx, 1);
+            if (dIdx > 0 && dIdx < state.draftItems.length) {
+              cascadeDraftFrom(dIdx - 1);
+            }
+            renderDraftRundownRows();
+          }
+          break;
+        }
         case 'open-history-detail':
           renderHistoryDetailModal(roomId);
           openModal('modal-history-detail');
@@ -2736,10 +3199,15 @@
       }
     });
 
-    // Keyboard Shortcuts: ESC closes modals, Shift + ArrowRight triggers NEXT CUE for Admin in Room View
+    // Keyboard Shortcuts: ESC closes top-most modal, Shift + ArrowRight triggers NEXT CUE for Admin in Room View
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-confirm'].forEach(closeModal);
+        if (!document.getElementById('modal-confirm').classList.contains('d-none')) {
+          state.confirmCallback = null;
+          closeModal('modal-confirm');
+          return;
+        }
+        ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail'].forEach(closeModal);
         return;
       }
       const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
