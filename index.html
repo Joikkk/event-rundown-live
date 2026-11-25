@@ -1042,35 +1042,36 @@
     }
 
     /**
-     * Automatic Delay Calculation (Date + Time Aware):
-     * Compares actual trigger date/time against event date + planned HH:mm start time.
-     * Positive = DELAY, 0 = ON TIME, Negative = EARLY (including days before event date).
+     * Automatic Delay Calculation (Date + Time Aware, ±2m 30s On-Time Tolerance):
+     * Compares actual trigger date/time (down to the second) against event date + planned HH:mm:00.
+     * Within ±150 seconds (±2 menit 30 detik) => 0 (ON TIME).
+     * Positive = DELAY, 0 = ON TIME, Negative = EARLY.
      */
+    const ON_TIME_TOLERANCE_SEC = 150; // 2 menit 30 detik
+
     function calculateDelayMinutes(plannedHHMM, actualDate = new Date(), eventDateISO = null) {
       if (!plannedHHMM || !/^\d{2}:\d{2}$/.test(plannedHHMM)) return 0;
-      const actualFloor = new Date(
-        actualDate.getFullYear(),
-        actualDate.getMonth(),
-        actualDate.getDate(),
-        actualDate.getHours(),
-        actualDate.getMinutes(),
-        0,
-        0
-      ).getTime();
 
+      let diffSec = 0;
       if (eventDateISO && /^\d{4}-\d{2}-\d{2}$/.test(eventDateISO)) {
         const plannedTs = parsePlannedTimestamp(plannedHHMM, eventDateISO, actualDate);
-        return Math.round((actualFloor - plannedTs) / 60000);
+        diffSec = Math.round((actualDate.getTime() - plannedTs) / 1000);
+      } else {
+        const [pH, pM] = plannedHHMM.split(':').map(Number);
+        const plannedSec = (pH * 60 + pM) * 60;
+        const actualSec = (actualDate.getHours() * 60 + actualDate.getMinutes()) * 60 + actualDate.getSeconds();
+        diffSec = actualSec - plannedSec;
+        // Handle midnight crossover cleanly when no event date is set
+        if (diffSec < -43200) diffSec += 86400;
+        if (diffSec > 43200) diffSec -= 86400;
       }
 
-      const [pH, pM] = plannedHHMM.split(':').map(Number);
-      const plannedMin = pH * 60 + pM;
-      const actualMin = actualDate.getHours() * 60 + actualDate.getMinutes();
-      let diff = actualMin - plannedMin;
-      // Handle midnight crossover cleanly when no event date is set
-      if (diff < -720) diff += 1440;
-      if (diff > 720) diff -= 1440;
-      return diff;
+      // Tolerance window: within ±2 minutes 30 seconds counts as ON TIME
+      if (Math.abs(diffSec) <= ON_TIME_TOLERANCE_SEC) {
+        return 0;
+      }
+
+      return Math.round(diffSec / 60);
     }
 
     function formatCountdown(seconds) {
