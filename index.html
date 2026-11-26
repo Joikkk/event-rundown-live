@@ -147,29 +147,16 @@
 
       <!-- Left: Brand & Desktop Nav -->
       <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
-        <button id="btn-brand-home" type="button" class="flex items-center gap-2 sm:gap-2.5 text-left group focus:outline-none min-w-0">
+        <button id="btn-brand-home" type="button" class="flex items-center gap-2 sm:gap-2.5 text-left group focus:outline-none min-w-0" title="Beranda Camvis">
           <img src="./icon-512.png" alt="Logo Camvis" class="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_0_6px_rgba(2,195,249,0.22)] group-hover:scale-105 transition-transform" />
           <div class="leading-tight min-w-0 flex items-center gap-2">
             <span class="font-extrabold text-base sm:text-lg tracking-tight text-white whitespace-nowrap group-hover:text-brand-soft transition-colors">Camvis</span>
-            <span id="header-workspace-crumb" class="d-none items-center gap-2 text-sm font-medium text-slate-400">
-              <span class="text-slate-600">/</span>
-              <span class="text-slate-300">Workspace</span>
-            </span>
           </div>
         </button>
 
-        <!-- Desktop Main Navigation -->
+        <!-- Desktop Main Navigation (Contextual per Module, No Workspace button — click Camvis logo to return) -->
         <nav id="desktop-main-nav" class="hidden md:flex items-center gap-1 ml-2 pl-4 border-l border-line" aria-label="Navigasi Utama">
-          <button id="nav-workspace" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2" title="Kembali ke Camvis Workspace">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
-              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-            </svg>
-            <span>Workspace</span>
-          </button>
-
+          <!-- Rundown Module Tabs -->
           <button id="nav-monitor" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2"></rect>
@@ -187,6 +174,28 @@
             </svg>
             <span>History</span>
             <span id="badge-history-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
+          </button>
+
+          <!-- PIC Module Tabs (Admin Only) -->
+          <button id="nav-jadwal" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Cek Jadwal PIC</span>
+          </button>
+
+          <button id="nav-pic-data" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Data PIC</span>
+            <span id="badge-pic-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
           </button>
         </nav>
       </div>
@@ -239,8 +248,8 @@
       </div>
     </div>
 
-    <!-- Mobile Sub-Navigation Bar (Admin Only: Switch Master Monitor & History) -->
-    <div id="mobile-sub-nav" class="admin-only d-none md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
+    <!-- Mobile Sub-Navigation Bar: Rundown Module (Admin Only) -->
+    <div id="mobile-sub-nav" class="d-none md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
       <button id="nav-monitor-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
         <span>Master Monitor</span>
         <span id="badge-active-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
@@ -248,6 +257,17 @@
       <button id="nav-history-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
         <span>History</span>
         <span id="badge-history-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
+      </button>
+    </div>
+
+    <!-- Mobile Sub-Navigation Bar: PIC Module (Admin Only) -->
+    <div id="mobile-pic-sub-nav" class="d-none md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
+      <button id="nav-jadwal-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
+        <span>Cek Jadwal PIC</span>
+      </button>
+      <button id="nav-pic-data-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
+        <span>Data PIC</span>
+        <span id="badge-pic-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
       </button>
     </div>
   </header>
@@ -300,8 +320,8 @@
         </div>
       </div>
 
-      <!-- Summary Telemetry Strip -->
-      <div id="monitor-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <!-- Summary Telemetry Strip (Desktop Only — Hidden on Mobile/APK for all users) -->
+      <div id="monitor-stats" class="hidden md:grid grid-cols-3 gap-3 sm:gap-4">
         <div class="bg-surface border border-line rounded-xl p-4">
           <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Ruangan Aktif</div>
           <div id="stat-total-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-white mt-1 tabular-nums">0</div>
@@ -450,6 +470,15 @@
     <!-- ==================== VIEW 3: HISTORY (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
     <section id="view-history" class="d-none space-y-6"></section>
 
+    <!-- ==================== VIEW 4: CEK JADWAL PIC (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
+    <section id="view-jadwal" class="d-none space-y-6"></section>
+
+    <!-- ==================== VIEW 5: DATA PIC (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
+    <section id="view-pic-data" class="d-none space-y-6"></section>
+
+    <!-- ==================== VIEW 6: DETAIL / EDIT PIC (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
+    <section id="view-pic-detail" class="d-none space-y-6"></section>
+
   </main>
 
   <!-- ==================== FOOTER ==================== -->
@@ -478,7 +507,7 @@
         <button type="button" data-close-modal="modal-login" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
       </div>
 
-      <form id="form-login" class="p-6 space-y-4">
+      <form id="form-login" autocomplete="off" class="p-6 space-y-4">
         <p class="text-xs text-slate-400 leading-relaxed">
           Admin hanya khusus untuk <strong class="text-slate-200">BPH Campus Visit</strong>. Silahkan hubungi Supervisor untuk mendapatkan akun
         </p>
@@ -487,12 +516,12 @@
 
         <div>
           <label for="login-email" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email Admin</label>
-          <input id="login-email" type="email" required autocomplete="email" placeholder="admin@event.com" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+          <input id="login-email" name="camvis_admin_email" type="email" required autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" readonly placeholder="admin@event.com" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
         </div>
 
         <div>
           <label for="login-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
-          <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+          <input id="login-password" name="camvis_admin_secret" type="password" required autocomplete="new-password" readonly placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2.5">
@@ -893,7 +922,7 @@
         <div class="flex items-center gap-2.5">
           <div id="coming-soon-icon" class="w-9 h-9 rounded-xl bg-brand/15 border border-brand/30 text-brand flex items-center justify-center shrink-0"></div>
           <div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/15 text-brand-soft border border-brand/30">Coming Soon</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/15 text-brand-soft border border-brand/30">Dalam Pengembangan</span>
             <h3 id="coming-soon-title" class="text-base font-bold text-white mt-0.5">Fitur Dalam Pengembangan</h3>
           </div>
         </div>
@@ -911,6 +940,11 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Modal 5C: Add / Edit PIC (Admin Only, Dynamic Body) -->
+  <div id="modal-pic-form" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4">
+    <div id="pic-form-mount" class="bg-surface border border-line-strong rounded-2xl max-w-3xl w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden"></div>
   </div>
 
   <!-- Modal 6: Confirm Action -->
@@ -973,6 +1007,9 @@
     const db = getDatabase(app);
 
     // ==================== 2. APP STATE ====================
+    const _initNow = new Date();
+    const _initTodayISO = `${_initNow.getFullYear()}-${String(_initNow.getMonth() + 1).padStart(2, '0')}-${String(_initNow.getDate()).padStart(2, '0')}`;
+
     const state = {
       user: null,
       isAdmin: false,
@@ -980,14 +1017,35 @@
       justLoggedIn: false,
       loaded: false,
       connected: false,
-      view: 'monitor', // 'workspace' | 'monitor' | 'room' | 'history'
+      view: 'monitor', // 'workspace' | 'monitor' | 'room' | 'history' | 'jadwal' | 'pic-data' | 'pic-detail'
       selectedRoomId: null,
+      selectedPicId: null,
       historyDetailRoomId: null,
       historySearch: '',
       rooms: {}, // active (and legacy history) rooms from /rooms
       historyRooms: {}, // protected admin-only history archive from /history
       historyUnsub: null,
       hasSeparateHistoryAccess: false,
+      // Modular PIC Nodes (Admin Only, separated to avoid cross-module bloat)
+      pics: {}, // /pics/<picId> -> { name, active, createdAt, updatedAt }
+      picSchedules: {}, // /picSchedules/<picId> -> { senin: [...], selasa: [...], ... }
+      picProfilesCache: {}, // /picProfiles/<picId> -> loaded on-demand ONLY on Detail/Edit PIC
+      picsUnsub: null,
+      picSchedulesUnsub: null,
+      picAccessError: false,
+      // PIC Module UI state
+      picSearch: '',
+      picSort: 'az', // 'az' | 'za' | 'newest'
+      jadwalDate: _initTodayISO,
+      jadwalStartTime: '08:00',
+      jadwalEndTime: '15:00',
+      jadwalSearched: false,
+      jadwalStatusFilter: 'all', // 'all' | 'green' | 'yellow' | 'orange' | 'red'
+      jadwalCalendarOpen: false,
+      jadwalCalYear: _initNow.getFullYear(),
+      jadwalCalMonth: _initNow.getMonth(),
+      picEditDraft: null,
+      // Rundown Draft & Importer
       draftItems: [], // optional inline rundown items when creating a new room
       geminiApiKey: '', // loaded securely from /adminSecrets/geminiApiKey for Admin only
       importTarget: 'room', // 'draft' | 'room'
@@ -1397,29 +1455,141 @@
       );
     }
 
+    // Admin-Only PIC Subscriptions (/pics + /picSchedules ONLY — /picProfiles loaded on-demand in Detail PIC)
+    function unsubscribeAdminPics() {
+      if (typeof state.picsUnsub === 'function') {
+        try { state.picsUnsub(); } catch (_) {}
+        state.picsUnsub = null;
+      }
+      if (typeof state.picSchedulesUnsub === 'function') {
+        try { state.picSchedulesUnsub(); } catch (_) {}
+        state.picSchedulesUnsub = null;
+      }
+      state.pics = {};
+      state.picSchedules = {};
+      state.picProfilesCache = {};
+      state.picAccessError = false;
+      state.selectedPicId = null;
+      state.picEditDraft = null;
+    }
+
+    function subscribeAdminPics() {
+      unsubscribeAdminPics();
+      if (!state.isAdmin) return;
+
+      state.picsUnsub = onValue(
+        ref(db, 'pics'),
+        (snapshot) => {
+          state.picAccessError = false;
+          state.pics = snapshot.val() || {};
+          renderAll();
+        },
+        (error) => {
+          if (error && error.code === 'PERMISSION_DENIED') {
+            state.picAccessError = true;
+          }
+          state.pics = {};
+          renderAll();
+        }
+      );
+
+      state.picSchedulesUnsub = onValue(
+        ref(db, 'picSchedules'),
+        (snapshot) => {
+          state.picSchedules = snapshot.val() || {};
+          renderAll();
+        },
+        (error) => {
+          if (error && error.code === 'PERMISSION_DENIED') {
+            state.picAccessError = true;
+          }
+          state.picSchedules = {};
+          renderAll();
+        }
+      );
+    }
+
+    async function loadPicProfileOnDemand(picId, forceRefresh = false) {
+      if (!state.isAdmin || !picId) return null;
+      if (!forceRefresh && state.picProfilesCache[picId]) {
+        return state.picProfilesCache[picId];
+      }
+      try {
+        const snap = await get(ref(db, `picProfiles/${picId}`));
+        const val = snap.val() || {};
+        state.picProfilesCache[picId] = val;
+        return val;
+      } catch (err) {
+        if (err && err.code === 'PERMISSION_DENIED') {
+          state.picAccessError = true;
+        }
+        return state.picProfilesCache[picId] || {};
+      }
+    }
+
+    // Login Form Hard Reset (prevents browser autofill restoring previous session credentials after logout)
+    function resetLoginFormFields() {
+      const form = document.getElementById('form-login');
+      const emailEl = document.getElementById('login-email');
+      const passEl = document.getElementById('login-password');
+      const errBox = document.getElementById('login-error');
+      if (errBox) {
+        errBox.textContent = '';
+        errBox.classList.add('d-none');
+      }
+      if (form) form.reset();
+      if (emailEl) {
+        emailEl.setAttribute('readonly', 'readonly');
+        emailEl.defaultValue = '';
+        emailEl.value = '';
+      }
+      if (passEl) {
+        passEl.setAttribute('readonly', 'readonly');
+        passEl.defaultValue = '';
+        passEl.value = '';
+      }
+    }
+
+    function openLoginModal() {
+      resetLoginFormFields();
+      openModal('modal-login');
+      // Secondary micro-clear to defeat delayed browser autofill injections
+      setTimeout(() => {
+        const emailEl = document.getElementById('login-email');
+        const passEl = document.getElementById('login-password');
+        if (emailEl && emailEl.hasAttribute('readonly')) emailEl.value = '';
+        if (passEl && passEl.hasAttribute('readonly')) passEl.value = '';
+      }, 120);
+    }
+
     // Physically wipe all protected DOM containers when unauthorized or logged out
     function purgeProtectedDOM() {
-      const wsEl = document.getElementById('view-workspace');
-      if (wsEl) {
-        wsEl.innerHTML = '';
-        wsEl.classList.add('d-none');
-      }
-      const histEl = document.getElementById('view-history');
-      if (histEl) {
-        histEl.innerHTML = '';
-        histEl.classList.add('d-none');
-      }
+      ['view-workspace', 'view-history', 'view-jadwal', 'view-pic-data', 'view-pic-detail'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = '';
+          el.classList.add('d-none');
+          delete el.dataset.mounted;
+        }
+      });
+
       const bottomNavRoot = document.getElementById('mobile-bottom-nav-root');
       if (bottomNavRoot) {
         bottomNavRoot.innerHTML = '';
       }
+      const picFormMount = document.getElementById('pic-form-mount');
+      if (picFormMount) picFormMount.innerHTML = '';
+
       const histModalBody = document.getElementById('history-modal-body');
       if (histModalBody) histModalBody.innerHTML = '';
       const histModalActions = document.getElementById('history-modal-admin-actions');
       if (histModalActions) histModalActions.innerHTML = '';
       state.historyDetailRoomId = null;
+      state.selectedPicId = null;
+      state.picEditDraft = null;
+      state.jadwalCalendarOpen = false;
 
-      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-confirm'].forEach(closeModal);
+      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-confirm'].forEach(closeModal);
       document.body.classList.remove('pb-24');
       const toastContainer = document.getElementById('toast-container');
       if (toastContainer) {
@@ -1489,7 +1659,9 @@
         stopAdminIdleMonitor();
         clearAdminActivity();
         unsubscribeAdminHistory();
+        unsubscribeAdminPics();
         purgeProtectedDOM();
+        resetLoginFormFields();
         try {
           await signOut(auth);
         } catch (err) {
@@ -1539,10 +1711,12 @@
           stopAdminIdleMonitor();
           clearAdminActivity();
           unsubscribeAdminHistory();
+          unsubscribeAdminPics();
           state.user = null;
           state.isAdmin = false;
           state.authResolved = true;
           purgeProtectedDOM();
+          resetLoginFormFields();
           guardAndResolveRoute({ silentRedirect: true });
           updateAuthUI();
           renderAll();
@@ -1563,16 +1737,19 @@
         startAdminIdleMonitor();
         loadAdminGeminiApiKey();
         subscribeAdminHistory();
+        subscribeAdminPics();
         guardAndResolveRoute({ isPostLogin: wasJustLoggedIn });
       } else {
         stopAdminIdleMonitor();
         clearAdminActivity();
         unsubscribeAdminHistory();
+        unsubscribeAdminPics();
         state.user = null;
         state.isAdmin = false;
         state.authResolved = true;
         state.geminiApiKey = '';
         purgeProtectedDOM();
+        resetLoginFormFields();
         // If user just logged out from an internal route, silently reset to #monitor without triggering unauthorized modal
         guardAndResolveRoute({ silentRedirect: wasAdmin });
       }
@@ -1585,6 +1762,7 @@
       const adminBar = document.getElementById('admin-user-bar');
       const emailLabel = document.getElementById('admin-email-label');
       const modePill = document.getElementById('header-mode-pill');
+      const brandBtn = document.getElementById('btn-brand-home');
 
       if (state.isAdmin) {
         btnLogin.classList.add('d-none');
@@ -1593,12 +1771,18 @@
         modePill.innerHTML = `<span class="w-2 h-2 rounded-full bg-brand"></span><span class="text-brand-soft">Mode Admin</span>`;
         modePill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand/15 border border-brand/40 text-[11px] font-bold tracking-wide uppercase';
         modePill.title = `Mode Admin Aktif (${state.user.email || 'Admin'})`;
+        if (brandBtn) {
+          brandBtn.title = isMobileOrStandalone() ? 'Master Monitor' : 'Kembali ke Camvis Workspace';
+        }
       } else {
         btnLogin.classList.remove('d-none');
         adminBar.classList.add('d-none');
         modePill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Mode Viewer</span>`;
         modePill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-elevated border border-line text-[11px] font-bold tracking-wide uppercase text-slate-300';
         modePill.title = 'Mode Viewer (Publik)';
+        if (brandBtn) {
+          brandBtn.title = 'Beranda Camvis';
+        }
       }
 
       document.querySelectorAll('.admin-only').forEach((el) => {
@@ -1608,11 +1792,16 @@
         el.classList.toggle('d-none', state.isAdmin);
       });
 
-      // Keep Workspace button hidden in Mobile / Standalone APK mode (even on wide tablets)
-      const navWs = document.getElementById('nav-workspace');
-      if (navWs) {
-        navWs.classList.toggle('d-none', !state.isAdmin || isMobileOrStandalone());
-      }
+      // Contextual Desktop Tabs (Rundown vs PIC Module)
+      const isPicModule = state.isAdmin && (state.view === 'jadwal' || state.view === 'pic-data' || state.view === 'pic-detail');
+      const navMonitor = document.getElementById('nav-monitor');
+      const navHistory = document.getElementById('nav-history');
+      const navJadwal = document.getElementById('nav-jadwal');
+      const navPicData = document.getElementById('nav-pic-data');
+      if (navMonitor) navMonitor.classList.toggle('d-none', isPicModule);
+      if (navHistory) navHistory.classList.toggle('d-none', !state.isAdmin || isPicModule);
+      if (navJadwal) navJadwal.classList.toggle('d-none', !isPicModule);
+      if (navPicData) navPicData.classList.toggle('d-none', !isPicModule);
     }
 
     // ==================== 6. DEVICE DETECTION, ROUTE GUARD & NAVIGATION ====================
@@ -1663,6 +1852,11 @@
         return { kind: 'room', route: 'room', roomId, rawHash };
       }
 
+      if (rawHash.startsWith('#pic-detail/')) {
+        const picId = decodeURIComponent(rawHash.slice(12));
+        return { kind: 'internal', route: 'pic-detail', picId, rawHash };
+      }
+
       const normalized = rawHash.replace(/^#\/?/, '').split('/')[0].toLowerCase();
       return { kind: 'internal', route: normalized, rawHash };
     }
@@ -1671,11 +1865,10 @@
       purgeProtectedDOM();
       state.view = 'monitor';
       state.selectedRoomId = null;
+      state.selectedPicId = null;
       replaceUrlToHash('#monitor');
       showToast(message, 'warning');
-      const errBox = document.getElementById('login-error');
-      if (errBox) errBox.classList.add('d-none');
-      openModal('modal-login');
+      openLoginModal();
     }
 
     function guardAndResolveRoute({ isPostLogin = false, silentRedirect = false } = {}) {
@@ -1686,10 +1879,12 @@
         if (mobileMode) {
           state.view = 'monitor';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           replaceUrlToHash('#monitor');
         } else {
           state.view = 'workspace';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           replaceUrlToHash('#workspace');
         }
         return;
@@ -1702,6 +1897,7 @@
         if (req.kind === 'empty' || (req.kind === 'public' && req.route === 'monitor')) {
           state.view = 'monitor';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           if (window.location.search) {
             replaceUrlToHash('#monitor');
           }
@@ -1715,7 +1911,6 @@
             state.selectedRoomId = req.roomId;
             return;
           }
-          // Room not found yet or belongs to History (blocked for guest)
           if (state.loaded) {
             state.view = 'monitor';
             state.selectedRoomId = null;
@@ -1727,10 +1922,11 @@
           return;
         }
 
-        // Any internal/protected route (#workspace, #history, #jadwal, #absensi, #admin, ?page=..., or unknown hash)
+        // Any internal/protected route (#workspace, #history, #jadwal, #pic-data, #pic-detail/..., #absensi, #admin, ?page=..., or unknown hash)
         if (silentRedirect) {
           state.view = 'monitor';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           replaceUrlToHash('#monitor');
         } else {
           promptUnauthorizedRedirect();
@@ -1746,10 +1942,12 @@
         if (mobileMode) {
           state.view = 'monitor';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           replaceUrlToHash('#monitor');
         } else {
           state.view = 'workspace';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           replaceUrlToHash('#workspace');
         }
         return;
@@ -1757,13 +1955,14 @@
 
       if (route === 'workspace') {
         if (mobileMode) {
-          // Never render Workspace on Mobile / APK
           state.view = 'monitor';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           replaceUrlToHash('#monitor');
         } else {
           state.view = 'workspace';
           state.selectedRoomId = null;
+          state.selectedPicId = null;
           if (window.location.search) replaceUrlToHash('#workspace');
         }
         return;
@@ -1783,6 +1982,34 @@
         return;
       }
 
+      if (route === 'jadwal') {
+        state.view = 'jadwal';
+        state.selectedRoomId = null;
+        if (window.location.search) replaceUrlToHash('#jadwal');
+        return;
+      }
+
+      if (route === 'pic-data') {
+        state.view = 'pic-data';
+        state.selectedRoomId = null;
+        state.selectedPicId = null;
+        if (window.location.search) replaceUrlToHash('#pic-data');
+        return;
+      }
+
+      if (route === 'pic-detail' && req.picId) {
+        state.view = 'pic-detail';
+        state.selectedRoomId = null;
+        state.selectedPicId = req.picId;
+        if (window.location.search) replaceUrlToHash(`#pic-detail/${encodeURIComponent(req.picId)}`);
+        loadPicProfileOnDemand(req.picId).then(() => {
+          if (state.isAdmin && state.view === 'pic-detail' && state.selectedPicId === req.picId) {
+            renderPicDetailView();
+          }
+        });
+        return;
+      }
+
       if (route === 'room' && req.roomId) {
         const targetRoom = state.rooms[req.roomId];
         if (targetRoom && targetRoom.status !== 'history') {
@@ -1798,13 +2025,13 @@
         return;
       }
 
-      // Future internal modules accessed directly via URL while Admin is logged in
-      if (route === 'jadwal' || route === 'absensi') {
+      // Future internal module accessed directly via URL while Admin is logged in
+      if (route === 'absensi') {
         const fallbackView = mobileMode ? 'monitor' : 'workspace';
         state.view = fallbackView;
         state.selectedRoomId = null;
         replaceUrlToHash(`#${fallbackView}`);
-        openComingSoonModal(route);
+        openComingSoonModal('absensi');
         return;
       }
 
@@ -1812,32 +2039,47 @@
       const fallbackView = mobileMode ? 'monitor' : 'workspace';
       state.view = fallbackView;
       state.selectedRoomId = null;
+      state.selectedPicId = null;
       replaceUrlToHash(`#${fallbackView}`);
     }
 
-    function navigateTo(view, roomId = null) {
+    function navigateTo(view, idParam = null) {
       const mobileMode = isMobileOrStandalone();
+      const protectedViews = ['workspace', 'history', 'jadwal', 'pic-data', 'pic-detail'];
 
       // Strict State Protection before setting route
-      if ((view === 'workspace' || view === 'history') && !state.isAdmin) {
+      if (protectedViews.includes(view) && !state.isAdmin) {
         promptUnauthorizedRedirect();
         return;
       }
 
       if (view === 'workspace' && mobileMode) {
         view = 'monitor';
-        roomId = null;
+        idParam = null;
       }
 
+      state.jadwalCalendarOpen = false;
       state.view = view;
-      state.selectedRoomId = roomId;
+      state.selectedRoomId = view === 'room' ? idParam : null;
+      state.selectedPicId = view === 'pic-detail' ? idParam : null;
 
-      if (view === 'room' && roomId) {
-        window.location.hash = `#room/${encodeURIComponent(roomId)}`;
+      if (view === 'room' && idParam) {
+        window.location.hash = `#room/${encodeURIComponent(idParam)}`;
+      } else if (view === 'pic-detail' && idParam) {
+        window.location.hash = `#pic-detail/${encodeURIComponent(idParam)}`;
+        loadPicProfileOnDemand(idParam).then(() => {
+          if (state.isAdmin && state.view === 'pic-detail' && state.selectedPicId === idParam) {
+            renderPicDetailView();
+          }
+        });
       } else if (view === 'workspace') {
         window.location.hash = '#workspace';
       } else if (view === 'history') {
         window.location.hash = '#history';
+      } else if (view === 'jadwal') {
+        window.location.hash = '#jadwal';
+      } else if (view === 'pic-data') {
+        window.location.hash = '#pic-data';
       } else {
         window.location.hash = '#monitor';
       }
@@ -1867,15 +2109,9 @@
 
     // ==================== 6B. COMING SOON MODAL ====================
     const COMING_SOON_FEATURES = {
-      jadwal: {
-        title: 'Jadwal PIC',
-        desc: 'Fitur Jadwal PIC untuk mengatur jadwal operasional, pembagian tugas, dan penempatan PIC Campus Visit sedang dalam tahap pengembangan.',
-        iconClass: 'w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 flex items-center justify-center shrink-0',
-        iconSvg: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path></svg>`
-      },
       absensi: {
         title: 'Absensi PIC',
-        desc: 'Fitur Absensi PIC untuk mencatat, memantau, dan merekap kehadiran PIC Campus Visit secara otomatis sedang dalam tahap pengembangan.',
+        desc: 'Fitur Absensi PIC untuk mencatat, memantau, dan merekap kehadiran PIC Campus Visit secara otomatis sedang dalam tahap pengembangan untuk proyek selanjutnya.',
         iconClass: 'w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0',
         iconSvg: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><polyline points="9 14 11 16 15 12"></polyline></svg>`
       }
@@ -1886,7 +2122,7 @@
         promptUnauthorizedRedirect();
         return;
       }
-      const cfg = COMING_SOON_FEATURES[featureKey] || COMING_SOON_FEATURES.jadwal;
+      const cfg = COMING_SOON_FEATURES[featureKey] || COMING_SOON_FEATURES.absensi;
       const iconEl = document.getElementById('coming-soon-icon');
       const titleEl = document.getElementById('coming-soon-title');
       const descEl = document.getElementById('coming-soon-desc');
@@ -1912,21 +2148,30 @@
       const mobileMode = isMobileOrStandalone();
       const isWorkspaceActive = state.isAdmin && !mobileMode && state.view === 'workspace';
       const isHistoryActive = state.isAdmin && state.view === 'history';
+      const isJadwalActive = state.isAdmin && state.view === 'jadwal';
+      const isPicDataActive = state.isAdmin && state.view === 'pic-data';
+      const isPicDetailActive = state.isAdmin && state.view === 'pic-detail';
+      const isPicModule = isJadwalActive || isPicDataActive || isPicDetailActive;
+      const isRundownModule = state.view === 'monitor' || state.view === 'room' || isHistoryActive;
 
       const activeRooms = getActiveRoomList();
       const historyRooms = getHistoryRoomList();
+      const picCount = state.isAdmin ? Object.keys(state.pics || {}).length : 0;
 
-      // Header Workspace Breadcrumb & Desktop Main Nav Visibility
-      const wsCrumb = document.getElementById('header-workspace-crumb');
-      if (wsCrumb) {
-        wsCrumb.classList.toggle('d-none', !isWorkspaceActive);
-        wsCrumb.classList.toggle('hidden', !isWorkspaceActive);
-        wsCrumb.classList.toggle('md:inline-flex', isWorkspaceActive);
-      }
-
+      // Desktop Main Nav Visibility (hidden on Workspace)
       const desktopNav = document.getElementById('desktop-main-nav');
       if (desktopNav) {
         desktopNav.classList.toggle('d-none', isWorkspaceActive);
+      }
+
+      // Mobile Contextual Sub-Navs (Admin Only)
+      const mobileSubNav = document.getElementById('mobile-sub-nav');
+      if (mobileSubNav) {
+        mobileSubNav.classList.toggle('d-none', !(state.isAdmin && isRundownModule));
+      }
+      const mobilePicSubNav = document.getElementById('mobile-pic-sub-nav');
+      if (mobilePicSubNav) {
+        mobilePicSubNav.classList.toggle('d-none', !(state.isAdmin && isPicModule));
       }
 
       // Update Nav Badges
@@ -1934,21 +2179,32 @@
       document.getElementById('badge-history-count').textContent = historyRooms.length;
       document.getElementById('badge-active-count-mobile').textContent = activeRooms.length;
       document.getElementById('badge-history-count-mobile').textContent = historyRooms.length;
+      const picBadge = document.getElementById('badge-pic-count');
+      if (picBadge) picBadge.textContent = picCount;
+      const picBadgeMob = document.getElementById('badge-pic-count-mobile');
+      if (picBadgeMob) picBadgeMob.textContent = picCount;
 
       // Update Nav Active Styling
       const isMonitorTab = state.view === 'monitor' || state.view === 'room';
-      setNavBtnStyle('nav-workspace', isWorkspaceActive);
       setNavBtnStyle('nav-monitor', isMonitorTab);
       setNavBtnStyle('nav-history', isHistoryActive);
       setNavBtnStyle('nav-monitor-mobile', isMonitorTab);
       setNavBtnStyle('nav-history-mobile', isHistoryActive);
+      setNavBtnStyle('nav-jadwal', isJadwalActive);
+      setNavBtnStyle('nav-pic-data', isPicDataActive || isPicDetailActive);
+      setNavBtnStyle('nav-jadwal-mobile', isJadwalActive);
+      setNavBtnStyle('nav-pic-data-mobile', isPicDataActive || isPicDetailActive);
 
-      // Update Master Monitor Stats Grid Columns (3 cols for Guest, 4 cols for Admin)
+      // Master Monitor Stats Strip: HIDDEN completely on Mobile / APK (for BOTH Guest and Admin)
       const statsGrid = document.getElementById('monitor-stats');
       if (statsGrid) {
-        statsGrid.className = state.isAdmin
-          ? 'grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4'
-          : 'grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4';
+        if (mobileMode) {
+          statsGrid.className = 'd-none';
+        } else {
+          statsGrid.className = state.isAdmin
+            ? 'hidden md:grid grid-cols-4 gap-3 sm:gap-4'
+            : 'hidden md:grid grid-cols-3 gap-3 sm:gap-4';
+        }
       }
 
       // Toggle Public Views
@@ -1962,6 +2218,24 @@
         renderHistoryView(historyRooms);
       } else {
         unmountHistoryView();
+      }
+
+      if (isJadwalActive) {
+        renderJadwalPicView();
+      } else {
+        unmountProtectedView('view-jadwal');
+      }
+
+      if (isPicDataActive) {
+        renderPicDataView();
+      } else {
+        unmountProtectedView('view-pic-data');
+      }
+
+      if (isPicDetailActive) {
+        renderPicDetailView();
+      } else {
+        unmountProtectedView('view-pic-detail');
       }
 
       if (state.view === 'monitor') {
@@ -1986,6 +2260,14 @@
       tickLiveTimers();
     }
 
+    function unmountProtectedView(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.innerHTML !== '') el.innerHTML = '';
+      el.classList.add('d-none');
+      delete el.dataset.mounted;
+    }
+
     function setNavBtnStyle(id, active) {
       const el = document.getElementById(id);
       if (!el) return;
@@ -2006,20 +2288,24 @@
       if (!shouldRender || !state.isAdmin || isMobileOrStandalone()) {
         wsEl.innerHTML = '';
         wsEl.classList.add('d-none');
+        delete wsEl.dataset.mounted;
         return;
       }
 
       wsEl.classList.remove('d-none');
-      // Avoid rebuilding if already mounted
-      if (wsEl.dataset.mounted === 'true' && wsEl.children.length > 0) return;
+      const totalPics = Object.keys(state.pics || {}).length;
+      const picCountEl = document.getElementById('ws-pic-count-pill');
+      if (wsEl.dataset.mounted === 'true' && wsEl.children.length > 0 && picCountEl) {
+        picCountEl.textContent = `${totalPics} PIC`;
+        return;
+      }
 
       wsEl.innerHTML = `
-        <div class="min-h-[calc(100vh-11.5rem)] flex items-center py-6 lg:py-10">
+        <div class="min-h-[calc(100vh-11.5rem)] flex items-center py-6 lg:py-8">
           <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
-            <!-- Left Column: Hero & 3 Application Cards -->
-            <div class="lg:col-span-6 space-y-7">
-              <div class="space-y-3">
-                <div class="text-xs font-bold uppercase tracking-[0.22em] text-brand">CAMPUS VISIT MANAGEMENT</div>
+            <!-- Left Column: Hero, 3 Application Cards & Data PIC Access -->
+            <div class="lg:col-span-6 space-y-6">
+              <div class="space-y-2.5">
                 <div class="space-y-1">
                   <div class="text-lg sm:text-xl font-medium text-slate-400">Welcome to</div>
                   <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-[1.1]">
@@ -2037,7 +2323,7 @@
               <div class="space-y-3.5 max-w-xl">
                 <p class="text-sm text-slate-400">Pilih aplikasi yang ingin Anda gunakan.</p>
 
-                <!-- Card 1: Rundown Monitor (ACTIVE) -->
+                <!-- Card 1: Rundown Monitor (Clean, no status badge) -->
                 <button type="button" data-action="workspace-open-monitor" class="w-full text-left group bg-surface hover:bg-elevated/80 border border-line hover:border-brand/60 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200 shadow-sm hover:shadow-[0_10px_30px_rgba(2,195,249,0.10)]">
                   <div class="flex items-center gap-4 min-w-0">
                     <div class="w-14 h-14 rounded-xl bg-brand/12 border border-brand/25 text-brand flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -2049,12 +2335,7 @@
                       </svg>
                     </div>
                     <div class="min-w-0">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-base font-bold text-white group-hover:text-brand-soft transition-colors">Rundown Monitor</span>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-live-dot"></span>Aktif
-                        </span>
-                      </div>
+                      <div class="text-base font-bold text-white group-hover:text-brand-soft transition-colors">Rundown Monitor</div>
                       <p class="text-sm text-slate-400 mt-1 leading-relaxed">Pantau dan kelola jalannya rundown kegiatan secara real-time.</p>
                     </div>
                   </div>
@@ -2063,8 +2344,8 @@
                   </svg>
                 </button>
 
-                <!-- Card 2: Jadwal PIC (COMING SOON) -->
-                <button type="button" data-action="open-coming-soon" data-feature="jadwal" class="w-full text-left group bg-surface hover:bg-elevated/70 border border-line hover:border-orange-500/45 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200">
+                <!-- Card 2: Jadwal PIC (Dalam Pengembangan — Clickable for Trial & Testing) -->
+                <button type="button" data-action="workspace-open-jadwal" class="w-full text-left group bg-surface hover:bg-elevated/80 border border-line hover:border-orange-500/55 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200 shadow-sm hover:shadow-[0_10px_30px_rgba(251,146,60,0.08)]">
                   <div class="flex items-center gap-4 min-w-0">
                     <div class="w-14 h-14 rounded-xl bg-orange-500/12 border border-orange-500/25 text-orange-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -2077,18 +2358,18 @@
                     </div>
                     <div class="min-w-0">
                       <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-base font-bold text-white">Jadwal PIC</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/35 text-[10px] font-bold uppercase tracking-wider text-orange-300">Coming Soon</span>
+                        <span class="text-base font-bold text-white group-hover:text-orange-300 transition-colors">Jadwal PIC</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/35 text-[10px] font-bold uppercase tracking-wider text-orange-300">Dalam Pengembangan</span>
                       </div>
-                      <p class="text-sm text-slate-400 mt-1 leading-relaxed">Atur jadwal, pembagian tugas, dan penempatan PIC kegiatan.</p>
+                      <p class="text-sm text-slate-400 mt-1 leading-relaxed">Cek ketersediaan jadwal PIC berdasarkan tanggal &amp; jam acara.</p>
                     </div>
                   </div>
-                  <svg class="w-5 h-5 text-brand/75 group-hover:text-brand shrink-0 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="w-5 h-5 text-brand shrink-0 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </button>
 
-                <!-- Card 3: Absensi PIC (COMING SOON) -->
+                <!-- Card 3: Absensi PIC (Dalam Pengembangan — Next Project) -->
                 <button type="button" data-action="open-coming-soon" data-feature="absensi" class="w-full text-left group bg-surface hover:bg-elevated/70 border border-line hover:border-emerald-500/45 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200">
                   <div class="flex items-center gap-4 min-w-0">
                     <div class="w-14 h-14 rounded-xl bg-emerald-500/12 border border-emerald-500/25 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -2101,7 +2382,7 @@
                     <div class="min-w-0">
                       <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-base font-bold text-white">Absensi PIC</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Coming Soon</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Dalam Pengembangan</span>
                       </div>
                       <p class="text-sm text-slate-400 mt-1 leading-relaxed">Catat, pantau, dan rekap kehadiran PIC Campus Visit.</p>
                     </div>
@@ -2110,6 +2391,32 @@
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </button>
+
+                <!-- Bottom Centralized Master Data Access: Data PIC -->
+                <div class="pt-2">
+                  <button type="button" data-action="workspace-open-pic-data" class="w-full text-left group bg-canvas/90 hover:bg-surface border border-line hover:border-brand/50 rounded-xl px-4 py-3.5 flex items-center justify-between gap-3 transition-all">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-9 h-9 rounded-lg bg-elevated border border-line-strong text-brand flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="text-sm font-bold text-slate-100 group-hover:text-brand-soft transition-colors">Data PIC</div>
+                        <div class="text-xs text-slate-400 truncate">Kelola master data, kontak, rekening, &amp; jadwal mingguan seluruh PIC</div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span id="ws-pic-count-pill" class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-elevated border border-line text-slate-300">${totalPics} PIC</span>
+                      <svg class="w-4 h-4 text-brand group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2128,46 +2435,33 @@
                     </linearGradient>
                   </defs>
 
-                  <!-- Soft Ambient Glow -->
                   <circle cx="250" cy="200" r="185" fill="url(#ws-glow)"/>
-
-                  <!-- Outer Orbit Rings -->
                   <circle cx="250" cy="200" r="172" stroke="#1E293B" stroke-width="1" opacity="0.65"/>
                   <circle cx="250" cy="200" r="146" stroke="#263345" stroke-width="1.2" stroke-dasharray="4 7" opacity="0.8"/>
 
-                  <!-- Decorative Dot Grid Top-Right -->
                   <g fill="#334155" opacity="0.7">
                     <circle cx="372" cy="48" r="2.2"/><circle cx="388" cy="48" r="2.2"/><circle cx="404" cy="48" r="2.2"/>
                     <circle cx="372" cy="64" r="2.2"/><circle cx="388" cy="64" r="2.2"/><circle cx="404" cy="64" r="2.2"/>
                     <circle cx="372" cy="80" r="2.2"/><circle cx="388" cy="80" r="2.2"/><circle cx="404" cy="80" r="2.2"/>
                   </g>
 
-                  <!-- Floating Accent Dots -->
                   <circle cx="182" cy="70" r="3" fill="#02c3f9"/>
                   <circle cx="76" cy="206" r="4" fill="#02c3f9"/>
                   <circle cx="426" cy="192" r="2.8" fill="#38BDF8"/>
 
-                  <!-- Ground Shadow Ellipse -->
                   <ellipse cx="250" cy="336" rx="145" ry="20" fill="#131B26" opacity="0.85"/>
-
-                  <!-- Monitor Stand -->
                   <path d="M224 294H276L288 326H212L224 294Z" fill="#233042"/>
                   <rect x="192" y="324" width="116" height="9" rx="4.5" fill="#2D3D54"/>
 
-                  <!-- Monitor Frame -->
                   <rect x="98" y="106" width="304" height="190" rx="16" fill="#121822" stroke="#2D3D54" stroke-width="2.5"/>
                   <rect x="110" y="118" width="280" height="162" rx="10" fill="url(#ws-screen)" stroke="#1E2A3A" stroke-width="1.5"/>
-
-                  <!-- Screen Inner Top Divider -->
                   <line x1="110" y1="142" x2="390" y2="142" stroke="#1E2A3A" stroke-width="1.2"/>
 
-                  <!-- Sidebar Bars -->
                   <rect x="128" y="160" width="34" height="6" rx="3" fill="#02c3f9"/>
                   <rect x="128" y="176" width="24" height="5" rx="2.5" fill="#334155"/>
                   <rect x="128" y="191" width="30" height="5" rx="2.5" fill="#334155"/>
                   <rect x="128" y="206" width="20" height="5" rx="2.5" fill="#334155"/>
 
-                  <!-- 3 Mini Metric Cards on Screen -->
                   <rect x="180" y="152" width="58" height="36" rx="7" fill="#131D2A" stroke="#253447" stroke-width="1.2"/>
                   <rect x="190" y="163" width="26" height="5" rx="2.5" fill="#02c3f9"/>
                   <rect x="190" y="174" width="15" height="5" rx="2.5" fill="#38BDF8" opacity="0.75"/>
@@ -2180,14 +2474,12 @@
                   <rect x="324" y="163" width="26" height="5" rx="2.5" fill="#34D399"/>
                   <rect x="324" y="174" width="16" height="5" rx="2.5" fill="#10B981" opacity="0.75"/>
 
-                  <!-- Live Telemetry Chart Box -->
                   <rect x="180" y="198" width="192" height="68" rx="8" fill="#101824" stroke="#253447" stroke-width="1.2"/>
                   <line x1="192" y1="220" x2="360" y2="220" stroke="#1B2738" stroke-width="1"/>
                   <line x1="192" y1="242" x2="360" y2="242" stroke="#1B2738" stroke-width="1"/>
                   <path d="M196 250 L226 239 L250 245 L284 221 L312 232 L352 208" stroke="#02c3f9" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M196 250 L226 239 L250 245 L284 221 L312 232 L352 208 L352 258 L196 258 Z" fill="#02c3f9" opacity="0.08"/>
 
-                  <!-- Floating Tile 1 (Top-Left: Cyan Rundown Monitor) -->
                   <g>
                     <rect x="64" y="64" width="84" height="84" rx="18" fill="#102938" stroke="#02c3f9" stroke-opacity="0.45" stroke-width="1.6"/>
                     <rect x="85" y="85" width="42" height="30" rx="5" stroke="#02c3f9" stroke-width="2.4"/>
@@ -2195,7 +2487,6 @@
                     <line x1="97" y1="124" x2="115" y2="124" stroke="#02c3f9" stroke-width="2.4" stroke-linecap="round"/>
                   </g>
 
-                  <!-- Floating Tile 2 (Top-Right: Orange Jadwal PIC) -->
                   <g>
                     <rect x="352" y="74" width="82" height="82" rx="18" fill="#2B1E14" stroke="#FB923C" stroke-opacity="0.45" stroke-width="1.6"/>
                     <rect x="375" y="99" width="36" height="34" rx="5" stroke="#FB923C" stroke-width="2.4"/>
@@ -2209,7 +2500,6 @@
                     <circle cx="393" cy="126" r="1.8" fill="#FB923C"/>
                   </g>
 
-                  <!-- Floating Tile 3 (Bottom-Right: Emerald Absensi PIC) -->
                   <g>
                     <rect x="346" y="252" width="84" height="84" rx="18" fill="#102B22" stroke="#34D399" stroke-opacity="0.45" stroke-width="1.6"/>
                     <rect x="371" y="274" width="34" height="42" rx="5" stroke="#34D399" stroke-width="2.4"/>
@@ -2252,6 +2542,7 @@
       }
 
       const isMonitorActive = state.view === 'monitor' || state.view === 'room' || state.view === 'history';
+      const isJadwalActive = state.view === 'jadwal' || state.view === 'pic-data' || state.view === 'pic-detail';
 
       root.innerHTML = `
         <nav aria-label="Navigasi Bawah Admin" class="fixed bottom-0 inset-x-0 z-40 bg-[#0B0F15]/95 backdrop-blur-lg border-t border-line shadow-[0_-8px_24px_rgba(0,0,0,0.45)]" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
@@ -2268,8 +2559,9 @@
               <span class="text-[11px] font-bold tracking-tight">Monitor</span>
             </button>
 
-            <!-- Tab 2: Jadwal (Coming Soon) -->
-            <button type="button" data-action="open-coming-soon" data-feature="jadwal" class="relative flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-200 transition-colors">
+            <!-- Tab 2: Jadwal PIC (Active for Trial & Testing) -->
+            <button type="button" data-action="bottom-nav-jadwal" class="relative flex flex-col items-center justify-center gap-1 transition-colors ${isJadwalActive ? 'text-brand' : 'text-slate-400 hover:text-slate-200'}">
+              ${isJadwalActive ? '<span class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-[2.5px] rounded-b-full bg-brand"></span>' : ''}
               <div class="relative">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -2278,9 +2570,9 @@
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                   <path d="M8 14h.01M12 14h.01M16 14h.01"></path>
                 </svg>
-                <span class="absolute -top-1 -right-2.5 px-1 py-0 rounded bg-orange-500/20 border border-orange-500/40 text-[8px] font-extrabold uppercase text-orange-300 leading-tight">Soon</span>
+                <span class="absolute -top-1 -right-2.5 px-1 py-0 rounded bg-orange-500/20 border border-orange-500/40 text-[8px] font-extrabold uppercase text-orange-300 leading-tight">Dev</span>
               </div>
-              <span class="text-[11px] font-semibold tracking-tight">Jadwal</span>
+              <span class="text-[11px] font-bold tracking-tight">Jadwal</span>
             </button>
 
             <!-- Tab 3: Absensi (Coming Soon) -->
@@ -3099,6 +3391,1292 @@
       } else {
         adminActions.innerHTML = '';
       }
+    }
+
+    // ==================== 7D. MODUL JADWAL PIC & DATA PIC (ADMIN ONLY, DYNAMIC DOM) ====================
+    const PIC_DAYS = [
+      { key: 'senin', label: 'Senin', short: 'Sen', jsDay: 1 },
+      { key: 'selasa', label: 'Selasa', short: 'Sel', jsDay: 2 },
+      { key: 'rabu', label: 'Rabu', short: 'Rab', jsDay: 3 },
+      { key: 'kamis', label: 'Kamis', short: 'Kam', jsDay: 4 },
+      { key: 'jumat', label: 'Jumat', short: 'Jum', jsDay: 5 },
+      { key: 'sabtu', label: 'Sabtu', short: 'Sab', jsDay: 6 }
+    ];
+
+    const ID_MONTHS = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    const ID_WEEKDAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+    function timeToMinutes(hhmm) {
+      if (!hhmm || typeof hhmm !== 'string') return null;
+      const m = hhmm.trim().match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return null;
+      const h = Number(m[1]);
+      const min = Number(m[2]);
+      if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+      return h * 60 + min;
+    }
+
+    function minutesToHHMM(totalMin) {
+      const clamped = Math.max(0, Math.min(23 * 60 + 59, Math.round(totalMin)));
+      return `${pad2(Math.floor(clamped / 60))}:${pad2(clamped % 60)}`;
+    }
+
+    function formatDurationId(totalMin) {
+      const m = Math.max(0, Math.round(totalMin));
+      const h = Math.floor(m / 60);
+      const rem = m % 60;
+      if (h > 0 && rem > 0) return `${h} jam ${rem} mnt`;
+      if (h > 0) return `${h} jam`;
+      return `${rem} mnt`;
+    }
+
+    function getDayMetaFromISO(isoStr) {
+      const safeIso = /^\d{4}-\d{2}-\d{2}$/.test(isoStr || '') ? isoStr : todayISO();
+      const [y, mo, d] = safeIso.split('-').map(Number);
+      const dateObj = new Date(y, mo - 1, d);
+      const jsDay = dateObj.getDay(); // 0=Minggu, 1=Senin ... 6=Sabtu
+      const foundDay = PIC_DAYS.find((x) => x.jsDay === jsDay) || null;
+      return {
+        iso: safeIso,
+        year: y,
+        month: mo - 1,
+        day: d,
+        jsDay,
+        dayKey: foundDay ? foundDay.key : null,
+        dayLabel: ID_WEEKDAYS[jsDay] || '-',
+        isSunday: jsDay === 0,
+        formattedDate: `${d} ${ID_MONTHS[mo - 1]} ${y}`,
+        fullLabel: `${ID_WEEKDAYS[jsDay]}, ${d} ${ID_MONTHS[mo - 1]} ${y}`
+      };
+    }
+
+    function normalizeDaySlots(rawSlots) {
+      if (!rawSlots) return [];
+      const arr = Array.isArray(rawSlots) ? rawSlots : Object.values(rawSlots);
+      return arr
+        .filter((s) => s && typeof s === 'object')
+        .map((s) => ({
+          start: String(s.start || '').trim(),
+          end: String(s.end || '').trim(),
+          label: String(s.label || '').trim()
+        }))
+        .filter((s) => {
+          const sm = timeToMinutes(s.start);
+          const em = timeToMinutes(s.end);
+          return sm !== null && em !== null && em > sm;
+        })
+        .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+    }
+
+    function getPicListSorted(filterQuery = '', sortMode = 'az') {
+      if (!state.isAdmin) return [];
+      const q = (filterQuery || '').trim().toLowerCase();
+      const list = Object.entries(state.pics || {})
+        .filter(([, p]) => p && typeof p === 'object')
+        .map(([id, p]) => {
+          const sched = state.picSchedules[id] || {};
+          let totalSlots = 0;
+          PIC_DAYS.forEach((d) => {
+            totalSlots += normalizeDaySlots(sched[d.key]).length;
+          });
+          return {
+            id,
+            name: String(p.name || 'Tanpa Nama').trim(),
+            active: p.active !== false,
+            createdAt: Number(p.createdAt || 0),
+            updatedAt: Number(p.updatedAt || 0),
+            totalSlots
+          };
+        })
+        .filter((p) => !q || p.name.toLowerCase().includes(q));
+
+      if (sortMode === 'za') {
+        list.sort((a, b) => b.name.localeCompare(a.name, 'id', { sensitivity: 'base' }));
+      } else if (sortMode === 'newest') {
+        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      } else {
+        list.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' }));
+      }
+      return list;
+    }
+
+    // Pure Availability & Conflict Evaluator (ONLY reads PIC Name + Weekly Schedule)
+    function evaluatePicAvailability(picId, picName, dayKey, eventStartMin, eventEndMin) {
+      const eventDuration = Math.max(0, eventEndMin - eventStartMin);
+      const daySlots = dayKey ? normalizeDaySlots(state.picSchedules[picId]?.[dayKey]) : [];
+
+      // Clip busy slots to event window
+      const rawConflicts = [];
+      daySlots.forEach((slot) => {
+        const s = timeToMinutes(slot.start);
+        const e = timeToMinutes(slot.end);
+        const ovStart = Math.max(s, eventStartMin);
+        const ovEnd = Math.min(e, eventEndMin);
+        if (ovEnd > ovStart) {
+          rawConflicts.push({ start: ovStart, end: ovEnd });
+        }
+      });
+
+      // Merge overlapping / touching conflict intervals
+      rawConflicts.sort((a, b) => a.start - b.start);
+      const mergedConflicts = [];
+      rawConflicts.forEach((interval) => {
+        const last = mergedConflicts[mergedConflicts.length - 1];
+        if (last && interval.start <= last.end) {
+          last.end = Math.max(last.end, interval.end);
+        } else {
+          mergedConflicts.push({ start: interval.start, end: interval.end });
+        }
+      });
+
+      const conflictMinutes = mergedConflicts.reduce((sum, c) => sum + (c.end - c.start), 0);
+      const availableMinutes = Math.max(0, eventDuration - conflictMinutes);
+
+      // Compute available intervals strictly inside [eventStartMin, eventEndMin]
+      const availableSlots = [];
+      let cursor = eventStartMin;
+      mergedConflicts.forEach((c) => {
+        if (c.start > cursor) {
+          availableSlots.push({ start: cursor, end: c.start });
+        }
+        cursor = Math.max(cursor, c.end);
+      });
+      if (cursor < eventEndMin) {
+        availableSlots.push({ start: cursor, end: eventEndMin });
+      }
+
+      // 4-Color Status Rules:
+      // Hijau : Tidak bentrok sama sekali (conflictMinutes === 0)
+      // Merah : Bentrok penuh ATAU hanya bisa berpartisipasi <= 1 jam (availableMinutes <= 60)
+      // Kuning: Bentrok <= 2 jam (conflictMinutes <= 120) & available > 1 jam
+      // Oren  : Bentrok > 2 jam (conflictMinutes > 120) & masih bisa ikut sebagian (> 1 jam)
+      let status = 'green';
+      let rank = 1;
+      if (conflictMinutes === 0) {
+        status = 'green';
+        rank = 1;
+      } else if (availableMinutes <= 60) {
+        status = 'red';
+        rank = 4;
+      } else if (conflictMinutes <= 120) {
+        status = 'yellow';
+        rank = 2;
+      } else {
+        status = 'orange';
+        rank = 3;
+      }
+
+      return {
+        id: picId,
+        name: picName,
+        status,
+        rank,
+        eventDuration,
+        conflictMinutes,
+        availableMinutes,
+        availableSlots,
+        mergedConflicts,
+        daySlots
+      };
+    }
+
+    function renderPicRulesAlertBanner() {
+      if (!state.picAccessError) return '';
+      return `
+        <div class="p-4 rounded-xl bg-red-950/70 border border-red-700/80 text-sm text-red-100 flex items-start gap-3">
+          <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <div class="space-y-1">
+            <div class="font-bold">Izin Akses Database Modul PIC Belum Aktif</div>
+            <p class="text-xs text-red-200/90 leading-relaxed">
+              Node <code class="font-mono bg-red-900/60 px-1.5 py-0.5 rounded">/pics</code>, <code class="font-mono bg-red-900/60 px-1.5 py-0.5 rounded">/picSchedules</code>, dan <code class="font-mono bg-red-900/60 px-1.5 py-0.5 rounded">/picProfiles</code> perlu ditambahkan pada pengaturan Rules database di Console agar data PIC dapat dibaca &amp; disimpan.
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- 7D-1. HALAMAN 1: CEK JADWAL PIC (#jadwal) ----------
+    function renderMiniCalendarHtml() {
+      const year = state.jadwalCalYear;
+      const month = state.jadwalCalMonth;
+      const firstDay = new Date(year, month, 1).getDay(); // 0=Sun..6=Sat
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = todayISO();
+      const selectedStr = state.jadwalDate;
+
+      const cells = [];
+      for (let i = 0; i < firstDay; i++) {
+        cells.push('<div class="h-8"></div>');
+      }
+      for (let day = 1; day <= daysInMonth; day++) {
+        const iso = `${year}-${pad2(month + 1)}-${pad2(day)}`;
+        const isSelected = iso === selectedStr;
+        const isToday = iso === todayStr;
+        const isSun = new Date(year, month, day).getDay() === 0;
+        let cls = 'h-8 w-8 mx-auto rounded-lg text-xs font-semibold flex items-center justify-center transition-colors ';
+        if (isSelected) {
+          cls += 'bg-brand text-slate-950 font-extrabold shadow-sm';
+        } else if (isToday) {
+          cls += 'bg-brand/15 text-brand-soft border border-brand/50 hover:bg-brand/25';
+        } else if (isSun) {
+          cls += 'text-slate-500 hover:bg-elevated hover:text-slate-300';
+        } else {
+          cls += 'text-slate-200 hover:bg-elevated hover:text-white';
+        }
+        cells.push(`<button type="button" data-action="cal-pick-date" data-date="${iso}" class="${cls}">${day}</button>`);
+      }
+
+      return `
+        <div id="jadwal-mini-calendar" class="absolute left-0 top-full mt-2 z-40 w-72 bg-surface border border-line-strong rounded-2xl shadow-2xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" data-action="cal-prev-month" class="p-1.5 rounded-lg bg-elevated hover:bg-slate-700 text-slate-200 border border-line transition-colors" title="Bulan Sebelumnya">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="text-xs font-extrabold text-white tracking-wide">${ID_MONTHS[month]} ${year}</div>
+            <button type="button" data-action="cal-next-month" class="p-1.5 rounded-lg bg-elevated hover:bg-slate-700 text-slate-200 border border-line transition-colors" title="Bulan Berikutnya">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase text-slate-500">
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+          </div>
+
+          <div class="grid grid-cols-7 gap-1 text-center">
+            ${cells.join('')}
+          </div>
+
+          <div class="pt-2 border-t border-line flex items-center justify-between text-[11px]">
+            <button type="button" data-action="cal-today" class="text-brand hover:text-brand-soft font-bold">Hari Ini</button>
+            <button type="button" data-action="cal-close" class="text-slate-400 hover:text-white font-semibold">Tutup</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderJadwalPicView() {
+      const container = document.getElementById('view-jadwal');
+      if (!container) return;
+      if (!state.isAdmin || state.view !== 'jadwal') {
+        unmountProtectedView('view-jadwal');
+        return;
+      }
+
+      container.classList.remove('d-none');
+      const dayMeta = getDayMetaFromISO(state.jadwalDate);
+      const allPics = getPicListSorted('', 'az');
+      const startMin = timeToMinutes(state.jadwalStartTime);
+      const endMin = timeToMinutes(state.jadwalEndTime);
+      const isValidRange = startMin !== null && endMin !== null && endMin > startMin;
+
+      // Compute search results if searched
+      let resultsHtml = '';
+      if (allPics.length === 0) {
+        resultsHtml = `
+          <div class="bg-surface border border-line rounded-2xl p-10 sm:p-12 text-center space-y-4">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-elevated border border-line flex items-center justify-center text-brand">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <line x1="19" y1="8" x2="19" y2="14"></line>
+                <line x1="22" y1="11" x2="16" y2="11"></line>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-white">Belum Ada Data PIC Tersimpan</h2>
+              <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">
+                Tambahkan data PIC beserta jadwal kuliah/kegiatan mingguannya terlebih dahulu agar sistem dapat mengecek ketersediaan secara otomatis.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2.5">
+              <button type="button" data-action="open-add-pic" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors">
+                + Add PIC Pertama
+              </button>
+              <button type="button" data-action="nav-pic-data" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-sm font-semibold text-slate-200 transition-colors">
+                Buka Halaman Data PIC
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (!state.jadwalSearched) {
+        resultsHtml = `
+          <div class="bg-surface/70 border border-line border-dashed rounded-2xl p-8 sm:p-10 text-center space-y-2">
+            <div class="text-sm font-bold text-slate-200">Pilih Tanggal &amp; Jam Acara lalu klik "Cari PIC"</div>
+            <p class="text-xs text-slate-400 max-w-lg mx-auto leading-relaxed">
+              Sistem akan mencocokkan rentang waktu acara terhadap jadwal mingguan <strong class="text-slate-200">${allPics.length} PIC</strong> (hanya menarik Nama &amp; Jadwal) dan mengelompokkannya ke indikator Hijau, Kuning, Oren, dan Merah.
+            </p>
+          </div>
+        `;
+      } else if (!isValidRange) {
+        resultsHtml = `
+          <div class="p-4 rounded-xl bg-red-950/60 border border-red-700/80 text-sm text-red-200">
+            Jam Selesai event harus lebih besar daripada Jam Mulai event. Silakan perbaiki rentang waktu lalu klik <strong>Cari PIC</strong>.
+          </div>
+        `;
+      } else {
+        const evaluated = allPics
+          .map((p) => evaluatePicAvailability(p.id, p.name, dayMeta.dayKey, startMin, endMin))
+          .sort((a, b) => a.rank - b.rank || a.conflictMinutes - b.conflictMinutes || a.name.localeCompare(b.name, 'id'));
+
+        const counts = {
+          all: evaluated.length,
+          green: evaluated.filter((r) => r.status === 'green').length,
+          yellow: evaluated.filter((r) => r.status === 'yellow').length,
+          orange: evaluated.filter((r) => r.status === 'orange').length,
+          red: evaluated.filter((r) => r.status === 'red').length
+        };
+
+        const filtered = state.jadwalStatusFilter === 'all'
+          ? evaluated
+          : evaluated.filter((r) => r.status === state.jadwalStatusFilter);
+
+        const eventDurationLabel = formatDurationId(endMin - startMin);
+
+        const statusMeta = {
+          green: {
+            label: 'Available Penuh',
+            sub: 'Tidak bentrok sama sekali',
+            cardBorder: 'border-emerald-500/40 hover:border-emerald-400/70',
+            dot: 'bg-emerald-400',
+            pill: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
+            filterActive: 'bg-emerald-500/20 border-emerald-400 text-emerald-200'
+          },
+          yellow: {
+            label: 'Bentrok ≤ 2 Jam',
+            sub: 'Bisa ikut sebagian besar',
+            cardBorder: 'border-yellow-400/45 hover:border-yellow-400/80',
+            dot: 'bg-yellow-400',
+            pill: 'bg-yellow-400/15 text-yellow-200 border-yellow-400/45',
+            filterActive: 'bg-yellow-400/20 border-yellow-400 text-yellow-200'
+          },
+          orange: {
+            label: 'Bentrok > 2 Jam',
+            sub: 'Bisa ikut sebagian waktu',
+            cardBorder: 'border-orange-500/45 hover:border-orange-400/80',
+            dot: 'bg-orange-400',
+            pill: 'bg-orange-500/15 text-orange-300 border-orange-500/45',
+            filterActive: 'bg-orange-500/20 border-orange-400 text-orange-200'
+          },
+          red: {
+            label: 'Bentrok Penuh / ≤ 1 Jam',
+            sub: 'Tidak disarankan',
+            cardBorder: 'border-red-500/45 hover:border-red-400/80',
+            dot: 'bg-red-400',
+            pill: 'bg-red-500/15 text-red-300 border-red-500/45',
+            filterActive: 'bg-red-500/20 border-red-400 text-red-200'
+          }
+        };
+
+        const renderPicResultCard = (item) => {
+          const m = statusMeta[item.status];
+          const availText = item.availableSlots.length > 0
+            ? item.availableSlots.map((s) => `${minutesToHHMM(s.start)} – ${minutesToHHMM(s.end)}`).join(', ')
+            : 'Tidak ada jam kosong di rentang event';
+          const conflictText = item.mergedConflicts.length > 0
+            ? item.mergedConflicts.map((c) => `${minutesToHHMM(c.start)}–${minutesToHHMM(c.end)}`).join(', ')
+            : '';
+
+          let noteBlock = '';
+          if (item.status === 'green') {
+            noteBlock = `
+              <div class="text-xs text-emerald-300 font-medium flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold">Available:</span>
+                <span class="font-mono">${escapeHtml(state.jadwalStartTime)} – ${escapeHtml(state.jadwalEndTime)} (Full ${escapeHtml(eventDurationLabel)})</span>
+              </div>
+            `;
+          } else if (item.status === 'yellow' || item.status === 'orange') {
+            noteBlock = `
+              <div class="space-y-1">
+                <div class="text-xs ${item.status === 'yellow' ? 'text-yellow-200' : 'text-orange-200'} font-medium flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold">Jam Available (Rentang Event):</span>
+                  <span class="font-mono font-bold px-2 py-0.5 rounded bg-canvas border border-line">${escapeHtml(availText)}</span>
+                  <span class="text-slate-400">(${formatDurationId(item.availableMinutes)})</span>
+                </div>
+                <div class="text-[11px] text-slate-400">
+                  Bentrok ${formatDurationId(item.conflictMinutes)} pada slot: <span class="font-mono text-slate-300">${escapeHtml(conflictText)}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            noteBlock = `
+              <div class="space-y-1">
+                <div class="text-xs text-red-300 font-medium">
+                  ${item.availableMinutes === 0
+                    ? 'Bentrok penuh sepanjang jam acara.'
+                    : `Hanya bisa berpartisipasi ${formatDurationId(item.availableMinutes)} (<span class="font-mono">${escapeHtml(availText)}</span>) &mdash; ≤ 1 jam.`
+                  }
+                </div>
+                <div class="text-[11px] text-slate-400">
+                  Bentrok ${formatDurationId(item.conflictMinutes)} pada slot: <span class="font-mono text-slate-300">${escapeHtml(conflictText)}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="bg-surface border ${m.cardBorder} rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <span class="w-2.5 h-2.5 rounded-full ${m.dot} shrink-0"></span>
+                  <h3 class="text-sm sm:text-base font-bold text-white truncate">${escapeHtml(item.name)}</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md border text-[11px] font-bold ${m.pill}">
+                    ${m.label}
+                  </span>
+                </div>
+                ${noteBlock}
+              </div>
+
+              <button type="button" data-action="open-pic-detail" data-pic-id="${escapeHtml(item.id)}" class="self-start sm:self-center shrink-0 px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-brand-soft transition-colors flex items-center gap-1">
+                <span>Detail</span>
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          `;
+        };
+
+        resultsHtml = `
+          <div class="space-y-4">
+            <!-- Result Context Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-surface/80 border border-line rounded-xl px-4 py-3">
+              <div class="text-xs sm:text-sm text-slate-300">
+                Hasil untuk <strong class="text-white">${escapeHtml(dayMeta.fullLabel)}</strong> &bull;
+                <span class="font-mono font-bold text-brand-soft">${escapeHtml(state.jadwalStartTime)} – ${escapeHtml(state.jadwalEndTime)}</span>
+                <span class="text-slate-400">(${escapeHtml(eventDurationLabel)})</span>
+              </div>
+              ${dayMeta.isSunday ? `<span class="text-[11px] font-semibold text-orange-300">Hari Minggu di luar jadwal rutin Senin–Sabtu</span>` : ''}
+            </div>
+
+            <!-- 4-Color Status Summary & Filter Chips -->
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <button type="button" data-action="jadwal-filter" data-status="all" class="p-3 rounded-xl border text-left transition-all ${state.jadwalStatusFilter === 'all' ? 'bg-brand/15 border-brand text-white' : 'bg-surface border-line text-slate-300 hover:border-line-strong'}">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Semua PIC</div>
+                <div class="font-mono text-xl font-extrabold mt-0.5">${counts.all}</div>
+              </button>
+              <button type="button" data-action="jadwal-filter" data-status="green" class="p-3 rounded-xl border text-left transition-all ${state.jadwalStatusFilter === 'green' ? statusMeta.green.filterActive : 'bg-surface border-line text-slate-300 hover:border-emerald-500/50'}">
+                <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Hijau</div>
+                <div class="font-mono text-xl font-extrabold text-emerald-300 mt-0.5">${counts.green}</div>
+                <div class="text-[10px] text-slate-400 truncate">Tidak bentrok</div>
+              </button>
+              <button type="button" data-action="jadwal-filter" data-status="yellow" class="p-3 rounded-xl border text-left transition-all ${state.jadwalStatusFilter === 'yellow' ? statusMeta.yellow.filterActive : 'bg-surface border-line text-slate-300 hover:border-yellow-400/50'}">
+                <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-yellow-300"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>Kuning</div>
+                <div class="font-mono text-xl font-extrabold text-yellow-300 mt-0.5">${counts.yellow}</div>
+                <div class="text-[10px] text-slate-400 truncate">Bentrok ≤ 2 jam</div>
+              </button>
+              <button type="button" data-action="jadwal-filter" data-status="orange" class="p-3 rounded-xl border text-left transition-all ${state.jadwalStatusFilter === 'orange' ? statusMeta.orange.filterActive : 'bg-surface border-line text-slate-300 hover:border-orange-500/50'}">
+                <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-orange-300"><span class="w-2 h-2 rounded-full bg-orange-400"></span>Oren</div>
+                <div class="font-mono text-xl font-extrabold text-orange-300 mt-0.5">${counts.orange}</div>
+                <div class="text-[10px] text-slate-400 truncate">Bentrok > 2 jam</div>
+              </button>
+              <button type="button" data-action="jadwal-filter" data-status="red" class="col-span-2 sm:col-span-1 p-3 rounded-xl border text-left transition-all ${state.jadwalStatusFilter === 'red' ? statusMeta.red.filterActive : 'bg-surface border-line text-slate-300 hover:border-red-500/50'}">
+                <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-red-300"><span class="w-2 h-2 rounded-full bg-red-400"></span>Merah</div>
+                <div class="font-mono text-xl font-extrabold text-red-300 mt-0.5">${counts.red}</div>
+                <div class="text-[10px] text-slate-400 truncate">Penuh / ≤ 1 jam</div>
+              </button>
+            </div>
+
+            <!-- Results List -->
+            <div class="space-y-2.5">
+              ${filtered.length > 0
+                ? filtered.map(renderPicResultCard).join('')
+                : `<div class="bg-surface border border-line rounded-xl p-8 text-center text-sm text-slate-400">Tidak ada PIC pada kategori status ini.</div>`
+              }
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Cek Jadwal PIC</h1>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/35 text-[10px] font-bold uppercase tracking-wider text-orange-300">Dalam Pengembangan</span>
+            </div>
+            <p class="text-sm text-slate-400 mt-1">Pilih tanggal dan jam acara untuk mencari PIC yang tersedia berdasarkan jadwal mingguan.</p>
+          </div>
+
+          <button type="button" data-action="nav-pic-data" class="self-start sm:self-auto px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-sm font-semibold text-white transition-colors flex items-center gap-2 shrink-0">
+            <svg class="w-4 h-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Kelola Data PIC</span>
+          </button>
+        </div>
+
+        ${renderPicRulesAlertBanner()}
+
+        <!-- Search Filter Card -->
+        <div class="bg-surface border border-line rounded-2xl p-5 sm:p-6 shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <!-- Mini Calendar Date Picker -->
+            <div class="md:col-span-5 relative">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Tanggal &amp; Bulan Acara</label>
+              <button id="btn-jadwal-calendar" type="button" data-action="cal-toggle" class="w-full px-3.5 py-2.5 rounded-xl bg-canvas border ${state.jadwalCalendarOpen ? 'border-brand' : 'border-line-strong hover:border-brand/60'} text-left flex items-center justify-between gap-2 transition-colors">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <svg class="w-4 h-4 text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="text-sm font-bold text-white truncate">${escapeHtml(dayMeta.fullLabel)}</span>
+                </div>
+                <span class="shrink-0 px-2 py-0.5 rounded bg-elevated border border-line text-[11px] font-bold ${dayMeta.isSunday ? 'text-orange-300' : 'text-brand-soft'}">${escapeHtml(dayMeta.dayLabel)}</span>
+              </button>
+              ${state.jadwalCalendarOpen ? renderMiniCalendarHtml() : ''}
+            </div>
+
+            <!-- Event Start Time -->
+            <div class="md:col-span-2">
+              <label for="jadwal-input-start" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jam Mulai</label>
+              <input id="jadwal-input-start" type="time" value="${escapeHtml(state.jadwalStartTime)}" class="w-full px-3 py-2.5 rounded-xl bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono font-bold text-white" />
+            </div>
+
+            <!-- Event End Time -->
+            <div class="md:col-span-2">
+              <label for="jadwal-input-end" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jam Selesai</label>
+              <input id="jadwal-input-end" type="time" value="${escapeHtml(state.jadwalEndTime)}" class="w-full px-3 py-2.5 rounded-xl bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono font-bold text-white" />
+            </div>
+
+            <!-- Cari PIC CTA -->
+            <div class="md:col-span-3">
+              <button type="button" data-action="jadwal-search" class="w-full py-2.5 px-5 rounded-xl bg-brand hover:bg-brand-hover text-slate-950 font-extrabold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Cari PIC</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Legend Strip -->
+          <div class="mt-4 pt-3.5 border-t border-line/70 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-slate-400">
+            <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><strong class="text-slate-200">Hijau:</strong> Tidak bentrok</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><strong class="text-slate-200">Kuning:</strong> Bentrok ≤ 2 jam</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span><strong class="text-slate-200">Oren:</strong> Bentrok &gt; 2 jam (parsial)</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-400"></span><strong class="text-slate-200">Merah:</strong> Bentrok penuh / ≤ 1 jam</span>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        ${resultsHtml}
+      `;
+
+      // Bind time input changes cleanly
+      const startInput = document.getElementById('jadwal-input-start');
+      const endInput = document.getElementById('jadwal-input-end');
+      if (startInput) {
+        startInput.addEventListener('change', (e) => {
+          state.jadwalStartTime = e.target.value || '08:00';
+          if (state.jadwalSearched) renderJadwalPicView();
+        });
+      }
+      if (endInput) {
+        endInput.addEventListener('change', (e) => {
+          state.jadwalEndTime = e.target.value || '15:00';
+          if (state.jadwalSearched) renderJadwalPicView();
+        });
+      }
+    }
+
+    // ---------- 7D-2. HALAMAN 2: DATA PIC (#pic-data) — Matches Reference Daftar PIC ----------
+    function ensurePicDataViewMounted() {
+      const viewEl = document.getElementById('view-pic-data');
+      if (!viewEl || !state.isAdmin) return false;
+      viewEl.classList.remove('d-none');
+
+      if (!document.getElementById('pic-data-rows')) {
+        viewEl.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Daftar PIC</h1>
+              <p class="text-sm text-slate-400 mt-1">Kelola dan lihat detail jadwal setiap PIC Campus Visit.</p>
+            </div>
+
+            <button type="button" data-action="open-add-pic" class="self-start sm:self-auto px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-slate-950 text-sm font-extrabold transition-colors flex items-center gap-2 shadow-sm shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add PIC</span>
+            </button>
+          </div>
+
+          <div id="pic-data-rules-banner"></div>
+
+          <!-- Search & Sort Toolbar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="relative w-full sm:max-w-md">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input id="pic-data-search" type="search" value="${escapeHtml(state.picSearch)}" placeholder="Cari nama PIC..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <div class="relative">
+                <select id="pic-data-sort" class="appearance-none pl-4 pr-9 py-2.5 rounded-xl bg-surface border border-line hover:border-line-strong focus:border-brand focus:outline-none text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+                  <option value="az" ${state.picSort === 'az' ? 'selected' : ''}>Urutkan: A – Z</option>
+                  <option value="za" ${state.picSort === 'za' ? 'selected' : ''}>Urutkan: Z – A</option>
+                  <option value="newest" ${state.picSort === 'newest' ? 'selected' : ''}>Urutkan: Terbaru</option>
+                </select>
+                <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- PIC List Table Card -->
+          <div class="bg-surface border border-line rounded-2xl overflow-hidden shadow-sm">
+            <div class="px-5 py-3 bg-elevated/50 border-b border-line text-xs font-bold uppercase tracking-wider text-slate-400">
+              Nama PIC
+            </div>
+            <div id="pic-data-rows" class="divide-y divide-line/80"></div>
+            <div id="pic-data-empty" class="d-none py-14 px-6 text-center space-y-3">
+              <div class="w-12 h-12 mx-auto rounded-2xl bg-elevated border border-line flex items-center justify-center text-slate-400">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <div class="text-sm font-bold text-white" id="pic-data-empty-title">Belum Ada Data PIC</div>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto" id="pic-data-empty-desc">
+                Klik tombol <strong>+ Add PIC</strong> di pojok kanan atas untuk menambahkan data PIC baru beserta jadwal kuliah/kegiatannya.
+              </p>
+            </div>
+          </div>
+
+          <div id="pic-data-footer" class="text-xs text-slate-500"></div>
+        `;
+
+        const searchEl = document.getElementById('pic-data-search');
+        if (searchEl) {
+          searchEl.addEventListener('input', (e) => {
+            state.picSearch = e.target.value;
+            renderPicDataView();
+          });
+        }
+        const sortEl = document.getElementById('pic-data-sort');
+        if (sortEl) {
+          sortEl.addEventListener('change', (e) => {
+            state.picSort = e.target.value;
+            renderPicDataView();
+          });
+        }
+      }
+      return true;
+    }
+
+    function renderPicDataView() {
+      if (!state.isAdmin || state.view !== 'pic-data') {
+        unmountProtectedView('view-pic-data');
+        return;
+      }
+      if (!ensurePicDataViewMounted()) return;
+
+      const banner = document.getElementById('pic-data-rules-banner');
+      if (banner) banner.innerHTML = renderPicRulesAlertBanner();
+
+      const totalAll = Object.keys(state.pics || {}).length;
+      const filtered = getPicListSorted(state.picSearch, state.picSort);
+      const rowsEl = document.getElementById('pic-data-rows');
+      const emptyEl = document.getElementById('pic-data-empty');
+      const footerEl = document.getElementById('pic-data-footer');
+
+      if (!rowsEl || !emptyEl) return;
+
+      if (filtered.length === 0) {
+        rowsEl.innerHTML = '';
+        emptyEl.classList.remove('d-none');
+        const emptyTitle = document.getElementById('pic-data-empty-title');
+        const emptyDesc = document.getElementById('pic-data-empty-desc');
+        if (totalAll > 0 && state.picSearch.trim()) {
+          if (emptyTitle) emptyTitle.textContent = 'PIC Tidak Ditemukan';
+          if (emptyDesc) emptyDesc.textContent = `Tidak ada nama PIC yang cocok dengan kata kunci "${state.picSearch.trim()}".`;
+        } else {
+          if (emptyTitle) emptyTitle.textContent = 'Belum Ada Data PIC';
+          if (emptyDesc) emptyDesc.innerHTML = 'Klik tombol <strong>+ Add PIC</strong> di pojok kanan atas untuk menambahkan data PIC baru beserta jadwal mingguannya.';
+        }
+        if (footerEl) footerEl.textContent = `Menampilkan 0 dari ${totalAll} PIC`;
+        return;
+      }
+
+      emptyEl.classList.add('d-none');
+      rowsEl.innerHTML = filtered.map((pic) => `
+        <div data-action="open-pic-detail" data-pic-id="${escapeHtml(pic.id)}" class="group px-5 py-3.5 hover:bg-elevated/55 flex items-center justify-between gap-4 cursor-pointer transition-colors">
+          <div class="flex items-center gap-3.5 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-elevated border border-line-strong text-slate-300 group-hover:border-brand/50 group-hover:text-brand flex items-center justify-center shrink-0 transition-colors">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <div class="text-sm sm:text-base font-bold text-white group-hover:text-brand-soft truncate transition-colors">${escapeHtml(pic.name)}</div>
+              <div class="text-[11px] text-slate-400">
+                ${pic.totalSlots > 0 ? `${pic.totalSlots} slot jadwal mingguan` : 'Belum ada jadwal sibuk'}
+              </div>
+            </div>
+          </div>
+
+          <button type="button" data-action="open-pic-detail" data-pic-id="${escapeHtml(pic.id)}" class="w-9 h-9 rounded-lg bg-brand/10 group-hover:bg-brand/20 border border-brand/25 text-brand flex items-center justify-center shrink-0 transition-colors" title="Lihat Detail &amp; Edit PIC">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+
+      if (footerEl) {
+        footerEl.textContent = `Menampilkan 1–${filtered.length} dari ${totalAll} PIC`;
+      }
+    }
+
+    // ---------- 7D-3. HALAMAN 3: DETAIL / EDIT PIC (#pic-detail/<id>) — Matches Reference PIC Dashboard ----------
+    function renderWeeklyTimetableGrid(scheduleObj) {
+      // Determine visible hour range (default 08:00 - 18:00, auto-expands if slots fall outside)
+      let minHour = 8;
+      let maxHour = 18;
+      const daySlotsMap = {};
+
+      PIC_DAYS.forEach((d) => {
+        const slots = normalizeDaySlots(scheduleObj?.[d.key]);
+        daySlotsMap[d.key] = slots;
+        slots.forEach((s) => {
+          const sm = timeToMinutes(s.start);
+          const em = timeToMinutes(s.end);
+          if (sm !== null) minHour = Math.min(minHour, Math.floor(sm / 60));
+          if (em !== null) maxHour = Math.max(maxHour, Math.ceil(em / 60));
+        });
+      });
+
+      minHour = Math.max(0, minHour);
+      maxHour = Math.min(24, Math.max(minHour + 1, maxHour));
+      const totalHours = maxHour - minHour;
+      const rowHeightPx = 44;
+      const totalHeightPx = totalHours * rowHeightPx;
+
+      const hourLabels = [];
+      for (let h = minHour; h < maxHour; h++) {
+        hourLabels.push(`
+          <div class="border-b border-line/60 flex items-start justify-center pt-1.5 text-xs font-mono text-slate-400" style="height: ${rowHeightPx}px;">
+            ${pad2(h)}:00
+          </div>
+        `);
+      }
+
+      const dayColumns = PIC_DAYS.map((d) => {
+        const slots = daySlotsMap[d.key];
+        const bgLines = Array.from({ length: totalHours }, () =>
+          `<div class="border-b border-line/50" style="height: ${rowHeightPx}px;"></div>`
+        ).join('');
+
+        const blocks = slots.map((slot) => {
+          const sm = timeToMinutes(slot.start);
+          const em = timeToMinutes(slot.end);
+          const topPx = ((sm - minHour * 60) / 60) * rowHeightPx + 2;
+          const heightPx = Math.max(24, ((em - sm) / 60) * rowHeightPx - 4);
+          return `
+            <div class="absolute left-1.5 right-1.5 rounded-xl bg-gradient-to-b from-orange-500 to-orange-600 border border-orange-400/50 shadow-md px-2 py-1 flex flex-col items-center justify-center text-center overflow-hidden" style="top: ${topPx.toFixed(1)}px; height: ${heightPx.toFixed(1)}px;" title="${escapeHtml(d.label)}: ${escapeHtml(slot.start)} – ${escapeHtml(slot.end)}${slot.label ? ' (' + escapeHtml(slot.label) + ')' : ''}">
+              <span class="text-xs font-extrabold text-white leading-tight truncate max-w-full">${escapeHtml(slot.label || 'Booked')}</span>
+              ${heightPx >= 38 ? `<span class="text-[10px] font-mono font-semibold text-orange-100/95 leading-tight mt-0.5">${escapeHtml(slot.start)}–${escapeHtml(slot.end)}</span>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="relative border-l border-line/70" style="height: ${totalHeightPx}px;">
+            ${bgLines}
+            ${blocks}
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="border border-line rounded-2xl overflow-hidden bg-canvas/70">
+          <div class="overflow-x-auto">
+            <div class="min-w-[680px]">
+              <!-- Header Row -->
+              <div class="grid grid-cols-[84px_repeat(6,minmax(0,1fr))] bg-elevated/60 border-b border-line">
+                <div class="py-3 text-center text-xs font-bold text-slate-300">Waktu</div>
+                ${PIC_DAYS.map((d) => `<div class="py-3 text-center text-xs font-bold text-slate-200 border-l border-line/70">${d.label}</div>`).join('')}
+              </div>
+              <!-- Body Grid -->
+              <div class="grid grid-cols-[84px_repeat(6,minmax(0,1fr))]">
+                <div>${hourLabels.join('')}</div>
+                ${dayColumns}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPicDetailView() {
+      const container = document.getElementById('view-pic-detail');
+      if (!container) return;
+      if (!state.isAdmin || state.view !== 'pic-detail') {
+        unmountProtectedView('view-pic-detail');
+        return;
+      }
+
+      container.classList.remove('d-none');
+      const picId = state.selectedPicId;
+      const pic = picId ? state.pics[picId] : null;
+
+      if (!pic) {
+        container.innerHTML = `
+          <div class="bg-surface border border-line rounded-2xl p-10 text-center space-y-4">
+            <h2 class="text-lg font-bold text-white">Data PIC Tidak Ditemukan</h2>
+            <p class="text-sm text-slate-400">PIC mungkin telah dihapus atau link sudah tidak valid.</p>
+            <button type="button" data-action="nav-pic-data" class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold">
+              Kembali ke Daftar PIC
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const schedule = state.picSchedules[picId] || {};
+      const profile = state.picProfilesCache[picId] || {};
+      const bankLabel = profile.bankName ? `Rek ${profile.bankName}` : 'Rek BCA';
+      const bankAccDisplay = profile.bankAccount ? profile.bankAccount : '-';
+      const phoneDisplay = profile.phone ? profile.phone : '-';
+
+      const daySummaryPills = PIC_DAYS.map((d) => {
+        const slots = normalizeDaySlots(schedule[d.key]);
+        return `
+          <div class="p-3 rounded-xl bg-canvas border border-line">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">${d.label}</div>
+            <div class="mt-1.5 space-y-1">
+              ${slots.length > 0
+                ? slots.map((s) => `<div class="text-xs font-mono text-orange-300 font-semibold">${escapeHtml(s.start)} – ${escapeHtml(s.end)}${s.label ? ` <span class="font-sans text-slate-400">(${escapeHtml(s.label)})</span>` : ''}</div>`).join('')
+                : `<div class="text-xs text-emerald-400/90 font-medium">Kosong / Available</div>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <!-- Back Bar -->
+        <div>
+          <button type="button" data-action="nav-pic-data" class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>Kembali ke Daftar PIC</span>
+          </button>
+        </div>
+
+        <!-- Dashboard Title -->
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-brand/12 border border-brand/30 text-brand flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">PIC Dashboard</h1>
+            <p class="text-sm text-slate-400 mt-0.5">Halaman ini berisi informasi PIC dan overview jadwal kegiatannya.</p>
+          </div>
+        </div>
+
+        ${renderPicRulesAlertBanner()}
+
+        <!-- Profile Card (Matches Reference Image 2) -->
+        <div class="bg-surface border border-line rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-7 min-w-0 flex-1">
+            <!-- Avatar Circle -->
+            <div class="w-20 h-20 rounded-full bg-brand/10 border-2 border-brand flex items-center justify-center text-brand-soft shrink-0 shadow-[0_0_24px_rgba(2,195,249,0.16)]">
+              <svg class="w-11 h-11" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="8" r="4.2"></circle>
+                <path d="M4.5 20.5c0-3.9 3.4-6.5 7.5-6.5s7.5 2.6 7.5 6.5" opacity="0.9"></path>
+              </svg>
+            </div>
+
+            <!-- Info Columns -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 sm:border-l sm:border-line sm:pl-7 flex-1 min-w-0">
+              <div class="space-y-3 min-w-0">
+                <div>
+                  <div class="text-xs font-medium text-slate-400">Nama</div>
+                  <div class="text-base sm:text-lg font-extrabold text-white mt-0.5 break-words">${escapeHtml(pic.name)}</div>
+                </div>
+                <div>
+                  <div class="text-xs font-medium text-slate-400">Nomor HP</div>
+                  <div class="text-sm font-bold text-slate-100 font-mono mt-0.5">${escapeHtml(phoneDisplay)}</div>
+                </div>
+              </div>
+
+              <div class="space-y-3 sm:border-l sm:border-line sm:pl-7 min-w-0">
+                <div>
+                  <div class="text-xs font-medium text-slate-400">${escapeHtml(bankLabel)}</div>
+                  <div class="text-sm sm:text-base font-bold text-white font-mono mt-0.5">${escapeHtml(bankAccDisplay)}</div>
+                </div>
+                ${profile.notes ? `
+                  <div>
+                    <div class="text-xs font-medium text-slate-400">Catatan</div>
+                    <div class="text-xs text-slate-300 mt-0.5 leading-relaxed">${escapeHtml(profile.notes)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button type="button" data-action="open-edit-pic" data-pic-id="${escapeHtml(picId)}" class="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-slate-950 text-sm font-extrabold transition-colors flex items-center gap-2 shadow-sm">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>Edit Data</span>
+            </button>
+            <button type="button" data-action="delete-pic" data-pic-id="${escapeHtml(picId)}" class="px-4 py-2.5 rounded-xl bg-elevated hover:bg-red-950/80 hover:border-red-700 hover:text-red-200 border border-line-strong text-sm font-semibold text-slate-300 transition-colors flex items-center gap-1.5">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6M14 11v6"></path>
+              </svg>
+              <span>Hapus</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Weekly Schedule Timetable Card (Matches Reference Image 2) -->
+        <div class="bg-surface border border-line rounded-2xl p-5 sm:p-6 space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-brand/12 border border-brand/30 text-brand flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-extrabold text-white">Jadwal PIC</h2>
+                <p class="text-xs sm:text-sm text-slate-400">Overview ketersediaan jadwal PIC dalam satu minggu (Senin–Sabtu).</p>
+              </div>
+            </div>
+
+            <button type="button" data-action="open-edit-pic" data-pic-id="${escapeHtml(picId)}" class="self-start sm:self-auto px-3.5 py-2 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-bold text-brand-soft transition-colors">
+              + Atur Jadwal Mingguan
+            </button>
+          </div>
+
+          ${renderWeeklyTimetableGrid(schedule)}
+
+          <!-- Compact Daily Slot Summary (Especially helpful on Mobile) -->
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-1">
+            ${daySummaryPills}
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- 7D-4. ADD / EDIT / DELETE PIC MODAL & FIREBASE CRUD ----------
+    async function openPicFormModal(picId = null) {
+      if (!requireAdmin()) return;
+
+      const isEdit = Boolean(picId && state.pics[picId]);
+      let profile = {};
+      if (isEdit) {
+        profile = (await loadPicProfileOnDemand(picId)) || {};
+      }
+
+      const rawSched = isEdit ? (state.picSchedules[picId] || {}) : {};
+      const scheduleDraft = {};
+      PIC_DAYS.forEach((d) => {
+        scheduleDraft[d.key] = normalizeDaySlots(rawSched[d.key]).map((s) => ({ ...s }));
+      });
+
+      state.picEditDraft = {
+        id: isEdit ? picId : null,
+        name: isEdit ? String(state.pics[picId].name || '') : '',
+        phone: String(profile.phone || ''),
+        bankName: String(profile.bankName || 'BCA'),
+        bankAccount: String(profile.bankAccount || ''),
+        notes: String(profile.notes || ''),
+        schedule: scheduleDraft
+      };
+
+      renderPicFormModal();
+      openModal('modal-pic-form');
+      setTimeout(() => {
+        const nameEl = document.getElementById('pic-form-name');
+        if (nameEl) nameEl.focus();
+      }, 50);
+    }
+
+    function syncPicDraftFromDom() {
+      const draft = state.picEditDraft;
+      if (!draft) return;
+      const nameEl = document.getElementById('pic-form-name');
+      const phoneEl = document.getElementById('pic-form-phone');
+      const bankEl = document.getElementById('pic-form-bank');
+      const accEl = document.getElementById('pic-form-account');
+      const notesEl = document.getElementById('pic-form-notes');
+      if (nameEl) draft.name = nameEl.value;
+      if (phoneEl) draft.phone = phoneEl.value;
+      if (bankEl) draft.bankName = bankEl.value;
+      if (accEl) draft.bankAccount = accEl.value;
+      if (notesEl) draft.notes = notesEl.value;
+
+      document.querySelectorAll('[data-pic-slot-day]').forEach((input) => {
+        const dayKey = input.dataset.picSlotDay;
+        const idx = Number(input.dataset.picSlotIdx);
+        const field = input.dataset.picSlotField;
+        if (draft.schedule[dayKey] && draft.schedule[dayKey][idx] && field) {
+          draft.schedule[dayKey][idx][field] = input.value;
+        }
+      });
+    }
+
+    function renderPicFormModal() {
+      const mount = document.getElementById('pic-form-mount');
+      const draft = state.picEditDraft;
+      if (!mount || !draft || !state.isAdmin) return;
+
+      const isEdit = Boolean(draft.id);
+
+      const daysEditorHtml = PIC_DAYS.map((d) => {
+        const slots = draft.schedule[d.key] || [];
+        return `
+          <div class="p-3.5 rounded-xl bg-canvas border border-line space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-white">${d.label}</span>
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-elevated text-slate-400">${slots.length} slot</span>
+              </div>
+              <button type="button" data-action="pic-add-slot" data-day="${d.key}" class="px-2.5 py-1 rounded-lg bg-elevated hover:bg-brand hover:text-slate-950 border border-line-strong text-[11px] font-bold text-brand-soft transition-colors">
+                + Tambah Slot
+              </button>
+            </div>
+
+            ${slots.length === 0
+              ? `<div class="text-[11px] text-slate-500 italic">Kosong (tidak ada jadwal sibuk di hari ${d.label}).</div>`
+              : `<div class="space-y-2">
+                  ${slots.map((slot, idx) => `
+                    <div class="grid grid-cols-12 gap-2 items-center">
+                      <div class="col-span-5 sm:col-span-3">
+                        <input type="time" value="${escapeHtml(slot.start)}" data-pic-slot-day="${d.key}" data-pic-slot-idx="${idx}" data-pic-slot-field="start" class="w-full px-2.5 py-1.5 rounded-lg bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs font-mono text-white" />
+                      </div>
+                      <div class="col-span-1 text-center text-xs text-slate-500 font-bold">&ndash;</div>
+                      <div class="col-span-5 sm:col-span-3">
+                        <input type="time" value="${escapeHtml(slot.end)}" data-pic-slot-day="${d.key}" data-pic-slot-idx="${idx}" data-pic-slot-field="end" class="w-full px-2.5 py-1.5 rounded-lg bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs font-mono text-white" />
+                      </div>
+                      <div class="col-span-10 sm:col-span-4">
+                        <input type="text" value="${escapeHtml(slot.label || '')}" placeholder="Keterangan (opsional, misal: Kuliah)" data-pic-slot-day="${d.key}" data-pic-slot-idx="${idx}" data-pic-slot-field="label" class="w-full px-2.5 py-1.5 rounded-lg bg-surface border border-line focus:border-brand focus:outline-none text-xs text-white placeholder-slate-500" />
+                      </div>
+                      <div class="col-span-2 sm:col-span-1 flex justify-end">
+                        <button type="button" data-action="pic-remove-slot" data-day="${d.key}" data-idx="${idx}" class="p-1.5 rounded-lg bg-elevated hover:bg-red-900 hover:text-red-200 text-slate-400 border border-line transition-colors" title="Hapus Slot">
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>`
+            }
+          </div>
+        `;
+      }).join('');
+
+      mount.innerHTML = `
+        <div class="px-6 py-4 border-b border-line flex items-center justify-between shrink-0">
+          <div>
+            <h3 class="text-base font-bold text-white">${isEdit ? 'Edit Data &amp; Jadwal PIC' : 'Tambah PIC Baru'}</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Data profil, jadwal mingguan, dan data pelengkap disimpan terpisah namun terhubung otomatis.</p>
+          </div>
+          <button type="button" data-close-modal="modal-pic-form" class="text-slate-400 hover:text-white text-2xl leading-none px-1">&times;</button>
+        </div>
+
+        <form id="form-pic-editor" class="flex-1 overflow-y-auto p-6 space-y-6">
+          <!-- Section 1: Profile Info -->
+          <div class="space-y-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-brand">Informasi PIC</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="pic-form-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Lengkap PIC *</label>
+                <input id="pic-form-name" type="text" required value="${escapeHtml(draft.name)}" placeholder="Contoh: Ariel Barlian Obadiyah" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+              </div>
+              <div>
+                <label for="pic-form-phone" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nomor HP / WhatsApp</label>
+                <input id="pic-form-phone" type="text" value="${escapeHtml(draft.phone)}" placeholder="Contoh: +62 812-3456-7890" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
+              </div>
+              <div>
+                <label for="pic-form-bank" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Bank</label>
+                <input id="pic-form-bank" type="text" value="${escapeHtml(draft.bankName)}" placeholder="BCA" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+              </div>
+              <div>
+                <label for="pic-form-account" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nomor Rekening</label>
+                <input id="pic-form-account" type="text" value="${escapeHtml(draft.bankAccount)}" placeholder="Contoh: 1234 5678 9012" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
+              </div>
+            </div>
+            <div>
+              <label for="pic-form-notes" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Catatan (Opsional)</label>
+              <input id="pic-form-notes" type="text" value="${escapeHtml(draft.notes)}" placeholder="Catatan tambahan PIC (prodi/angkatan/peran)" class="w-full px-3.5 py-2 rounded-lg bg-canvas border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+            </div>
+          </div>
+
+          <!-- Section 2: Weekly Schedule Slots -->
+          <div class="space-y-3 pt-2 border-t border-line">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-brand">Jadwal Sibuk / Kuliah Mingguan (Senin – Sabtu)</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Tambahkan satu atau beberapa slot jam sibuk per hari (misal: 08:00–11:00 dan 14:00–17:00).</p>
+            </div>
+            <div class="space-y-2.5">
+              ${daysEditorHtml}
+            </div>
+          </div>
+
+          <div id="pic-form-error" class="d-none p-3 rounded-lg bg-red-950/80 border border-red-700 text-xs font-medium text-red-200"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-line bg-elevated/40 flex items-center justify-end gap-2.5 shrink-0">
+          <button type="button" data-close-modal="modal-pic-form" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+          <button id="btn-save-pic-form" type="button" data-action="pic-save-form" class="px-5 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-extrabold transition-colors">
+            ${isEdit ? 'Simpan Perubahan' : 'Simpan PIC'}
+          </button>
+        </div>
+      `;
+    }
+
+    async function savePicForm() {
+      if (!requireAdmin() || !state.picEditDraft) return;
+      syncPicDraftFromDom();
+
+      const draft = state.picEditDraft;
+      const errBox = document.getElementById('pic-form-error');
+      const saveBtn = document.getElementById('btn-save-pic-form');
+      if (errBox) errBox.classList.add('d-none');
+
+      const name = draft.name.trim();
+      if (!name) {
+        if (errBox) {
+          errBox.textContent = 'Nama Lengkap PIC wajib diisi.';
+          errBox.classList.remove('d-none');
+        }
+        return;
+      }
+
+      // Validate & clean weekly slots
+      const cleanSchedule = {};
+      for (const d of PIC_DAYS) {
+        const rawList = draft.schedule[d.key] || [];
+        const dayClean = [];
+        for (const slot of rawList) {
+          const sm = timeToMinutes(slot.start);
+          const em = timeToMinutes(slot.end);
+          if (sm === null || em === null || em <= sm) {
+            if (errBox) {
+              errBox.textContent = `Slot jadwal hari ${d.label} tidak valid (${slot.start || '--:--'} – ${slot.end || '--:--'}). Pastikan Jam Selesai lebih besar dari Jam Mulai.`;
+              errBox.classList.remove('d-none');
+            }
+            return;
+          }
+          dayClean.push({
+            start: minutesToHHMM(sm),
+            end: minutesToHHMM(em),
+            label: String(slot.label || '').trim()
+          });
+        }
+        dayClean.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+        cleanSchedule[d.key] = dayClean;
+      }
+
+      const isEdit = Boolean(draft.id);
+      const picId = isEdit ? draft.id : push(ref(db, 'pics')).key;
+      const nowTs = Date.now();
+      const existingCreatedAt = isEdit && state.pics[picId]?.createdAt ? state.pics[picId].createdAt : nowTs;
+
+      const profilePayload = {
+        phone: draft.phone.trim(),
+        bankName: draft.bankName.trim() || 'BCA',
+        bankAccount: draft.bankAccount.trim(),
+        notes: draft.notes.trim(),
+        updatedAt: nowTs
+      };
+
+      const atomicUpdates = {
+        [`pics/${picId}`]: {
+          name,
+          active: true,
+          createdAt: existingCreatedAt,
+          updatedAt: nowTs
+        },
+        [`picSchedules/${picId}`]: cleanSchedule,
+        [`picProfiles/${picId}`]: profilePayload
+      };
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Menyimpan...';
+      }
+
+      try {
+        await update(ref(db), atomicUpdates);
+        state.picProfilesCache[picId] = profilePayload;
+        state.picEditDraft = null;
+        closeModal('modal-pic-form');
+        showToast(isEdit ? `Data PIC "${name}" berhasil diperbarui.` : `PIC "${name}" berhasil ditambahkan.`, 'success');
+        if (!isEdit && state.view !== 'pic-detail') {
+          navigateTo('pic-detail', picId);
+        } else {
+          renderAll();
+        }
+      } catch (err) {
+        handleWriteError(err, 'Gagal menyimpan data PIC. Pastikan Rules database untuk /pics, /picSchedules, dan /picProfiles sudah aktif.');
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = isEdit ? 'Simpan Perubahan' : 'Simpan PIC';
+        }
+      }
+    }
+
+    function confirmDeletePic(picId) {
+      if (!requireAdmin()) return;
+      const pic = state.pics[picId];
+      if (!pic) return;
+
+      openConfirm({
+        title: 'Hapus Data PIC?',
+        message: `Seluruh data "${pic.name}" termasuk profil kontak, rekening, dan jadwal mingguannya akan dihapus permanen dari database.`,
+        okText: 'Ya, Hapus PIC',
+        cancelText: 'Batal',
+        danger: true,
+        onConfirm: async () => {
+          try {
+            await update(ref(db), {
+              [`pics/${picId}`]: null,
+              [`picSchedules/${picId}`]: null,
+              [`picProfiles/${picId}`]: null
+            });
+            delete state.picProfilesCache[picId];
+            showToast(`Data PIC "${pic.name}" berhasil dihapus.`, 'info');
+            navigateTo('pic-data');
+          } catch (err) {
+            handleWriteError(err, 'Gagal menghapus data PIC.');
+          }
+        }
+      });
     }
 
     // ==================== 8. LIVE 1-SECOND CLOCK & TIMER ENGINE ====================
@@ -4055,11 +5633,14 @@
         navigateTo('monitor');
       }
     });
-    document.getElementById('nav-workspace').addEventListener('click', () => navigateTo('workspace'));
     document.getElementById('nav-monitor').addEventListener('click', () => navigateTo('monitor'));
     document.getElementById('nav-history').addEventListener('click', () => navigateTo('history'));
+    document.getElementById('nav-jadwal').addEventListener('click', () => navigateTo('jadwal'));
+    document.getElementById('nav-pic-data').addEventListener('click', () => navigateTo('pic-data'));
     document.getElementById('nav-monitor-mobile').addEventListener('click', () => navigateTo('monitor'));
     document.getElementById('nav-history-mobile').addEventListener('click', () => navigateTo('history'));
+    document.getElementById('nav-jadwal-mobile').addEventListener('click', () => navigateTo('jadwal'));
+    document.getElementById('nav-pic-data-mobile').addEventListener('click', () => navigateTo('pic-data'));
     document.getElementById('btn-back-monitor').addEventListener('click', () => navigateTo('monitor'));
     document.getElementById('btn-close-alert').addEventListener('click', hideGlobalAlert);
 
@@ -4104,15 +5685,27 @@
       }
     });
 
+    // Unlock login fields only on real user interaction (blocks silent browser autofill after logout)
+    ['login-email', 'login-password'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const unlockField = () => {
+        if (el.hasAttribute('readonly')) {
+          el.removeAttribute('readonly');
+        }
+      };
+      el.addEventListener('pointerdown', unlockField);
+      el.addEventListener('touchstart', unlockField, { passive: true });
+      el.addEventListener('focus', unlockField);
+      el.addEventListener('keydown', unlockField);
+    });
+
     // Auth buttons
     document.getElementById('btn-open-login').addEventListener('click', () => {
-      document.getElementById('login-error').classList.add('d-none');
-      document.getElementById('form-login').reset();
-      openModal('modal-login');
-      setTimeout(() => document.getElementById('login-email').focus(), 40);
+      openLoginModal();
     });
     document.getElementById('btn-empty-login').addEventListener('click', () => {
-      document.getElementById('btn-open-login').click();
+      openLoginModal();
     });
 
     document.getElementById('btn-logout').addEventListener('click', async () => {
@@ -4120,7 +5713,9 @@
         stopAdminIdleMonitor();
         clearAdminActivity();
         unsubscribeAdminHistory();
+        unsubscribeAdminPics();
         purgeProtectedDOM();
+        resetLoginFormFields();
         await signOut(auth);
         showToast('Berhasil logout. Kembali ke Mode Viewer Publik.', 'info');
       } catch (err) {
@@ -4146,6 +5741,7 @@
         state.justLoggedIn = true;
         await signInWithEmailAndPassword(auth, email, password);
         closeModal('modal-login');
+        resetLoginFormFields();
         showToast('Login Admin berhasil. Auto-logout aktif jika tidak ada aktivitas selama 6 jam.', 'success');
       } catch (err) {
         state.justLoggedIn = false;
@@ -4472,16 +6068,27 @@
       if (typeof cb === 'function') await cb();
     });
 
-    // Generic Modal Close buttons & backdrop click
+    // Generic Modal Close buttons, Mini Calendar outside click & delegated dynamic actions
     document.addEventListener('click', (e) => {
+      // Close mini calendar popup if clicking outside calendar & trigger button
+      if (state.jadwalCalendarOpen && !e.target.closest('#jadwal-mini-calendar') && !e.target.closest('#btn-jadwal-calendar')) {
+        state.jadwalCalendarOpen = false;
+        renderJadwalPicView();
+      }
+
       const closeBtn = e.target.closest('[data-close-modal]');
       if (closeBtn) {
-        closeModal(closeBtn.dataset.closeModal);
+        const modalId = closeBtn.dataset.closeModal;
+        closeModal(modalId);
+        if (modalId === 'modal-login') resetLoginFormFields();
+        if (modalId === 'modal-pic-form') state.picEditDraft = null;
         return;
       }
 
       if (e.target.classList.contains('modal-backdrop')) {
         e.target.classList.add('d-none');
+        if (e.target.id === 'modal-login') resetLoginFormFields();
+        if (e.target.id === 'modal-pic-form') state.picEditDraft = null;
         return;
       }
 
@@ -4492,17 +6099,147 @@
       const action = actionEl.dataset.action;
       const roomId = actionEl.dataset.roomId || state.selectedRoomId;
       const itemId = actionEl.dataset.itemId;
+      const picId = actionEl.dataset.picId || state.selectedPicId;
 
       switch (action) {
         case 'workspace-open-monitor':
           navigateTo('monitor');
           break;
+        case 'workspace-open-jadwal':
+          navigateTo('jadwal');
+          break;
+        case 'workspace-open-pic-data':
+        case 'nav-pic-data':
+          navigateTo('pic-data');
+          break;
         case 'bottom-nav-monitor':
           navigateTo('monitor');
           break;
-        case 'open-coming-soon':
-          openComingSoonModal(actionEl.dataset.feature || 'jadwal');
+        case 'bottom-nav-jadwal':
+          navigateTo('jadwal');
           break;
+        case 'open-coming-soon':
+          openComingSoonModal(actionEl.dataset.feature || 'absensi');
+          break;
+        // ---- Modul PIC & Jadwal PIC ----
+        case 'cal-toggle': {
+          state.jadwalCalendarOpen = !state.jadwalCalendarOpen;
+          if (state.jadwalCalendarOpen) {
+            const meta = getDayMetaFromISO(state.jadwalDate);
+            state.jadwalCalYear = meta.year;
+            state.jadwalCalMonth = meta.month;
+          }
+          renderJadwalPicView();
+          break;
+        }
+        case 'cal-prev-month': {
+          state.jadwalCalMonth -= 1;
+          if (state.jadwalCalMonth < 0) {
+            state.jadwalCalMonth = 11;
+            state.jadwalCalYear -= 1;
+          }
+          renderJadwalPicView();
+          break;
+        }
+        case 'cal-next-month': {
+          state.jadwalCalMonth += 1;
+          if (state.jadwalCalMonth > 11) {
+            state.jadwalCalMonth = 0;
+            state.jadwalCalYear += 1;
+          }
+          renderJadwalPicView();
+          break;
+        }
+        case 'cal-today': {
+          const todayStr = todayISO();
+          const meta = getDayMetaFromISO(todayStr);
+          state.jadwalDate = todayStr;
+          state.jadwalCalYear = meta.year;
+          state.jadwalCalMonth = meta.month;
+          state.jadwalCalendarOpen = false;
+          renderJadwalPicView();
+          break;
+        }
+        case 'cal-close': {
+          state.jadwalCalendarOpen = false;
+          renderJadwalPicView();
+          break;
+        }
+        case 'cal-pick-date': {
+          const picked = actionEl.dataset.date;
+          if (picked) {
+            state.jadwalDate = picked;
+            state.jadwalCalendarOpen = false;
+            renderJadwalPicView();
+          }
+          break;
+        }
+        case 'jadwal-search': {
+          const startInput = document.getElementById('jadwal-input-start');
+          const endInput = document.getElementById('jadwal-input-end');
+          if (startInput && startInput.value) state.jadwalStartTime = startInput.value;
+          if (endInput && endInput.value) state.jadwalEndTime = endInput.value;
+          state.jadwalCalendarOpen = false;
+          state.jadwalSearched = true;
+          state.jadwalStatusFilter = 'all';
+          renderJadwalPicView();
+          break;
+        }
+        case 'jadwal-filter': {
+          state.jadwalStatusFilter = actionEl.dataset.status || 'all';
+          renderJadwalPicView();
+          break;
+        }
+        case 'open-add-pic':
+          openPicFormModal(null);
+          break;
+        case 'open-edit-pic':
+          openPicFormModal(picId);
+          break;
+        case 'open-pic-detail':
+          if (picId) navigateTo('pic-detail', picId);
+          break;
+        case 'delete-pic':
+          if (picId) confirmDeletePic(picId);
+          break;
+        case 'pic-add-slot': {
+          if (!state.picEditDraft) break;
+          syncPicDraftFromDom();
+          const dayKey = actionEl.dataset.day;
+          if (dayKey && state.picEditDraft.schedule[dayKey]) {
+            const existing = state.picEditDraft.schedule[dayKey];
+            let nextStart = '08:00';
+            let nextEnd = '11:00';
+            if (existing.length > 0) {
+              const lastEndMin = timeToMinutes(existing[existing.length - 1].end);
+              if (lastEndMin !== null && lastEndMin <= 20 * 60) {
+                nextStart = minutesToHHMM(Math.min(21 * 60, lastEndMin + 60));
+                nextEnd = minutesToHHMM(Math.min(23 * 60, lastEndMin + 180));
+              } else {
+                nextStart = '14:00';
+                nextEnd = '16:00';
+              }
+            }
+            existing.push({ start: nextStart, end: nextEnd, label: '' });
+            renderPicFormModal();
+          }
+          break;
+        }
+        case 'pic-remove-slot': {
+          if (!state.picEditDraft) break;
+          syncPicDraftFromDom();
+          const dayKey = actionEl.dataset.day;
+          const idx = Number(actionEl.dataset.idx);
+          if (dayKey && state.picEditDraft.schedule[dayKey] && !Number.isNaN(idx)) {
+            state.picEditDraft.schedule[dayKey].splice(idx, 1);
+            renderPicFormModal();
+          }
+          break;
+        }
+        case 'pic-save-form':
+          savePicForm();
+          break;
+        // ---- Modul Rundown Monitor ----
         case 'open-room':
           navigateTo('room', roomId);
           break;
@@ -4578,6 +6315,11 @@
     // Keyboard Shortcuts: ESC closes top-most modal, Shift + ArrowRight triggers NEXT CUE for Admin in Room View
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (state.jadwalCalendarOpen) {
+          state.jadwalCalendarOpen = false;
+          renderJadwalPicView();
+          return;
+        }
         if (!document.getElementById('modal-confirm').classList.contains('d-none')) {
           state.confirmCallback = null;
           closeModal('modal-confirm');
@@ -4587,11 +6329,21 @@
           closeModal('modal-import');
           return;
         }
-        ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-coming-soon'].forEach(closeModal);
+        if (!document.getElementById('modal-pic-form').classList.contains('d-none')) {
+          state.picEditDraft = null;
+          closeModal('modal-pic-form');
+          return;
+        }
+        if (!document.getElementById('modal-login').classList.contains('d-none')) {
+          closeModal('modal-login');
+          resetLoginFormFields();
+          return;
+        }
+        ['modal-room', 'modal-item', 'modal-history-detail', 'modal-coming-soon'].forEach(closeModal);
         return;
       }
       const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-confirm']
+      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-confirm']
         .some(id => !document.getElementById(id).classList.contains('d-none'));
 
       if (e.shiftKey && e.key === 'ArrowRight' && !isInputFocused && !anyModalOpen && state.isAdmin && state.view === 'room' && state.selectedRoomId) {
