@@ -149,8 +149,8 @@
       <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
         <button id="btn-brand-home" type="button" class="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none min-w-0" title="Beranda Camvis">
           <span class="relative inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0">
-            <span aria-hidden="true" class="pointer-events-none absolute -inset-2.5 rounded-full blur-[6px] opacity-85 group-hover:opacity-100 transition-opacity" style="background: radial-gradient(circle, rgba(2,195,249,0.44) 0%, rgba(2,195,249,0.18) 46%, rgba(2,195,249,0) 74%);"></span>
-            <img src="./icon-512.png" alt="Logo Camvis" class="relative z-10 w-9 h-9 sm:w-10 sm:h-10 object-contain group-hover:scale-105 transition-transform" style="filter: drop-shadow(0 0 6px rgba(2,195,249,0.52)) drop-shadow(0 0 14px rgba(2,195,249,0.32));" />
+            <span aria-hidden="true" class="pointer-events-none absolute -inset-2 rounded-full blur-[5px] opacity-80 group-hover:opacity-100 transition-opacity" style="background: radial-gradient(circle, rgba(2,195,249,0.20) 0%, rgba(2,195,249,0.07) 48%, rgba(2,195,249,0) 74%);"></span>
+            <img src="./icon-512.png" alt="Logo Camvis" class="relative z-10 w-9 h-9 sm:w-10 sm:h-10 object-contain group-hover:scale-105 transition-transform" style="filter: drop-shadow(0 0 8px rgba(2,195,249,0.28));" />
           </span>
           <div class="leading-tight min-w-0 flex items-center gap-2">
             <span class="font-extrabold text-base sm:text-lg tracking-tight text-white whitespace-nowrap group-hover:text-brand-soft transition-colors">Camvis</span>
@@ -3692,7 +3692,7 @@
           <div class="bg-surface/70 border border-line border-dashed rounded-2xl p-8 sm:p-10 text-center space-y-2">
             <div class="text-sm font-bold text-slate-200">Pilih Tanggal &amp; Jam Acara lalu klik "Cari PIC"</div>
             <p class="text-xs text-slate-400 max-w-lg mx-auto leading-relaxed">
-              Sistem akan mencocokkan rentang waktu acara terhadap jadwal mingguan <strong class="text-slate-200">${allPics.length} PIC</strong> (hanya menarik Nama &amp; Jadwal) dan mengelompokkannya ke indikator Hijau, Kuning, Oren, dan Merah.
+              Sistem akan otomatis mencocokkan jadwal PIC
             </p>
           </div>
         `;
@@ -5781,8 +5781,8 @@
 
     document.getElementById('btn-logout').addEventListener('click', () => {
       openConfirm({
-        title: 'Keluar dari Mode Admin?',
-        message: 'Apakah kamu yakin ingin logout dari akun Admin? Anda harus login kembali untuk mengakses Workspace, kontrol Rundown, History, dan Data PIC.',
+        title: 'Konfirmasi Logout',
+        message: 'Apakah kamu yakin ingin logout?',
         okText: 'Ya, Logout',
         cancelText: 'Batal',
         danger: true,
