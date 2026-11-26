@@ -186,7 +186,7 @@
         </div>
 
         <!-- Connection Indicator -->
-        <div id="sync-indicator" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-elevated border border-line text-xs font-medium text-slate-300" title="Status Koneksi Firebase Real-Time">
+        <div id="sync-indicator" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-elevated border border-line text-xs font-medium text-slate-300" title="Status Koneksi Server Real-Time">
           <span id="sync-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
           <span id="sync-text" class="tracking-wide uppercase text-[11px]">CONNECTING</span>
         </div>
@@ -256,9 +256,9 @@
   <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6">
 
     <!-- Loading Skeleton -->
-    <div id="view-loading" class="py-24 flex flex-col items-center justify-center gap-4 text-slate-400">
+    <div id="view-loading" class="py-24 flex flex-col items-center justify-center gap-4 text-slate-400 text-center">
       <div class="w-10 h-10 rounded-full border-2 border-line-strong border-t-amber-400 animate-spin"></div>
-      <p class="text-sm font-medium tracking-wide">Menghubungkan ke Firebase Realtime Database...</p>
+      <p class="text-sm font-medium tracking-wide">Menghubungkan ke Server...</p>
     </div>
 
     <!-- ==================== VIEW 1: MASTER MONITOR ==================== -->
@@ -472,9 +472,9 @@
 
   <!-- ==================== FOOTER ==================== -->
   <footer class="border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500">
-    <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+    <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
       <span>Rundown Live &bull; Real-Time Multi-Room Production Monitor</span>
-      <span class="font-mono text-[11px] text-slate-500">Firebase v10 Realtime Sync &bull; High-Contrast Field Mode</span>
+      <span class="font-mono text-[11px] text-slate-500">Real-Time Cloud Sync &bull; High-Contrast Field Mode</span>
     </div>
   </footer>
 
@@ -498,7 +498,7 @@
 
       <form id="form-login" class="p-6 space-y-4">
         <p class="text-xs text-slate-400 leading-relaxed">
-          Masuk menggunakan akun Admin Firebase Authentication untuk mengaktifkan kontrol <strong class="text-slate-200">NEXT CUE</strong>, manajemen ruangan, dan edit rundown.
+          Masuk menggunakan akun Admin untuk mengaktifkan kontrol <strong class="text-slate-200">NEXT CUE</strong>, manajemen ruangan, dan edit rundown.
         </p>
 
         <div id="login-error" class="d-none p-3 rounded-lg bg-red-950/80 border border-red-700 text-xs font-medium text-red-200"></div>
@@ -785,7 +785,7 @@
             <div>
               <h4 class="text-xs font-bold uppercase tracking-wider text-amber-300">Pengaturan Gemini API Key (Untuk Scan Foto / PDF)</h4>
               <p class="text-[11px] text-slate-400 mt-0.5">
-                Disimpan aman di Firebase khusus Admin (<code class="font-mono text-slate-300">/adminSecrets/geminiApiKey</code>). File Excel/CSV tetap bisa dibaca instan tanpa API Key.
+                Disimpan aman di server khusus Admin. File Excel/CSV tetap bisa dibaca instan tanpa API Key.
               </p>
             </div>
             <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-amber-400 hover:text-amber-300 underline">
@@ -1318,10 +1318,10 @@
         console.error('Firebase RTDB read error:', error);
         if (error.code === 'PERMISSION_DENIED') {
           showGlobalAlert(
-            `<strong>Akses Database Ditolak (PERMISSION_DENIED).</strong> Pastikan Firebase Realtime Database Rules mengizinkan akses baca publik: <code class="font-mono bg-black/40 px-1.5 py-0.5 rounded text-xs">{ "rules": { ".read": true, ".write": "auth != null" } }</code>.`
+            `<strong>Akses Database Ditolak (PERMISSION_DENIED).</strong> Silakan periksa pengaturan izin akses server.`
           );
         } else {
-          showGlobalAlert(`Gagal memuat data Firebase: ${escapeHtml(error.message)}`);
+          showGlobalAlert(`Gagal memuat data dari server: ${escapeHtml(error.message)}`);
         }
         renderAll();
       }
@@ -2424,7 +2424,7 @@
     function handleWriteError(err, fallbackMsg) {
       console.error(err);
       if (err && err.code === 'PERMISSION_DENIED') {
-        showToast('Izin ditolak oleh Firebase Database Rules.', 'error');
+        showToast('Izin ditolak oleh server. Pastikan Anda login dengan akun Admin yang sah.', 'error');
       } else {
         showToast(fallbackMsg || err.message || 'Terjadi kesalahan saat menyimpan.', 'error');
       }
@@ -2813,7 +2813,7 @@
       if (!room) return;
       openConfirm({
         title: 'Hapus Permanen dari History?',
-        message: `Data arsip dan riwayat keterlambatan "${room.name}" akan dihapus permanen dari Firebase. Tindakan ini tidak dapat dibatalkan.`,
+        message: `Data arsip dan riwayat keterlambatan "${room.name}" akan dihapus permanen dari server. Tindakan ini tidak dapat dibatalkan.`,
         okText: 'Hapus Permanen',
         danger: true,
         onConfirm: async () => {
@@ -3813,15 +3813,15 @@
         input.value = '';
         updateApiKeyStatusUI();
         document.getElementById('import-apikey-panel').classList.add('d-none');
-        showToast('Gemini API Key berhasil disimpan aman di Firebase khusus Admin.', 'success');
+        showToast('Gemini API Key berhasil disimpan aman di server khusus Admin.', 'success');
       } catch (err) {
-        // Fallback to localStorage if Firebase Rules restrict root /adminSecrets
+        // Fallback to localStorage if server Rules restrict root /adminSecrets
         try {
           localStorage.setItem(LOCAL_GEMINI_KEY_FALLBACK, key);
           input.value = '';
           updateApiKeyStatusUI();
           document.getElementById('import-apikey-panel').classList.add('d-none');
-          showToast('API Key disimpan di browser ini (tambahkan akses /adminSecrets di Firebase Rules untuk sinkron lintas perangkat).', 'warning');
+          showToast('API Key disimpan di browser ini (sinkronisasi server tidak tersedia untuk path ini).', 'warning');
         } catch (_) {
           handleWriteError(err, 'Gagal menyimpan API Key.');
         }
@@ -4590,7 +4590,7 @@ Aturan wajib:
         closeModal('modal-import');
         showToast(`${cleaned.length} sesi berhasil ditambahkan ke rundown ruangan!`, 'success');
       } catch (err) {
-        handleWriteError(err, 'Gagal menyimpan hasil import ke Firebase.');
+        handleWriteError(err, 'Gagal menyimpan hasil import ke server.');
       }
     }
 
