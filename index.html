@@ -147,8 +147,11 @@
 
       <!-- Left: Brand & Desktop Nav -->
       <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
-        <button id="btn-brand-home" type="button" class="flex items-center gap-2 sm:gap-2.5 text-left group focus:outline-none min-w-0" title="Beranda Camvis">
-          <img src="./icon-512.png" alt="Logo Camvis" class="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_0_6px_rgba(2,195,249,0.22)] group-hover:scale-105 transition-transform" />
+        <button id="btn-brand-home" type="button" class="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none min-w-0" title="Beranda Camvis">
+          <span class="relative inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0">
+            <span aria-hidden="true" class="pointer-events-none absolute -inset-2.5 rounded-full blur-[6px] opacity-85 group-hover:opacity-100 transition-opacity" style="background: radial-gradient(circle, rgba(2,195,249,0.44) 0%, rgba(2,195,249,0.18) 46%, rgba(2,195,249,0) 74%);"></span>
+            <img src="./icon-512.png" alt="Logo Camvis" class="relative z-10 w-9 h-9 sm:w-10 sm:h-10 object-contain group-hover:scale-105 transition-transform" style="filter: drop-shadow(0 0 6px rgba(2,195,249,0.52)) drop-shadow(0 0 14px rgba(2,195,249,0.32));" />
+          </span>
           <div class="leading-tight min-w-0 flex items-center gap-2">
             <span class="font-extrabold text-base sm:text-lg tracking-tight text-white whitespace-nowrap group-hover:text-brand-soft transition-colors">Camvis</span>
           </div>
