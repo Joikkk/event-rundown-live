@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rundown Live — Real-Time Event Cue & Multi-Room Monitor</title>
-  <meta name="description" content="Sistem monitoring rundown event real-time multi-ruangan dengan live cue, kalkulasi keterlambatan otomatis, dan riwayat event." />
+  <title>Camvis — Real-Time Live Rundown Monitor</title>
+  <meta name="description" content="Sistem monitoring rundown event real-time multi-ruangan Camvis UMN dengan live cue, kalkulasi keterlambatan otomatis, dan riwayat event." />
 
   <!-- PWA Manifest & Theme -->
   <link rel="manifest" href="./manifest.json" />
@@ -15,7 +15,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="Rundown" />
+  <meta name="apple-mobile-web-app-title" content="Camvis" />
   <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
 
   <!-- Fonts: Inter + JetBrains Mono for high-contrast broadcast legibility -->
@@ -43,6 +43,12 @@
             elevated: '#171D27',
             line: '#252E3D',
             'line-strong': '#334155',
+            brand: {
+              DEFAULT: '#02c3f9',
+              hover: '#38d2ff',
+              deep: '#0284c7',
+              soft: '#7dd3fc',
+            }
           }
         }
       }
@@ -133,7 +139,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-canvas text-slate-100 flex flex-col selection:bg-amber-400 selection:text-slate-950">
+<body class="min-h-screen bg-canvas text-slate-100 flex flex-col selection:bg-brand selection:text-slate-950">
 
   <!-- ==================== STICKY HEADER / NAVBAR ==================== -->
   <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line">
@@ -142,14 +148,9 @@
       <!-- Left: Brand & Desktop Nav -->
       <div class="flex items-center gap-3 sm:gap-4 min-w-0">
         <button id="btn-brand-home" type="button" class="flex items-center gap-2 sm:gap-2.5 text-left group focus:outline-none min-w-0">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-extrabold text-sm tracking-tight shrink-0 shadow-sm group-hover:bg-amber-300 transition-colors">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-          </div>
+          <img src="./icon-512.png" alt="Logo Camvis" class="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_0_6px_rgba(2,195,249,0.22)] group-hover:scale-105 transition-transform" />
           <div class="leading-tight min-w-0">
-            <div class="font-extrabold text-[13px] sm:text-base tracking-tight text-white whitespace-nowrap">RUNDOWN<span class="text-amber-400">LIVE</span></div>
-            <div class="text-[11px] font-medium text-slate-400 tracking-wide uppercase hidden sm:block">Broadcast Cue Monitor</div>
+            <div class="font-extrabold text-base sm:text-lg tracking-tight text-white whitespace-nowrap group-hover:text-brand-soft transition-colors">Camvis</div>
           </div>
         </button>
 
@@ -187,7 +188,7 @@
 
         <!-- Connection Indicator -->
         <div id="sync-indicator" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-elevated border border-line text-xs font-medium text-slate-300" title="Status Koneksi Server Real-Time">
-          <span id="sync-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="sync-dot" class="w-2 h-2 rounded-full bg-orange-400"></span>
           <span id="sync-text" class="tracking-wide uppercase text-[11px]">CONNECTING</span>
         </div>
 
@@ -201,7 +202,7 @@
         <div id="auth-controls" class="flex items-center gap-1.5 sm:gap-2">
           <!-- Public state: Admin Login Button -->
           <button id="btn-open-login" type="button" class="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs sm:text-sm font-semibold text-white transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
@@ -257,7 +258,7 @@
 
     <!-- Loading Skeleton -->
     <div id="view-loading" class="py-24 flex flex-col items-center justify-center gap-4 text-slate-400 text-center">
-      <div class="w-10 h-10 rounded-full border-2 border-line-strong border-t-amber-400 animate-spin"></div>
+      <div class="w-10 h-10 rounded-full border-2 border-line-strong border-t-brand animate-spin"></div>
       <p class="text-sm font-medium tracking-wide">Menghubungkan ke Server...</p>
     </div>
 
@@ -272,7 +273,7 @@
 
         <div class="flex flex-wrap items-center gap-2.5">
           <!-- Admin-Only Controls -->
-          <button id="btn-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors flex items-center gap-2 shadow-sm">
+          <button id="btn-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors flex items-center gap-2 shadow-sm">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -321,7 +322,7 @@
           Saat ini belum ada rundown ruangan yang berjalan. Login sebagai Admin untuk menambahkan ruangan baru atau cek tab History untuk melihat event sebelumnya.
         </p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <button id="btn-empty-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+          <button id="btn-empty-add-room" type="button" class="admin-only d-none px-4 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors">
             + Buat Ruangan Pertama
           </button>
           <button id="btn-empty-login" type="button" class="public-only px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-100 text-sm font-semibold transition-colors">
@@ -352,7 +353,7 @@
           <button id="btn-room-edit" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-line text-xs font-semibold text-slate-200 transition-colors">
             Edit Ruangan
           </button>
-          <button id="btn-room-reset" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-amber-500/15 hover:border-amber-400 hover:text-amber-300 border border-line text-xs font-semibold text-slate-300 transition-colors" title="Reset semua cue kembali ke standby (misal setelah gladi resik)">
+          <button id="btn-room-reset" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-orange-500/15 hover:border-orange-400 hover:text-orange-300 border border-line text-xs font-semibold text-slate-300 transition-colors" title="Reset semua cue kembali ke standby (misal setelah gladi resik)">
             Reset Show
           </button>
           <button id="btn-room-delete" type="button" class="px-3 py-2 rounded-lg bg-surface hover:bg-red-600 hover:border-red-500 hover:text-white border border-line text-xs font-semibold text-slate-200 transition-colors" title="Hapus ruangan / event ini">
@@ -382,7 +383,7 @@
             <span>Fokus Sesi Aktif</span>
           </button>
 
-          <button id="btn-import-room" type="button" class="admin-only d-none px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-amber-400/50 hover:border-amber-400 text-xs font-bold text-amber-300 transition-colors flex items-center gap-1.5" title="Upload Foto, Paste Screenshot, atau File Excel/CSV">
+          <button id="btn-import-room" type="button" class="admin-only d-none px-3 py-2 rounded-lg bg-surface hover:bg-elevated border border-brand/50 hover:border-brand text-xs font-bold text-brand-soft transition-colors flex items-center gap-1.5" title="Upload Foto, Paste Screenshot, atau File Excel/CSV">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17 8 12 3 7 8"></polyline>
@@ -391,7 +392,7 @@
             <span>Import Foto / File</span>
           </button>
 
-          <button id="btn-add-item" type="button" class="admin-only d-none px-3.5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5">
+          <button id="btn-add-item" type="button" class="admin-only d-none px-3.5 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -443,7 +444,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input id="history-search" type="search" placeholder="Cari ruangan atau event..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface border border-line focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+            <input id="history-search" type="search" placeholder="Cari ruangan atau event..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
           </div>
         </div>
       </div>
@@ -471,11 +472,8 @@
   </main>
 
   <!-- ==================== FOOTER ==================== -->
-  <footer class="border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500">
-    <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-      <span>Rundown Live &bull; Real-Time Multi-Room Production Monitor</span>
-      <span class="font-mono text-[11px] text-slate-500">Real-Time Cloud Sync &bull; High-Contrast Field Mode</span>
-    </div>
+  <footer class="border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500 text-center">
+    Camvis UMN &copy; 2026
   </footer>
 
   <!-- ==================== MODALS ==================== -->
@@ -485,7 +483,7 @@
     <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
       <div class="px-6 py-4 border-b border-line flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-amber-400/15 text-amber-400 flex items-center justify-center">
+          <div class="w-8 h-8 rounded-lg bg-brand/15 text-brand flex items-center justify-center">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -505,19 +503,19 @@
 
         <div>
           <label for="login-email" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email Admin</label>
-          <input id="login-email" type="email" required autocomplete="email" placeholder="admin@event.com" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          <input id="login-email" type="email" required autocomplete="email" placeholder="admin@event.com" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
         </div>
 
         <div>
           <label for="login-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
-          <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2.5">
           <button type="button" data-close-modal="modal-login" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
             Batal
           </button>
-          <button id="btn-submit-login" type="submit" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors flex items-center gap-2">
+          <button id="btn-submit-login" type="submit" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors flex items-center gap-2">
             <span>Masuk Admin</span>
           </button>
         </div>
@@ -539,29 +537,29 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label for="room-input-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Ruangan / Stage *</label>
-            <input id="room-input-name" type="text" required placeholder="Contoh: Main Ballroom — Stage A" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+            <input id="room-input-name" type="text" required placeholder="Contoh: Main Ballroom — Stage A" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
           </div>
           <div>
             <label for="room-input-event" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Event / Acara *</label>
-            <input id="room-input-event" type="text" required placeholder="Contoh: Indonesia Tech Summit 2026" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+            <input id="room-input-event" type="text" required placeholder="Contoh: Indonesia Tech Summit 2026" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label for="room-input-location" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Lokasi / Venue</label>
-            <input id="room-input-location" type="text" placeholder="Contoh: Lantai 3, Hall Utama" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+            <input id="room-input-location" type="text" placeholder="Contoh: Lantai 3, Hall Utama" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
           </div>
           <div>
             <label for="room-input-date" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Tanggal Event</label>
-            <input id="room-input-date" type="date" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+            <input id="room-input-date" type="date" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white font-mono" />
           </div>
         </div>
 
         <!-- Optional Inline Rundown Creation Toggle (New Room Only) -->
         <div id="room-draft-rundown-toggle-wrap" class="pt-1 border-t border-line/80">
           <label class="flex items-start gap-2.5 cursor-pointer select-none py-1">
-            <input id="room-input-with-rundown" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas text-amber-400 focus:ring-amber-400 accent-amber-400 cursor-pointer" />
+            <input id="room-input-with-rundown" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas text-brand focus:ring-brand accent-brand cursor-pointer" />
             <div>
               <span class="text-sm font-semibold text-slate-100 block">Langsung buat daftar rundown sekarang <span class="text-xs font-normal text-slate-400">(Opsional)</span></span>
               <span class="text-xs text-slate-400">Centang jika ingin langsung mengisi sesi rundown bersamaan saat membuat ruangan.</span>
@@ -577,7 +575,7 @@
               <p class="text-[11px] text-slate-400">Jam sesi berikutnya otomatis mengikuti jam selesai sesi di atasnya (kecuali yang dicentang Fixed Time).</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <button id="btn-import-draft" type="button" class="px-3 py-1.5 rounded-lg bg-surface hover:bg-elevated border border-amber-400/50 hover:border-amber-400 text-xs font-bold text-amber-300 transition-colors flex items-center gap-1.5" title="Upload Foto, Paste Screenshot, atau File Excel/CSV">
+              <button id="btn-import-draft" type="button" class="px-3 py-1.5 rounded-lg bg-surface hover:bg-elevated border border-brand/50 hover:border-brand text-xs font-bold text-brand-soft transition-colors flex items-center gap-1.5" title="Upload Foto, Paste Screenshot, atau File Excel/CSV">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="17 8 12 3 7 8"></polyline>
@@ -618,7 +616,7 @@
           <button type="button" data-close-modal="modal-room" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
             Batal
           </button>
-          <button id="btn-submit-room" type="submit" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+          <button id="btn-submit-room" type="submit" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors">
             Simpan Ruangan
           </button>
         </div>
@@ -640,17 +638,17 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="item-input-start" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jam Mulai (Rencana) *</label>
-            <input id="item-input-start" type="time" required class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+            <input id="item-input-start" type="time" required class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white font-mono" />
           </div>
           <div>
             <label for="item-input-duration" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Durasi (Menit) *</label>
-            <input id="item-input-duration" type="number" min="1" max="1440" required placeholder="15" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+            <input id="item-input-duration" type="number" min="1" max="1440" required placeholder="15" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white font-mono" />
           </div>
         </div>
 
         <!-- Live Gap Warning (only shown when non-hard-time start != previous end) -->
-        <div id="item-gap-warning" class="d-none p-3 rounded-lg bg-amber-950/60 border border-amber-500/60 text-xs text-amber-200 leading-relaxed flex items-start gap-2">
-          <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <div id="item-gap-warning" class="d-none p-3 rounded-lg bg-orange-950/60 border border-orange-500/60 text-xs text-orange-200 leading-relaxed flex items-start gap-2">
+          <svg class="w-4 h-4 text-orange-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
             <line x1="12" y1="9" x2="12" y2="13"></line>
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -673,7 +671,7 @@
 
           <div id="item-cascade-wrap" class="d-none pt-2 border-t border-line/70">
             <label class="flex items-start gap-2.5 cursor-pointer select-none">
-              <input id="item-input-cascade" type="checkbox" checked class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas accent-amber-400 cursor-pointer" />
+              <input id="item-input-cascade" type="checkbox" checked class="mt-0.5 w-4 h-4 rounded border-line-strong bg-canvas accent-brand cursor-pointer" />
               <div class="leading-tight">
                 <span class="text-xs font-bold text-slate-100">Otomatis update jam mulai sesi di bawahnya</span>
                 <p class="text-[11px] text-slate-400 mt-0.5">Sesi berikutnya akan menyesuaikan jam selesai sesi ini (berhenti jika bertemu sesi Fixed Time).</p>
@@ -684,30 +682,30 @@
 
         <div>
           <label for="item-input-title" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Sesi *</label>
-          <input id="item-input-title" type="text" required placeholder="Contoh: Opening Remarks & Keynote" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          <input id="item-input-title" type="text" required placeholder="Contoh: Opening Remarks & Keynote" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
         </div>
 
         <div>
           <label for="item-input-pic" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">PIC (Penanggung Jawab) *</label>
-          <input id="item-input-pic" type="text" required placeholder="Contoh: MC Raka / Stage Mgr Budi" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500" />
+          <input id="item-input-pic" type="text" required placeholder="Contoh: MC Raka / Stage Mgr Budi" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
         </div>
 
         <div>
           <label for="item-input-notes" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Catatan Teknis / Cue (Opsional)</label>
-          <textarea id="item-input-notes" rows="2" placeholder="Contoh: Mic handheld 2x, bumper video play, lampu dimmer 50%" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500 resize-none"></textarea>
+          <textarea id="item-input-notes" rows="2" placeholder="Contoh: Mic handheld 2x, bumper video play, lampu dimmer 50%" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500 resize-none"></textarea>
         </div>
 
         <!-- Actual Time Editor (Start: active/completed; End: ONLY completed) -->
         <div id="item-actual-time-wrap" class="d-none rounded-xl bg-elevated/60 border border-line-strong p-3.5 space-y-2.5">
-          <div class="text-xs font-bold uppercase tracking-wider text-amber-300">Koreksi Waktu Aktual</div>
+          <div class="text-xs font-bold uppercase tracking-wider text-brand-soft">Koreksi Waktu Aktual</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label for="item-input-actual-start" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1">Jam Mulai Aktual</label>
-              <input id="item-input-actual-start" type="time" class="w-full px-3 py-2 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+              <input id="item-input-actual-start" type="time" class="w-full px-3 py-2 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white font-mono" />
             </div>
             <div id="item-actual-end-col" class="d-none">
               <label for="item-input-actual-end" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1">Jam Selesai Aktual</label>
-              <input id="item-input-actual-end" type="time" class="w-full px-3 py-2 rounded-lg bg-canvas border border-line-strong focus:border-amber-400 focus:outline-none text-sm text-white font-mono" />
+              <input id="item-input-actual-end" type="time" class="w-full px-3 py-2 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white font-mono" />
             </div>
           </div>
           <p id="item-actual-time-hint" class="text-[11px] text-slate-400">Status On Time / Delay otomatis dihitung ulang berdasarkan Jam Mulai Aktual.</p>
@@ -717,7 +715,7 @@
           <button type="button" data-close-modal="modal-item" class="px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
             Batal
           </button>
-          <button id="btn-submit-item" type="submit" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+          <button id="btn-submit-item" type="submit" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors">
             Simpan Sesi
           </button>
         </div>
@@ -744,7 +742,7 @@
           <button id="btn-export-history-csv" type="button" class="px-3.5 py-2 rounded-lg bg-surface hover:bg-elevated border border-line-strong text-xs font-semibold text-slate-200 transition-colors">
             Export CSV
           </button>
-          <button type="button" data-close-modal="modal-history-detail" class="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-colors">
+          <button type="button" data-close-modal="modal-history-detail" class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-xs font-bold transition-colors">
             Tutup
           </button>
         </div>
@@ -767,7 +765,7 @@
 
         <div class="flex items-center gap-2">
           <button id="btn-toggle-apikey" type="button" class="px-3 py-1.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-slate-200 transition-colors flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="w-3.5 h-3.5 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
             </svg>
             <span>API Key AI</span>
@@ -780,22 +778,22 @@
       <div class="p-6 overflow-y-auto space-y-5 flex-1">
 
         <!-- Collapsible Gemini API Key Settings (Admin-Only, Stored in Firebase /adminSecrets) -->
-        <div id="import-apikey-panel" class="d-none rounded-xl bg-canvas border border-amber-400/40 p-4 space-y-3">
+        <div id="import-apikey-panel" class="d-none rounded-xl bg-canvas border border-brand/40 p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-amber-300">Pengaturan Gemini API Key (Untuk Scan Foto / PDF)</h4>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-brand-soft">Pengaturan Gemini API Key (Untuk Scan Foto / PDF)</h4>
               <p class="text-[11px] text-slate-400 mt-0.5">
                 Disimpan aman di server khusus Admin. File Excel/CSV tetap bisa dibaca instan tanpa API Key.
               </p>
             </div>
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-amber-400 hover:text-amber-300 underline">
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-brand hover:text-brand-hover underline">
               Buat API Key Gratis (Google AI Studio) &rarr;
             </a>
           </div>
 
           <div class="flex flex-col sm:flex-row gap-2">
-            <input id="import-apikey-input" type="password" autocomplete="off" placeholder="Tempel Gemini API Key Anda (contoh: AIzaSy...)" class="flex-1 px-3.5 py-2 rounded-lg bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs sm:text-sm text-white font-mono placeholder-slate-500" />
-            <button id="btn-save-apikey" type="button" class="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold transition-colors shrink-0">
+            <input id="import-apikey-input" type="password" autocomplete="off" placeholder="Tempel Gemini API Key Anda (contoh: AIzaSy...)" class="flex-1 px-3.5 py-2 rounded-lg bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs sm:text-sm text-white font-mono placeholder-slate-500" />
+            <button id="btn-save-apikey" type="button" class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-xs sm:text-sm font-bold transition-colors shrink-0">
               Simpan Key
             </button>
             <button id="btn-clear-apikey" type="button" class="px-3 py-2 rounded-lg bg-elevated hover:bg-red-950 hover:text-red-200 border border-line text-xs font-semibold text-slate-300 transition-colors shrink-0">
@@ -806,18 +804,18 @@
         </div>
 
         <!-- Upload / Drag & Drop / Paste Zone -->
-        <div id="import-dropzone" tabindex="0" class="rounded-2xl border-2 border-dashed border-line-strong hover:border-amber-400/80 bg-canvas/70 p-6 sm:p-8 text-center transition-colors cursor-pointer focus:outline-none focus:border-amber-400">
+        <div id="import-dropzone" tabindex="0" class="rounded-2xl border-2 border-dashed border-line-strong hover:border-brand/80 bg-canvas/70 p-6 sm:p-8 text-center transition-colors cursor-pointer focus:outline-none focus:border-brand">
           <input id="import-file-input" type="file" accept=".png,.jpg,.jpeg,.webp,.pdf,.xlsx,.xls,.csv" class="d-none" />
 
           <div id="import-dropzone-empty" class="space-y-2.5">
-            <div class="w-12 h-12 mx-auto rounded-xl bg-elevated border border-line flex items-center justify-center text-amber-400">
+            <div class="w-12 h-12 mx-auto rounded-xl bg-elevated border border-line flex items-center justify-center text-brand">
               <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </div>
-            <div class="text-sm font-bold text-white">Klik untuk pilih file, tarik ke sini, atau tekan <span class="px-1.5 py-0.5 rounded bg-elevated border border-line font-mono text-amber-300 text-xs">Ctrl + V</span> untuk paste foto</div>
+            <div class="text-sm font-bold text-white">Klik untuk pilih file, tarik ke sini, atau tekan <span class="px-1.5 py-0.5 rounded bg-elevated border border-line font-mono text-brand-soft text-xs">Ctrl + V</span> untuk paste foto</div>
             <p class="text-xs text-slate-400 max-w-xl mx-auto">
               Mendukung <strong class="text-slate-200">Foto / Screenshot</strong> (JPG, PNG, WEBP), <strong class="text-slate-200">PDF</strong> (via Gemini AI), serta <strong class="text-slate-200">Excel / CSV / Copy-Paste Google Sheets</strong> (instan &amp; gratis tanpa API Key).
             </p>
@@ -828,7 +826,7 @@
             <img id="import-image-thumb" src="" alt="Preview Rundown" class="d-none max-h-56 mx-auto rounded-xl border border-line-strong object-contain bg-black/40" />
             <div id="import-file-badge" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-elevated border border-line text-xs font-mono text-slate-200"></div>
             <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
-              <button id="btn-run-ai-parse" type="button" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-extrabold transition-colors flex items-center gap-2">
+              <button id="btn-run-ai-parse" type="button" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-xs sm:text-sm font-extrabold transition-colors flex items-center gap-2">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
@@ -842,8 +840,8 @@
         </div>
 
         <!-- Loading Indicator -->
-        <div id="import-loading" class="d-none py-6 flex flex-col items-center justify-center gap-3 text-amber-300">
-          <div class="w-8 h-8 rounded-full border-2 border-line-strong border-t-amber-400 animate-spin"></div>
+        <div id="import-loading" class="d-none py-6 flex flex-col items-center justify-center gap-3 text-brand-soft">
+          <div class="w-8 h-8 rounded-full border-2 border-line-strong border-t-brand animate-spin"></div>
           <p id="import-loading-text" class="text-xs sm:text-sm font-semibold">AI sedang membaca tabel rundown...</p>
         </div>
 
@@ -896,7 +894,7 @@
           <button type="button" data-close-modal="modal-import" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-xs sm:text-sm font-semibold text-slate-200 transition-colors">
             Batal
           </button>
-          <button id="btn-apply-import" type="button" disabled class="px-5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs sm:text-sm font-bold transition-colors">
+          <button id="btn-apply-import" type="button" disabled class="px-5 py-2 rounded-lg bg-brand hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs sm:text-sm font-bold transition-colors">
             Masukkan ke Rundown
           </button>
         </div>
@@ -916,7 +914,7 @@
           <button id="btn-confirm-cancel" type="button" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
             Batal
           </button>
-          <button id="btn-confirm-ok" type="button" class="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors">
+          <button id="btn-confirm-ok" type="button" class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors">
             Ya, Lanjutkan
           </button>
         </div>
@@ -1186,7 +1184,7 @@
         </span>`;
       }
       if (d < 0) {
-        return `<span class="inline-flex items-center gap-1 rounded-md font-mono ${sizeCls} bg-sky-500/20 text-sky-300 border border-sky-500/40">
+        return `<span class="inline-flex items-center gap-1 rounded-md font-mono ${sizeCls} bg-teal-500/20 text-teal-300 border border-teal-500/40">
           LEBIH CEPAT ${formatDelayDuration(d, true)}
         </span>`;
       }
@@ -1239,7 +1237,7 @@
       const colors = {
         success: 'bg-emerald-950/95 border-emerald-600 text-emerald-100',
         error: 'bg-red-950/95 border-red-600 text-red-100',
-        warning: 'bg-amber-950/95 border-amber-500 text-amber-100',
+        warning: 'bg-orange-950/95 border-orange-500 text-orange-100',
         info: 'bg-elevated/95 border-line-strong text-slate-100'
       };
       const toast = document.createElement('div');
@@ -1279,7 +1277,7 @@
       okBtn.textContent = okText;
       okBtn.className = danger
         ? 'px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors'
-        : 'px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold transition-colors';
+        : 'px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors';
       state.confirmCallback = onConfirm;
       openModal('modal-confirm');
     }
@@ -1295,9 +1293,9 @@
         txt.textContent = 'LIVE SYNC';
         txt.className = 'tracking-wide uppercase text-[11px] text-emerald-300 font-bold';
       } else {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        dot.className = 'w-2 h-2 rounded-full bg-orange-400';
         txt.textContent = 'OFFLINE';
-        txt.className = 'tracking-wide uppercase text-[11px] text-amber-300 font-bold';
+        txt.className = 'tracking-wide uppercase text-[11px] text-orange-300 font-bold';
       }
     });
 
@@ -1472,8 +1470,8 @@
         btnLogin.classList.add('d-none');
         adminBar.classList.remove('d-none');
         emailLabel.textContent = state.user.email || 'Admin';
-        modePill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span class="text-amber-300">Mode Admin</span>`;
-        modePill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-400/10 border border-amber-400/30 text-[11px] font-bold tracking-wide uppercase';
+        modePill.innerHTML = `<span class="w-2 h-2 rounded-full bg-brand"></span><span class="text-brand-soft">Mode Admin</span>`;
+        modePill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand/15 border border-brand/40 text-[11px] font-bold tracking-wide uppercase';
         modePill.title = `Mode Admin Aktif (${state.user.email || 'Admin'})`;
       } else {
         btnLogin.classList.remove('d-none');
@@ -1726,7 +1724,7 @@
             ? `<button type="button" data-action="finish-room" data-room-id="${escapeHtml(room.id)}" class="px-3.5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold uppercase tracking-wide transition-colors shrink-0">
                  Selesai &rarr; History
                </button>`
-            : `<button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}" class="px-3.5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold uppercase tracking-wide transition-colors shrink-0">
+            : `<button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}" class="px-3.5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-xs font-extrabold uppercase tracking-wide transition-colors shrink-0">
                  ${isLive ? 'NEXT CUE &rarr;' : 'MULAI SHOW'}
                </button>`
           : '';
@@ -1801,7 +1799,7 @@
 
         return `<button type="button" data-action="open-room" data-room-id="${escapeHtml(r.id)}" class="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 border ${
           isCurrent
-            ? 'bg-elevated text-white border-amber-400/70'
+            ? 'bg-elevated text-white border-brand/70'
             : 'bg-surface text-slate-400 hover:text-white border-line'
         }">${dot}<span>${escapeHtml(r.name)}</span></button>`;
       }).join('');
@@ -1834,7 +1832,7 @@
           adminCueControlHtml = `
             <div class="rounded-xl border border-dashed border-line-strong bg-canvas/60 p-4 text-center">
               <p class="text-xs text-slate-400 mb-3">Tambahkan minimal 1 item rundown untuk memulai Live Cue.</p>
-              <button type="button" id="btn-console-add-item" class="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-sm transition-colors">
+              <button type="button" id="btn-console-add-item" class="w-full py-3 px-4 rounded-xl bg-brand hover:bg-brand-hover text-slate-950 font-extrabold text-sm transition-colors">
                 + Tambah Sesi Pertama
               </button>
             </div>
@@ -1848,7 +1846,7 @@
           adminCueControlHtml = `
             <div class="space-y-2.5">
               <button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}"
-                class="w-full py-5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-amber-950/30 flex flex-col items-center justify-center gap-1">
+                class="w-full py-5 px-6 rounded-xl bg-brand hover:bg-brand-hover active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-brand-deep/30 flex flex-col items-center justify-center gap-1">
                 <span class="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
                   <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                   MULAI SHOW (CUE #1)
@@ -1900,7 +1898,7 @@
           adminCueControlHtml = `
             <div class="space-y-2.5">
               <button type="button" data-action="next-cue" data-room-id="${escapeHtml(room.id)}"
-                class="w-full py-5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-amber-950/30 flex flex-col items-center justify-center gap-1">
+                class="w-full py-5 px-6 rounded-xl bg-brand hover:bg-brand-hover active:scale-[0.99] text-slate-950 transition-all shadow-lg shadow-brand-deep/30 flex flex-col items-center justify-center gap-1">
                 <span class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
                   NEXT CUE
                   <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
@@ -1928,7 +1926,7 @@
               <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">SESI BERIKUTNYA (NEXT UP)</div>
               <div class="text-base font-bold text-white mt-1.5 leading-snug">${escapeHtml(stats.nextItem.title)}</div>
               <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-300 font-mono">
-                <span>Jam: <strong class="text-amber-300">${escapeHtml(stats.nextItem.startTime)}</strong></span>
+                <span>Jam: <strong class="text-brand-soft">${escapeHtml(stats.nextItem.startTime)}</strong></span>
                 <span>Durasi: <strong>${stats.nextItem.duration} mnt</strong></span>
               </div>
               <div class="mt-1 text-xs text-slate-400">PIC: <strong class="text-slate-200">${escapeHtml(stats.nextItem.pic || '-')}</strong></div>
@@ -2106,7 +2104,7 @@
                <div class="font-mono text-xs flex items-center flex-wrap gap-1 ${hasDelay ? 'text-red-300 font-bold' : 'text-slate-200'}">
                  <span>Aktual: <strong>${escapeHtml(item.actualStartTime.slice(0, 5))}</strong>${actualEndDisplay ? ` &ndash; ${actualEndDisplay}` : ''}</span>
                  ${canEditActual ? `
-                   <button type="button" data-action="edit-actual-end" data-item-id="${escapeHtml(item.id)}" class="px-1.5 py-0.5 rounded bg-elevated hover:bg-amber-400 hover:text-slate-950 text-amber-300 border border-line text-[10px] font-sans font-bold transition-colors" title="Koreksi Waktu Aktual">
+                   <button type="button" data-action="edit-actual-end" data-item-id="${escapeHtml(item.id)}" class="px-1.5 py-0.5 rounded bg-elevated hover:bg-brand hover:text-slate-950 text-brand-soft border border-line text-[10px] font-sans font-bold transition-colors" title="Koreksi Waktu Aktual">
                      Edit Aktual
                    </button>` : ''}
                </div>
@@ -2118,7 +2116,7 @@
           ? `<td class="py-3.5 pl-2 pr-4 text-right whitespace-nowrap">
                <div class="inline-flex items-center gap-1">
                  ${!isActive ? `
-                   <button type="button" data-action="jump-cue" data-item-id="${escapeHtml(item.id)}" class="p-1.5 rounded-md bg-elevated hover:bg-amber-400 hover:text-slate-950 text-amber-400 border border-line transition-colors" title="Aktifkan Cue Ini Sekarang">
+                   <button type="button" data-action="jump-cue" data-item-id="${escapeHtml(item.id)}" class="p-1.5 rounded-md bg-elevated hover:bg-brand hover:text-slate-950 text-brand border border-line transition-colors" title="Aktifkan Cue Ini Sekarang">
                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                    </button>` : ''}
                  <button type="button" data-action="move-item-up" data-item-id="${escapeHtml(item.id)}" ${idx === 0 ? 'disabled' : ''} class="p-1.5 rounded-md bg-elevated hover:bg-slate-700 disabled:opacity-30 text-slate-300 border border-line transition-colors" title="Geser Naik">
@@ -2342,15 +2340,15 @@
         const overtimeBadge = parent ? parent.querySelector('.live-overtime-label') : null;
 
         if (remainingSec < 0) {
-          el.classList.remove('text-white', 'text-amber-300');
+          el.classList.remove('text-white', 'text-orange-300');
           el.classList.add('text-red-400');
           if (overtimeBadge) overtimeBadge.classList.remove('d-none');
         } else if (remainingSec <= 120) {
           el.classList.remove('text-white', 'text-red-400');
-          el.classList.add('text-amber-300');
+          el.classList.add('text-orange-300');
           if (overtimeBadge) overtimeBadge.classList.add('d-none');
         } else {
-          el.classList.remove('text-red-400', 'text-amber-300');
+          el.classList.remove('text-red-400', 'text-orange-300');
           el.classList.add('text-white');
           if (overtimeBadge) overtimeBadge.classList.add('d-none');
         }
@@ -2377,7 +2375,7 @@
         if (elapsedSec > durMin * 60) {
           el.className = 'live-progress-bar h-full rounded-full bg-red-500 transition-all duration-500';
         } else if (pct >= 85) {
-          el.className = 'live-progress-bar h-full rounded-full bg-amber-400 transition-all duration-500';
+          el.className = 'live-progress-bar h-full rounded-full bg-orange-400 transition-all duration-500';
         } else {
           el.className = 'live-progress-bar h-full rounded-full bg-emerald-400 transition-all duration-500';
         }
@@ -2997,21 +2995,21 @@
           <tr class="align-top" data-draft-row="${idx}">
             <td class="py-2.5 px-2.5 text-center font-mono text-slate-400 font-bold pt-3.5">${idx + 1}</td>
             <td class="py-2 px-2">
-              <input type="time" data-draft-idx="${idx}" data-draft-field="startTime" value="${escapeHtml(row.startTime)}" class="w-full px-2 py-1.5 rounded bg-surface border ${hasGap ? 'border-amber-500' : 'border-line-strong'} focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+              <input type="time" data-draft-idx="${idx}" data-draft-field="startTime" value="${escapeHtml(row.startTime)}" class="w-full px-2 py-1.5 rounded bg-surface border ${hasGap ? 'border-orange-500' : 'border-line-strong'} focus:border-brand focus:outline-none text-xs text-white font-mono" />
               <div class="text-[10px] font-mono text-slate-500 mt-0.5">&ndash; ${escapeHtml(endTime || '--:--')}</div>
-              ${hasGap ? `<div class="text-[10px] text-amber-400 font-semibold mt-0.5">Gap (prev: ${escapeHtml(prevEnd)})</div>` : ''}
+              ${hasGap ? `<div class="text-[10px] text-orange-400 font-semibold mt-0.5">Gap (prev: ${escapeHtml(prevEnd)})</div>` : ''}
             </td>
             <td class="py-2 px-2">
-              <input type="number" min="1" max="1440" data-draft-idx="${idx}" data-draft-field="duration" value="${escapeHtml(row.duration)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+              <input type="number" min="1" max="1440" data-draft-idx="${idx}" data-draft-field="duration" value="${escapeHtml(row.duration)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white font-mono" />
             </td>
             <td class="py-2 px-2">
-              <input type="text" data-draft-idx="${idx}" data-draft-field="title" value="${escapeHtml(row.title)}" placeholder="Nama sesi..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white placeholder-slate-500" />
+              <input type="text" data-draft-idx="${idx}" data-draft-field="title" value="${escapeHtml(row.title)}" placeholder="Nama sesi..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white placeholder-slate-500" />
             </td>
             <td class="py-2 px-2">
-              <input type="text" data-draft-idx="${idx}" data-draft-field="pic" value="${escapeHtml(row.pic)}" placeholder="PIC..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white placeholder-slate-500" />
+              <input type="text" data-draft-idx="${idx}" data-draft-field="pic" value="${escapeHtml(row.pic)}" placeholder="PIC..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white placeholder-slate-500" />
             </td>
             <td class="py-2 px-2">
-              <input type="text" data-draft-idx="${idx}" data-draft-field="notes" value="${escapeHtml(row.notes)}" placeholder="Opsional..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white placeholder-slate-500" />
+              <input type="text" data-draft-idx="${idx}" data-draft-field="notes" value="${escapeHtml(row.notes)}" placeholder="Opsional..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white placeholder-slate-500" />
             </td>
             <td class="py-2.5 px-2 text-center">
               <label class="inline-flex flex-col items-center gap-1 cursor-pointer select-none">
@@ -3768,7 +3766,7 @@
         if (hint) hint.textContent = 'Status: Gemini API Key aktif dan siap digunakan untuk scan foto / PDF.';
       } else {
         pill.textContent = 'API KEY BELUM DIISI';
-        pill.className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase tracking-wide bg-amber-500/15 text-amber-300 border border-amber-500/40';
+        pill.className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase tracking-wide bg-orange-500/15 text-orange-300 border border-orange-500/40';
         if (input) input.placeholder = 'Tempel Gemini API Key Anda (contoh: AIzaSy...)';
         if (hint) hint.textContent = 'Status: Belum ada Gemini API Key. Diperlukan hanya untuk scan Foto/PDF (Excel/CSV tetap jalan tanpa API Key).';
       }
@@ -4402,20 +4400,20 @@ Aturan wajib:
           <tr class="align-top">
             <td class="py-2.5 px-2.5 text-center font-mono text-slate-400 font-bold pt-3.5">${idx + 1}</td>
             <td class="py-2 px-2">
-              <input type="time" data-import-idx="${idx}" data-import-field="startTime" value="${escapeHtml(row.startTime)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+              <input type="time" data-import-idx="${idx}" data-import-field="startTime" value="${escapeHtml(row.startTime)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white font-mono" />
               <div class="text-[10px] font-mono text-slate-500 mt-0.5">&ndash; ${escapeHtml(endTime || '--:--')}</div>
             </td>
             <td class="py-2 px-2">
-              <input type="number" min="1" max="1440" data-import-idx="${idx}" data-import-field="duration" value="${escapeHtml(row.duration)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white font-mono" />
+              <input type="number" min="1" max="1440" data-import-idx="${idx}" data-import-field="duration" value="${escapeHtml(row.duration)}" class="w-full px-2 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white font-mono" />
             </td>
             <td class="py-2 px-2">
-              <input type="text" data-import-idx="${idx}" data-import-field="title" value="${escapeHtml(row.title)}" placeholder="Nama sesi..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white" />
+              <input type="text" data-import-idx="${idx}" data-import-field="title" value="${escapeHtml(row.title)}" placeholder="Nama sesi..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white" />
             </td>
             <td class="py-2 px-2">
-              <input type="text" data-import-idx="${idx}" data-import-field="pic" value="${escapeHtml(row.pic)}" placeholder="PIC..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white" />
+              <input type="text" data-import-idx="${idx}" data-import-field="pic" value="${escapeHtml(row.pic)}" placeholder="PIC..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white" />
             </td>
             <td class="py-2 px-2">
-              <input type="text" data-import-idx="${idx}" data-import-field="notes" value="${escapeHtml(row.notes)}" placeholder="Opsional..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-amber-400 focus:outline-none text-xs text-white" />
+              <input type="text" data-import-idx="${idx}" data-import-field="notes" value="${escapeHtml(row.notes)}" placeholder="Opsional..." class="w-full px-2.5 py-1.5 rounded bg-surface border border-line-strong focus:border-brand focus:outline-none text-xs text-white" />
             </td>
             <td class="py-2.5 px-2 text-center">
               <label class="inline-flex flex-col items-center gap-1 cursor-pointer select-none">
@@ -4629,14 +4627,14 @@ Aturan wajib:
 
     importDropzone.addEventListener('dragover', (e) => {
       e.preventDefault();
-      importDropzone.classList.add('border-amber-400', 'bg-amber-400/5');
+      importDropzone.classList.add('border-brand', 'bg-brand/10');
     });
     importDropzone.addEventListener('dragleave', () => {
-      importDropzone.classList.remove('border-amber-400', 'bg-amber-400/5');
+      importDropzone.classList.remove('border-brand', 'bg-brand/10');
     });
     importDropzone.addEventListener('drop', (e) => {
       e.preventDefault();
-      importDropzone.classList.remove('border-amber-400', 'bg-amber-400/5');
+      importDropzone.classList.remove('border-brand', 'bg-brand/10');
       const f = e.dataTransfer?.files?.[0];
       if (f) handleSelectedImportFile(f, false);
     });

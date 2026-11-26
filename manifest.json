@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Live Rundown Event",
-  "short_name": "Rundown",
+  "name": "Camvis Live Rundown",
+  "short_name": "Camvis",
   "description": "Sistem monitoring rundown event real-time multi-ruangan dengan live cue dan kalkulasi keterlambatan otomatis.",
   "start_url": "./index.html",
   "scope": "./",
