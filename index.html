@@ -922,8 +922,8 @@
         <div class="flex items-center gap-2.5">
           <div id="coming-soon-icon" class="w-9 h-9 rounded-xl bg-brand/15 border border-brand/30 text-brand flex items-center justify-center shrink-0"></div>
           <div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/15 text-brand-soft border border-brand/30">Dalam Pengembangan</span>
-            <h3 id="coming-soon-title" class="text-base font-bold text-white mt-0.5">Fitur Dalam Pengembangan</h3>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/35">Coming Soon</span>
+            <h3 id="coming-soon-title" class="text-base font-bold text-white mt-0.5">Segera Hadir</h3>
           </div>
         </div>
         <button type="button" data-close-modal="modal-coming-soon" class="text-slate-400 hover:text-white text-2xl leading-none px-1">&times;</button>
@@ -2369,7 +2369,7 @@
                   </svg>
                 </button>
 
-                <!-- Card 3: Absensi PIC (Dalam Pengembangan — Next Project) -->
+                <!-- Card 3: Absensi PIC (Soon — Next Project) -->
                 <button type="button" data-action="open-coming-soon" data-feature="absensi" class="w-full text-left group bg-surface hover:bg-elevated/70 border border-line hover:border-emerald-500/45 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200">
                   <div class="flex items-center gap-4 min-w-0">
                     <div class="w-14 h-14 rounded-xl bg-emerald-500/12 border border-emerald-500/25 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -2382,7 +2382,7 @@
                     <div class="min-w-0">
                       <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-base font-bold text-white">Absensi PIC</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Dalam Pengembangan</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Soon</span>
                       </div>
                       <p class="text-sm text-slate-400 mt-1 leading-relaxed">Catat, pantau, dan rekap kehadiran PIC Campus Visit.</p>
                     </div>
@@ -3662,11 +3662,16 @@
       `;
     }
 
-    function renderJadwalPicView() {
+    function renderJadwalPicView(forceRender = false) {
       const container = document.getElementById('view-jadwal');
       if (!container) return;
       if (!state.isAdmin || state.view !== 'jadwal') {
         unmountProtectedView('view-jadwal');
+        return;
+      }
+
+      const activeId = document.activeElement?.id;
+      if (!forceRender && (activeId === 'jadwal-input-start' || activeId === 'jadwal-input-end')) {
         return;
       }
 
@@ -3894,24 +3899,12 @@
       }
 
       container.innerHTML = `
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Cek Jadwal PIC</h1>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/35 text-[10px] font-bold uppercase tracking-wider text-orange-300">Dalam Pengembangan</span>
-            </div>
-            <p class="text-sm text-slate-400 mt-1">Pilih tanggal dan jam acara untuk mencari PIC yang tersedia berdasarkan jadwal mingguan.</p>
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Cek Jadwal PIC</h1>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/35 text-[10px] font-bold uppercase tracking-wider text-orange-300">Dalam Pengembangan</span>
           </div>
-
-          <button type="button" data-action="nav-pic-data" class="self-start sm:self-auto px-4 py-2.5 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-sm font-semibold text-white transition-colors flex items-center gap-2 shrink-0">
-            <svg class="w-4 h-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>Kelola Data PIC</span>
-          </button>
+          <p class="text-sm text-slate-400 mt-1">Pilih tanggal dan jam acara untuk mencari PIC yang tersedia berdasarkan jadwal mingguan.</p>
         </div>
 
         ${renderPicRulesAlertBanner()}
@@ -3932,7 +3925,9 @@
                   </svg>
                   <span class="text-sm font-bold text-white truncate">${escapeHtml(dayMeta.fullLabel)}</span>
                 </div>
-                <span class="shrink-0 px-2 py-0.5 rounded bg-elevated border border-line text-[11px] font-bold ${dayMeta.isSunday ? 'text-orange-300' : 'text-brand-soft'}">${escapeHtml(dayMeta.dayLabel)}</span>
+                <svg class="w-4 h-4 text-slate-400 shrink-0 transition-transform ${state.jadwalCalendarOpen ? 'rotate-180 text-brand' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
               </button>
               ${state.jadwalCalendarOpen ? renderMiniCalendarHtml() : ''}
             </div>
@@ -3974,20 +3969,32 @@
         ${resultsHtml}
       `;
 
-      // Bind time input changes cleanly
+      // Sync time inputs WITHOUT rebuilding DOM mid-keystroke (prevents Chrome time input 2-digit focus bug)
       const startInput = document.getElementById('jadwal-input-start');
       const endInput = document.getElementById('jadwal-input-end');
+      const syncTimeInputs = () => {
+        if (startInput && startInput.value) state.jadwalStartTime = startInput.value;
+        if (endInput && endInput.value) state.jadwalEndTime = endInput.value;
+      };
+      const triggerTimeSearchOnEnter = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          syncTimeInputs();
+          state.jadwalCalendarOpen = false;
+          state.jadwalSearched = true;
+          state.jadwalStatusFilter = 'all';
+          renderJadwalPicView(true);
+        }
+      };
       if (startInput) {
-        startInput.addEventListener('change', (e) => {
-          state.jadwalStartTime = e.target.value || '08:00';
-          if (state.jadwalSearched) renderJadwalPicView();
-        });
+        startInput.addEventListener('input', syncTimeInputs);
+        startInput.addEventListener('change', syncTimeInputs);
+        startInput.addEventListener('keydown', triggerTimeSearchOnEnter);
       }
       if (endInput) {
-        endInput.addEventListener('change', (e) => {
-          state.jadwalEndTime = e.target.value || '15:00';
-          if (state.jadwalSearched) renderJadwalPicView();
-        });
+        endInput.addEventListener('input', syncTimeInputs);
+        endInput.addEventListener('change', syncTimeInputs);
+        endInput.addEventListener('keydown', triggerTimeSearchOnEnter);
       }
     }
 
@@ -4301,11 +4308,14 @@
         <div class="bg-surface border border-line rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-7 min-w-0 flex-1">
             <!-- Avatar Circle -->
-            <div class="w-20 h-20 rounded-full bg-brand/10 border-2 border-brand flex items-center justify-center text-brand-soft shrink-0 shadow-[0_0_24px_rgba(2,195,249,0.16)]">
-              <svg class="w-11 h-11" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="8" r="4.2"></circle>
-                <path d="M4.5 20.5c0-3.9 3.4-6.5 7.5-6.5s7.5 2.6 7.5 6.5" opacity="0.9"></path>
-              </svg>
+            <div class="w-20 h-20 rounded-full bg-brand/10 border-2 border-brand flex items-center justify-center text-brand-soft shrink-0 overflow-hidden shadow-[0_0_24px_rgba(2,195,249,0.16)]">
+              ${profile.photoDataUrl
+                ? `<img src="${escapeHtml(profile.photoDataUrl)}" alt="Foto ${escapeHtml(pic.name)}" class="w-full h-full object-cover" />`
+                : `<svg class="w-11 h-11" viewBox="0 0 24 24" fill="currentColor">
+                     <circle cx="12" cy="8" r="4.2"></circle>
+                     <path d="M4.5 20.5c0-3.9 3.4-6.5 7.5-6.5s7.5 2.6 7.5 6.5" opacity="0.9"></path>
+                   </svg>`
+              }
             </div>
 
             <!-- Info Columns -->
@@ -4358,25 +4368,19 @@
 
         <!-- Weekly Schedule Timetable Card (Matches Reference Image 2) -->
         <div class="bg-surface border border-line rounded-2xl p-5 sm:p-6 space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-brand/12 border border-brand/30 text-brand flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-extrabold text-white">Jadwal PIC</h2>
-                <p class="text-xs sm:text-sm text-slate-400">Overview ketersediaan jadwal PIC dalam satu minggu (Senin–Sabtu).</p>
-              </div>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand/12 border border-brand/30 text-brand flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
             </div>
-
-            <button type="button" data-action="open-edit-pic" data-pic-id="${escapeHtml(picId)}" class="self-start sm:self-auto px-3.5 py-2 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-bold text-brand-soft transition-colors">
-              + Atur Jadwal Mingguan
-            </button>
+            <div>
+              <h2 class="text-lg font-extrabold text-white">Jadwal PIC</h2>
+              <p class="text-xs sm:text-sm text-slate-400">Overview ketersediaan jadwal PIC dalam satu minggu (Senin–Sabtu).</p>
+            </div>
           </div>
 
           ${renderWeeklyTimetableGrid(schedule)}
@@ -4390,6 +4394,39 @@
     }
 
     // ---------- 7D-4. ADD / EDIT / DELETE PIC MODAL & FIREBASE CRUD ----------
+    function compressPicPhotoFile(file) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type || !file.type.startsWith('image/')) {
+          reject(new Error('File harus berupa gambar (JPG, PNG, atau WebP).'));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Gagal membaca file foto.'));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('Format gambar tidak dapat diproses.'));
+          img.onload = () => {
+            const targetSize = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = targetSize;
+            canvas.height = targetSize;
+            const ctx = canvas.getContext('2d');
+            // Center-crop square so portrait/landscape photos never stretch
+            const side = Math.min(img.width, img.height);
+            const sx = (img.width - side) / 2;
+            const sy = (img.height - side) / 2;
+            ctx.fillStyle = '#090B0E';
+            ctx.fillRect(0, 0, targetSize, targetSize);
+            ctx.drawImage(img, sx, sy, side, side, 0, 0, targetSize, targetSize);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            resolve(dataUrl);
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function openPicFormModal(picId = null) {
       if (!requireAdmin()) return;
 
@@ -4412,6 +4449,7 @@
         bankName: String(profile.bankName || 'BCA'),
         bankAccount: String(profile.bankAccount || ''),
         notes: String(profile.notes || ''),
+        photoDataUrl: String(profile.photoDataUrl || ''),
         schedule: scheduleDraft
       };
 
@@ -4506,9 +4544,47 @@
         </div>
 
         <form id="form-pic-editor" class="flex-1 overflow-y-auto p-6 space-y-6">
-          <!-- Section 1: Profile Info -->
+          <!-- Section 1: Profile Info & Optional Photo Upload -->
           <div class="space-y-4">
             <h4 class="text-xs font-bold uppercase tracking-wider text-brand">Informasi PIC</h4>
+
+            <!-- Optional Profile Photo Picker -->
+            <div class="flex items-center gap-4 p-3.5 rounded-xl bg-canvas border border-line">
+              <div class="relative shrink-0">
+                <button type="button" data-action="pic-trigger-photo" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand/10 border-2 border-brand/70 hover:border-brand flex items-center justify-center text-brand-soft overflow-hidden group transition-colors" title="Upload Foto Profil PIC">
+                  ${draft.photoDataUrl
+                    ? `<img src="${escapeHtml(draft.photoDataUrl)}" alt="Preview Foto PIC" class="w-full h-full object-cover" />`
+                    : `<svg class="w-9 h-9 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="currentColor">
+                         <circle cx="12" cy="8" r="4.2"></circle>
+                         <path d="M4.5 20.5c0-3.9 3.4-6.5 7.5-6.5s7.5 2.6 7.5 6.5" opacity="0.9"></path>
+                       </svg>`
+                  }
+                </button>
+                <button type="button" data-action="pic-trigger-photo" class="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full bg-brand hover:bg-brand-hover text-slate-950 border-2 border-canvas flex items-center justify-center shadow-md transition-colors" title="Pilih / Ganti Foto Profil">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </button>
+                <input id="pic-form-photo-input" type="file" accept="image/*" class="hidden" />
+              </div>
+
+              <div class="min-w-0 flex-1 space-y-1.5">
+                <div class="text-sm font-bold text-white">Foto Profil PIC <span class="text-xs font-normal text-slate-400">(Opsional)</span></div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Klik ikon kamera atau avatar di samping untuk mengunggah foto profil (JPG/PNG/WebP, otomatis disesuaikan persegi).</p>
+                <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                  <button type="button" data-action="pic-trigger-photo" class="px-3 py-1 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-brand-soft transition-colors">
+                    ${draft.photoDataUrl ? 'Ganti Foto' : 'Upload Foto'}
+                  </button>
+                  ${draft.photoDataUrl ? `
+                    <button type="button" data-action="pic-remove-photo" class="px-3 py-1 rounded-lg bg-elevated hover:bg-red-950/80 hover:border-red-700 hover:text-red-200 border border-line text-xs font-semibold text-slate-400 transition-colors">
+                      Hapus Foto
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label for="pic-form-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nama Lengkap PIC *</label>
@@ -4556,6 +4632,24 @@
           </button>
         </div>
       `;
+
+      // Bind photo file upload listener cleanly
+      const photoInput = document.getElementById('pic-form-photo-input');
+      if (photoInput) {
+        photoInput.addEventListener('change', async (e) => {
+          const file = e.target.files?.[0];
+          if (!file || !state.picEditDraft) return;
+          syncPicDraftFromDom();
+          try {
+            const compressedDataUrl = await compressPicPhotoFile(file);
+            state.picEditDraft.photoDataUrl = compressedDataUrl;
+            renderPicFormModal();
+            showToast('Foto profil PIC berhasil dimuat. Klik Simpan untuk menerapkan.', 'success');
+          } catch (err) {
+            showToast(err.message || 'Gagal memproses foto profil.', 'error');
+          }
+        });
+      }
     }
 
     async function savePicForm() {
@@ -4611,6 +4705,7 @@
         bankName: draft.bankName.trim() || 'BCA',
         bankAccount: draft.bankAccount.trim(),
         notes: draft.notes.trim(),
+        photoDataUrl: draft.photoDataUrl || '',
         updatedAt: nowTs
       };
 
@@ -5708,19 +5803,28 @@
       openLoginModal();
     });
 
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-      try {
-        stopAdminIdleMonitor();
-        clearAdminActivity();
-        unsubscribeAdminHistory();
-        unsubscribeAdminPics();
-        purgeProtectedDOM();
-        resetLoginFormFields();
-        await signOut(auth);
-        showToast('Berhasil logout. Kembali ke Mode Viewer Publik.', 'info');
-      } catch (err) {
-        showToast('Gagal logout: ' + err.message, 'error');
-      }
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      openConfirm({
+        title: 'Keluar dari Mode Admin?',
+        message: 'Apakah kamu yakin ingin logout dari akun Admin? Anda harus login kembali untuk mengakses Workspace, kontrol Rundown, History, dan Data PIC.',
+        okText: 'Ya, Logout',
+        cancelText: 'Batal',
+        danger: true,
+        onConfirm: async () => {
+          try {
+            stopAdminIdleMonitor();
+            clearAdminActivity();
+            unsubscribeAdminHistory();
+            unsubscribeAdminPics();
+            purgeProtectedDOM();
+            resetLoginFormFields();
+            await signOut(auth);
+            showToast('Berhasil logout. Kembali ke Mode Viewer Publik.', 'info');
+          } catch (err) {
+            showToast('Gagal logout: ' + err.message, 'error');
+          }
+        }
+      });
     });
 
     // Login Form Submit
@@ -6070,10 +6174,11 @@
 
     // Generic Modal Close buttons, Mini Calendar outside click & delegated dynamic actions
     document.addEventListener('click', (e) => {
-      // Close mini calendar popup if clicking outside calendar & trigger button
+      // Close mini calendar popup directly without rebuilding focused inputs
       if (state.jadwalCalendarOpen && !e.target.closest('#jadwal-mini-calendar') && !e.target.closest('#btn-jadwal-calendar')) {
         state.jadwalCalendarOpen = false;
-        renderJadwalPicView();
+        const calEl = document.getElementById('jadwal-mini-calendar');
+        if (calEl) calEl.remove();
       }
 
       const closeBtn = e.target.closest('[data-close-modal]');
@@ -6129,7 +6234,7 @@
             state.jadwalCalYear = meta.year;
             state.jadwalCalMonth = meta.month;
           }
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'cal-prev-month': {
@@ -6138,7 +6243,7 @@
             state.jadwalCalMonth = 11;
             state.jadwalCalYear -= 1;
           }
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'cal-next-month': {
@@ -6147,7 +6252,7 @@
             state.jadwalCalMonth = 0;
             state.jadwalCalYear += 1;
           }
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'cal-today': {
@@ -6157,12 +6262,12 @@
           state.jadwalCalYear = meta.year;
           state.jadwalCalMonth = meta.month;
           state.jadwalCalendarOpen = false;
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'cal-close': {
           state.jadwalCalendarOpen = false;
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'cal-pick-date': {
@@ -6170,7 +6275,7 @@
           if (picked) {
             state.jadwalDate = picked;
             state.jadwalCalendarOpen = false;
-            renderJadwalPicView();
+            renderJadwalPicView(true);
           }
           break;
         }
@@ -6182,12 +6287,12 @@
           state.jadwalCalendarOpen = false;
           state.jadwalSearched = true;
           state.jadwalStatusFilter = 'all';
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'jadwal-filter': {
           state.jadwalStatusFilter = actionEl.dataset.status || 'all';
-          renderJadwalPicView();
+          renderJadwalPicView(true);
           break;
         }
         case 'open-add-pic':
@@ -6202,6 +6307,18 @@
         case 'delete-pic':
           if (picId) confirmDeletePic(picId);
           break;
+        case 'pic-trigger-photo': {
+          const photoInput = document.getElementById('pic-form-photo-input');
+          if (photoInput) photoInput.click();
+          break;
+        }
+        case 'pic-remove-photo': {
+          if (!state.picEditDraft) break;
+          syncPicDraftFromDom();
+          state.picEditDraft.photoDataUrl = '';
+          renderPicFormModal();
+          break;
+        }
         case 'pic-add-slot': {
           if (!state.picEditDraft) break;
           syncPicDraftFromDom();
