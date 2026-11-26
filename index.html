@@ -950,8 +950,13 @@
     <div id="pic-form-mount" class="bg-surface border border-line-strong rounded-2xl max-w-3xl w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden"></div>
   </div>
 
+  <!-- Modal 5D: 1:1 Profile Photo Cropper Editor (Admin Only, Dynamic Body) -->
+  <div id="modal-pic-crop" class="d-none fixed inset-0 z-[60] modal-backdrop flex items-center justify-center p-3 sm:p-4">
+    <div id="pic-crop-mount" class="bg-[#0B0F15] border border-line-strong rounded-2xl max-w-md w-full max-h-[94vh] shadow-2xl flex flex-col overflow-hidden"></div>
+  </div>
+
   <!-- Modal 6: Confirm Action -->
-  <div id="modal-confirm" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+  <div id="modal-confirm" class="d-none fixed inset-0 z-[70] modal-backdrop flex items-center justify-center p-4">
     <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
       <div class="px-6 py-4 border-b border-line">
         <h3 id="confirm-title" class="text-base font-bold text-white">Konfirmasi</h3>
@@ -971,7 +976,7 @@
   </div>
 
   <!-- ==================== TOAST CONTAINER ==================== -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-[calc(100vw-2.5rem)] pointer-events-none"></div>
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[80] flex flex-col gap-2 max-w-sm w-[calc(100vw-2.5rem)] pointer-events-none"></div>
 
   <!-- ==================== APPLICATION SCRIPT (FIREBASE v10 MODULAR SDK) ==================== -->
   <script type="module">
@@ -1032,7 +1037,9 @@
       // Modular PIC Nodes (Admin Only, separated to avoid cross-module bloat)
       pics: {}, // /pics/<picId> -> { name, active, createdAt, updatedAt }
       picSchedules: {}, // /picSchedules/<picId> -> { senin: [...], selasa: [...], ... }
-      picProfilesCache: {}, // /picProfiles/<picId> -> loaded on-demand ONLY on Detail/Edit PIC
+      picProfilesCache: {}, // /picProfiles/<picId> -> loaded on-demand ONLY on Daftar/Detail/Edit PIC (never on #jadwal)
+      picProfilesAllLoaded: false,
+      picProfilesLoading: false,
       picsUnsub: null,
       picSchedulesUnsub: null,
       picAccessError: false,
@@ -1048,6 +1055,7 @@
       jadwalCalYear: _initNow.getFullYear(),
       jadwalCalMonth: _initNow.getMonth(),
       picEditDraft: null,
+      picCropSession: null,
       // Rundown Draft & Importer
       draftItems: [], // optional inline rundown items when creating a new room
       geminiApiKey: '', // loaded securely from /adminSecrets/geminiApiKey for Admin only
@@ -1458,7 +1466,7 @@
       );
     }
 
-    // Admin-Only PIC Subscriptions (/pics + /picSchedules ONLY — /picProfiles loaded on-demand in Detail PIC)
+    // Admin-Only PIC Subscriptions (/pics + /picSchedules ONLY — /picProfiles loaded lazily on Daftar/Detail PIC, never on #jadwal)
     function unsubscribeAdminPics() {
       if (typeof state.picsUnsub === 'function') {
         try { state.picsUnsub(); } catch (_) {}
@@ -1471,9 +1479,12 @@
       state.pics = {};
       state.picSchedules = {};
       state.picProfilesCache = {};
+      state.picProfilesAllLoaded = false;
+      state.picProfilesLoading = false;
       state.picAccessError = false;
       state.selectedPicId = null;
       state.picEditDraft = null;
+      state.picCropSession = null;
     }
 
     function subscribeAdminPics() {
@@ -1530,6 +1541,31 @@
       }
     }
 
+    // Lazily fetch /picProfiles once when Admin opens Daftar PIC (#pic-data),
+    // keeping Cek Jadwal PIC (#jadwal) lightweight without profile images.
+    async function ensurePicListProfilesLoaded(forceRefresh = false) {
+      if (!state.isAdmin) return;
+      if (!forceRefresh && (state.picProfilesAllLoaded || state.picProfilesLoading)) return;
+      state.picProfilesLoading = true;
+      try {
+        const snap = await get(ref(db, 'picProfiles'));
+        const allProfiles = snap.val() || {};
+        Object.entries(allProfiles).forEach(([pid, prof]) => {
+          state.picProfilesCache[pid] = prof || {};
+        });
+        state.picProfilesAllLoaded = true;
+        if (state.isAdmin && state.view === 'pic-data') {
+          renderPicDataView();
+        }
+      } catch (err) {
+        if (err && err.code === 'PERMISSION_DENIED') {
+          state.picAccessError = true;
+        }
+      } finally {
+        state.picProfilesLoading = false;
+      }
+    }
+
     // Login Form Hard Reset (prevents browser autofill restoring previous session credentials after logout)
     function resetLoginFormFields() {
       const form = document.getElementById('form-login');
@@ -1582,6 +1618,8 @@
       }
       const picFormMount = document.getElementById('pic-form-mount');
       if (picFormMount) picFormMount.innerHTML = '';
+      const picCropMount = document.getElementById('pic-crop-mount');
+      if (picCropMount) picCropMount.innerHTML = '';
 
       const histModalBody = document.getElementById('history-modal-body');
       if (histModalBody) histModalBody.innerHTML = '';
@@ -1590,9 +1628,10 @@
       state.historyDetailRoomId = null;
       state.selectedPicId = null;
       state.picEditDraft = null;
+      state.picCropSession = null;
       state.jadwalCalendarOpen = false;
 
-      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-confirm'].forEach(closeModal);
+      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-confirm'].forEach(closeModal);
       document.body.classList.remove('pb-24');
       const toastContainer = document.getElementById('toast-container');
       if (toastContainer) {
@@ -4069,6 +4108,9 @@
       }
       if (!ensurePicDataViewMounted()) return;
 
+      // Lazy-load PIC profile photos once when opening Daftar PIC (keeps #jadwal lightweight)
+      ensurePicListProfilesLoaded();
+
       const banner = document.getElementById('pic-data-rules-banner');
       if (banner) banner.innerHTML = renderPicRulesAlertBanner();
 
@@ -4097,15 +4139,22 @@
       }
 
       emptyEl.classList.add('d-none');
-      rowsEl.innerHTML = filtered.map((pic) => `
+      rowsEl.innerHTML = filtered.map((pic) => {
+        const photoUrl = state.picProfilesCache[pic.id]?.photoDataUrl || '';
+        const avatarHtml = photoUrl
+          ? `<div class="w-11 h-11 rounded-full overflow-hidden border border-brand/60 group-hover:border-brand bg-brand/10 shrink-0 transition-colors">
+               <img src="${escapeHtml(photoUrl)}" alt="Foto ${escapeHtml(pic.name)}" class="w-full h-full object-cover" loading="lazy" />
+             </div>`
+          : `<div class="w-11 h-11 rounded-full bg-elevated border border-line-strong text-slate-300 group-hover:border-brand/50 group-hover:text-brand flex items-center justify-center shrink-0 transition-colors">
+               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                 <circle cx="12" cy="7" r="4"></circle>
+               </svg>
+             </div>`;
+        return `
         <div data-action="open-pic-detail" data-pic-id="${escapeHtml(pic.id)}" class="group px-5 py-3.5 hover:bg-elevated/55 flex items-center justify-between gap-4 cursor-pointer transition-colors">
           <div class="flex items-center gap-3.5 min-w-0">
-            <div class="w-10 h-10 rounded-xl bg-elevated border border-line-strong text-slate-300 group-hover:border-brand/50 group-hover:text-brand flex items-center justify-center shrink-0 transition-colors">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </div>
+            ${avatarHtml}
             <div class="min-w-0">
               <div class="text-sm sm:text-base font-bold text-white group-hover:text-brand-soft truncate transition-colors">${escapeHtml(pic.name)}</div>
               <div class="text-[11px] text-slate-400">
@@ -4120,7 +4169,8 @@
             </svg>
           </button>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       if (footerEl) {
         footerEl.textContent = `Menampilkan 1–${filtered.length} dari ${totalAll} PIC`;
@@ -4369,38 +4419,435 @@
       `;
     }
 
-    // ---------- 7D-4. ADD / EDIT / DELETE PIC MODAL & FIREBASE CRUD ----------
-    function compressPicPhotoFile(file) {
+    // ---------- 7D-4. ADD / EDIT / DELETE PIC MODAL, 1:1 PHOTO CROPPER & FIREBASE CRUD ----------
+    function loadImageFileForCrop(file) {
       return new Promise((resolve, reject) => {
         if (!file || !file.type || !file.type.startsWith('image/')) {
           reject(new Error('File harus berupa gambar (JPG, PNG, atau WebP).'));
           return;
         }
-        const reader = new FileReader();
-        reader.onerror = () => reject(new Error('Gagal membaca file foto.'));
-        reader.onload = () => {
-          const img = new Image();
-          img.onerror = () => reject(new Error('Format gambar tidak dapat diproses.'));
-          img.onload = () => {
-            const targetSize = 256;
-            const canvas = document.createElement('canvas');
-            canvas.width = targetSize;
-            canvas.height = targetSize;
-            const ctx = canvas.getContext('2d');
-            // Center-crop square so portrait/landscape photos never stretch
-            const side = Math.min(img.width, img.height);
-            const sx = (img.width - side) / 2;
-            const sy = (img.height - side) / 2;
-            ctx.fillStyle = '#090B0E';
-            ctx.fillRect(0, 0, targetSize, targetSize);
-            ctx.drawImage(img, sx, sy, side, side, 0, 0, targetSize, targetSize);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-            resolve(dataUrl);
-          };
-          img.src = reader.result;
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          if (!img.naturalWidth || !img.naturalHeight) {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Dimensi gambar tidak valid.'));
+            return;
+          }
+          resolve({ img, objectUrl });
         };
-        reader.readAsDataURL(file);
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('Format gambar tidak dapat diproses.'));
+        };
+        img.src = objectUrl;
       });
+    }
+
+    function getPicCropMetrics(session) {
+      const { img, rotationDeg, cropSize, zoom } = session;
+      const isSwapped = (rotationDeg % 180) !== 0;
+      const effW = isSwapped ? img.naturalHeight : img.naturalWidth;
+      const effH = isSwapped ? img.naturalWidth : img.naturalHeight;
+      const minScale = Math.max(cropSize / effW, cropSize / effH);
+      const scale = minScale * zoom;
+      const maxOffsetX = Math.max(0, (effW * scale - cropSize) / 2);
+      const maxOffsetY = Math.max(0, (effH * scale - cropSize) / 2);
+      return { effW, effH, minScale, scale, maxOffsetX, maxOffsetY };
+    }
+
+    function clampPicCropOffsets(session) {
+      if (!session) return;
+      const { maxOffsetX, maxOffsetY } = getPicCropMetrics(session);
+      session.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, session.offsetX));
+      session.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, session.offsetY));
+    }
+
+    function syncPicCropZoomUI(session) {
+      if (!session) return;
+      const slider = document.getElementById('pic-crop-zoom');
+      const label = document.getElementById('pic-crop-zoom-label');
+      if (slider) slider.value = session.zoom.toFixed(2);
+      if (label) label.textContent = `${session.zoom.toFixed(1)}×`;
+    }
+
+    function setPicCropZoom(nextZoom, pivotX = 0, pivotY = 0) {
+      const session = state.picCropSession;
+      if (!session) return;
+      const prevScale = getPicCropMetrics(session).scale;
+      session.zoom = Math.max(1, Math.min(4, Number(nextZoom) || 1));
+      const nextScale = getPicCropMetrics(session).scale;
+      const factor = prevScale > 0 ? (nextScale / prevScale) : 1;
+      session.offsetX = pivotX - (pivotX - session.offsetX) * factor;
+      session.offsetY = pivotY - (pivotY - session.offsetY) * factor;
+      clampPicCropOffsets(session);
+      syncPicCropZoomUI(session);
+      drawPicCropCanvas();
+    }
+
+    function rotatePicCrop90() {
+      const session = state.picCropSession;
+      if (!session) return;
+      session.rotationDeg = (session.rotationDeg + 90) % 360;
+      // Rotate current framing offset 90° clockwise so focus stays intuitive
+      const prevX = session.offsetX;
+      session.offsetX = -session.offsetY;
+      session.offsetY = prevX;
+      clampPicCropOffsets(session);
+      drawPicCropCanvas();
+    }
+
+    function resetPicCropTransform() {
+      const session = state.picCropSession;
+      if (!session) return;
+      session.zoom = 1;
+      session.offsetX = 0;
+      session.offsetY = 0;
+      session.rotationDeg = 0;
+      clampPicCropOffsets(session);
+      syncPicCropZoomUI(session);
+      drawPicCropCanvas();
+    }
+
+    function drawPicCropCanvas() {
+      const session = state.picCropSession;
+      const canvas = document.getElementById('pic-crop-canvas');
+      if (!session || !canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const { stageSize, cropSize, img, rotationDeg, offsetX, offsetY } = session;
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      const targetPixelSize = Math.round(stageSize * dpr);
+      if (canvas.width !== targetPixelSize || canvas.height !== targetPixelSize) {
+        canvas.width = targetPixelSize;
+        canvas.height = targetPixelSize;
+        canvas.style.width = `${stageSize}px`;
+        canvas.style.height = `${stageSize}px`;
+      }
+
+      const cropX = (stageSize - cropSize) / 2;
+      const cropY = (stageSize - cropSize) / 2;
+      const halfStage = stageSize / 2;
+      const { scale } = getPicCropMetrics(session);
+
+      ctx.save();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // 1. Dark canvas background
+      ctx.fillStyle = '#05070A';
+      ctx.fillRect(0, 0, stageSize, stageSize);
+
+      // 2. Draw user photo with current pan, rotation, and zoom
+      ctx.save();
+      ctx.translate(halfStage + offsetX, halfStage + offsetY);
+      ctx.rotate((rotationDeg * Math.PI) / 180);
+      ctx.scale(scale, scale);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+      ctx.restore();
+
+      // 3. Dimmed outer mask outside the 1:1 square
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+      ctx.fillRect(0, 0, stageSize, cropY); // Top
+      ctx.fillRect(0, cropY + cropSize, stageSize, stageSize - (cropY + cropSize)); // Bottom
+      ctx.fillRect(0, cropY, cropX, cropSize); // Left
+      ctx.fillRect(cropX + cropSize, cropY, stageSize - (cropX + cropSize), cropSize); // Right
+
+      // 4. Soft circular avatar preview mask inside 1:1 square (highlights exact circular profile area)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cropX, cropY, cropSize, cropSize);
+      ctx.arc(halfStage, halfStage, cropSize / 2, 0, Math.PI * 2, true);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.44)';
+      ctx.fill('evenodd');
+      ctx.restore();
+
+      // 5. Rule-of-thirds 3x3 grid inside 1:1 square
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
+      ctx.lineWidth = 1;
+      const third = cropSize / 3;
+      ctx.beginPath();
+      ctx.moveTo(cropX + third, cropY);
+      ctx.lineTo(cropX + third, cropY + cropSize);
+      ctx.moveTo(cropX + third * 2, cropY);
+      ctx.lineTo(cropX + third * 2, cropY + cropSize);
+      ctx.moveTo(cropX, cropY + third);
+      ctx.lineTo(cropX + cropSize, cropY + third);
+      ctx.moveTo(cropX, cropY + third * 2);
+      ctx.lineTo(cropX + cropSize, cropY + third * 2);
+      ctx.stroke();
+
+      // 6. Subtle 1:1 square outline & inscribed circle guide ring
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.48)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cropX + 0.5, cropY + 0.5, cropSize - 1, cropSize - 1);
+
+      ctx.beginPath();
+      ctx.arc(halfStage, halfStage, cropSize / 2 - 0.5, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.72)';
+      ctx.lineWidth = 1.25;
+      ctx.stroke();
+
+      // 7. Bold white corner L-brackets (LINE-style 1:1 frame)
+      const bLen = Math.max(16, Math.round(cropSize * 0.085));
+      const x1 = cropX;
+      const y1 = cropY;
+      const x2 = cropX + cropSize;
+      const y2 = cropY + cropSize;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'square';
+      ctx.beginPath();
+      // Top-left
+      ctx.moveTo(x1, y1 + bLen);
+      ctx.lineTo(x1, y1);
+      ctx.lineTo(x1 + bLen, y1);
+      // Top-right
+      ctx.moveTo(x2 - bLen, y1);
+      ctx.lineTo(x2, y1);
+      ctx.lineTo(x2, y1 + bLen);
+      // Bottom-left
+      ctx.moveTo(x1, y2 - bLen);
+      ctx.lineTo(x1, y2);
+      ctx.lineTo(x1 + bLen, y2);
+      // Bottom-right
+      ctx.moveTo(x2 - bLen, y2);
+      ctx.lineTo(x2, y2);
+      ctx.lineTo(x2, y2 - bLen);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function bindPicCropCanvasInteractions(canvas) {
+      if (!canvas) return;
+
+      const getLocalPos = (clientX, clientY) => {
+        const rect = canvas.getBoundingClientRect();
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      };
+
+      canvas.addEventListener('pointerdown', (e) => {
+        const session = state.picCropSession;
+        if (!session) return;
+        e.preventDefault();
+        try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        const pos = getLocalPos(e.clientX, e.clientY);
+        session.pointers.set(e.pointerId, pos);
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        const session = state.picCropSession;
+        if (!session || !session.pointers.has(e.pointerId)) return;
+        e.preventDefault();
+
+        const prevPos = session.pointers.get(e.pointerId);
+        const nextPos = getLocalPos(e.clientX, e.clientY);
+
+        if (session.pointers.size === 1) {
+          session.offsetX += nextPos.x - prevPos.x;
+          session.offsetY += nextPos.y - prevPos.y;
+          session.pointers.set(e.pointerId, nextPos);
+          clampPicCropOffsets(session);
+          drawPicCropCanvas();
+        } else if (session.pointers.size >= 2) {
+          const entries = Array.from(session.pointers.entries());
+          const pA = entries[0][0] === e.pointerId ? prevPos : entries[0][1];
+          const pB = entries[1][0] === e.pointerId ? prevPos : entries[1][1];
+          const nA = entries[0][0] === e.pointerId ? nextPos : entries[0][1];
+          const nB = entries[1][0] === e.pointerId ? nextPos : entries[1][1];
+
+          const prevDist = Math.hypot(pB.x - pA.x, pB.y - pA.y);
+          const nextDist = Math.hypot(nB.x - nA.x, nB.y - nA.y);
+          const prevMidX = (pA.x + pB.x) / 2;
+          const prevMidY = (pA.y + pB.y) / 2;
+          const nextMidX = (nA.x + nB.x) / 2;
+          const nextMidY = (nA.y + nB.y) / 2;
+
+          session.pointers.set(e.pointerId, nextPos);
+          session.offsetX += nextMidX - prevMidX;
+          session.offsetY += nextMidY - prevMidY;
+
+          if (prevDist > 8 && nextDist > 8) {
+            const halfStage = session.stageSize / 2;
+            const ratio = nextDist / prevDist;
+            setPicCropZoom(session.zoom * ratio, nextMidX - halfStage, nextMidY - halfStage);
+          } else {
+            clampPicCropOffsets(session);
+            drawPicCropCanvas();
+          }
+        }
+      });
+
+      const releasePointer = (e) => {
+        const session = state.picCropSession;
+        if (!session) return;
+        session.pointers.delete(e.pointerId);
+        try {
+          if (canvas.hasPointerCapture(e.pointerId)) {
+            canvas.releasePointerCapture(e.pointerId);
+          }
+        } catch (_) {}
+      };
+
+      canvas.addEventListener('pointerup', releasePointer);
+      canvas.addEventListener('pointercancel', releasePointer);
+
+      // Desktop scroll-wheel zoom centered on pointer
+      canvas.addEventListener('wheel', (e) => {
+        const session = state.picCropSession;
+        if (!session) return;
+        e.preventDefault();
+        const pos = getLocalPos(e.clientX, e.clientY);
+        const halfStage = session.stageSize / 2;
+        const delta = e.deltaY < 0 ? 0.14 : -0.14;
+        setPicCropZoom(session.zoom + delta, pos.x - halfStage, pos.y - halfStage);
+      }, { passive: false });
+    }
+
+    function closePicCropModal() {
+      if (state.picCropSession?.objectUrl) {
+        try { URL.revokeObjectURL(state.picCropSession.objectUrl); } catch (_) {}
+      }
+      state.picCropSession = null;
+      const mount = document.getElementById('pic-crop-mount');
+      if (mount) mount.innerHTML = '';
+      closeModal('modal-pic-crop');
+      const photoInput = document.getElementById('pic-form-photo-input');
+      if (photoInput) photoInput.value = '';
+    }
+
+    async function openPicCropModal(file) {
+      if (!requireAdmin() || !state.picEditDraft) return;
+      try {
+        const { img, objectUrl } = await loadImageFileForCrop(file);
+        if (state.picCropSession?.objectUrl) {
+          try { URL.revokeObjectURL(state.picCropSession.objectUrl); } catch (_) {}
+        }
+
+        const stageSize = Math.max(240, Math.min(360, window.innerWidth - 52, window.innerHeight - 290));
+        const cropSize = Math.round(stageSize * 0.84);
+
+        state.picCropSession = {
+          img,
+          objectUrl,
+          stageSize,
+          cropSize,
+          zoom: 1,
+          offsetX: 0,
+          offsetY: 0,
+          rotationDeg: 0,
+          pointers: new Map()
+        };
+
+        const mount = document.getElementById('pic-crop-mount');
+        if (!mount) return;
+
+        mount.innerHTML = `
+          <div class="px-5 py-3.5 border-b border-line flex items-center justify-between shrink-0 bg-surface">
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm sm:text-base font-bold text-white">Atur Foto Profil</h3>
+              <span class="px-2 py-0.5 rounded-md bg-brand/15 border border-brand/35 font-mono text-[11px] font-bold text-brand">1:1</span>
+            </div>
+            <button type="button" data-action="pic-crop-cancel" class="text-slate-400 hover:text-white text-2xl leading-none px-1" aria-label="Tutup">&times;</button>
+          </div>
+
+          <div class="p-4 sm:p-5 flex flex-col items-center gap-3.5 overflow-y-auto bg-[#05070A]">
+            <div class="relative rounded-xl overflow-hidden border border-line-strong shadow-2xl bg-[#05070A]">
+              <canvas id="pic-crop-canvas" class="block touch-none cursor-grab active:cursor-grabbing select-none"></canvas>
+            </div>
+
+            <p class="text-[11px] text-slate-400 text-center">
+              Geser foto untuk mengatur posisi &bull; Cubit atau gunakan slider untuk zoom
+            </p>
+
+            <!-- Zoom Slider Row -->
+            <div class="w-full max-w-[360px] flex items-center gap-2.5 px-1">
+              <button type="button" data-action="pic-crop-zoom-out" class="w-8 h-8 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-200 flex items-center justify-center shrink-0 transition-colors" title="Perkecil">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+              <input id="pic-crop-zoom" type="range" min="1" max="4" step="0.01" value="1.00" class="flex-1 accent-[#02c3f9] cursor-pointer" aria-label="Zoom foto" />
+              <button type="button" data-action="pic-crop-zoom-in" class="w-8 h-8 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-slate-200 flex items-center justify-center shrink-0 transition-colors" title="Perbesar">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+              <span id="pic-crop-zoom-label" class="font-mono text-xs font-bold text-slate-300 w-10 text-right">1.0×</span>
+            </div>
+
+            <!-- Rotate 90° & Reset Toolbar -->
+            <div class="w-full max-w-[360px] flex items-center justify-center gap-3 pt-0.5">
+              <button type="button" data-action="pic-crop-rotate" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-white transition-colors" title="Putar 90°">
+                <svg class="w-4 h-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+                  <polyline points="21 3 21 9 15 9"></polyline>
+                </svg>
+                Putar 90&deg;
+              </button>
+              <button type="button" data-action="pic-crop-reset" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-elevated hover:bg-slate-700 border border-line text-xs font-semibold text-slate-300 hover:text-white transition-colors" title="Reset posisi &amp; zoom">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div class="px-5 py-3.5 border-t border-line bg-surface flex items-center justify-end gap-2.5 shrink-0">
+            <button type="button" data-action="pic-crop-cancel" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+              Batal
+            </button>
+            <button type="button" data-action="pic-crop-apply" class="px-5 py-2 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-extrabold transition-colors">
+              Gunakan Foto
+            </button>
+          </div>
+        `;
+
+        const canvas = document.getElementById('pic-crop-canvas');
+        bindPicCropCanvasInteractions(canvas);
+
+        const zoomSlider = document.getElementById('pic-crop-zoom');
+        if (zoomSlider) {
+          zoomSlider.addEventListener('input', (ev) => {
+            setPicCropZoom(parseFloat(ev.target.value), 0, 0);
+          });
+        }
+
+        openModal('modal-pic-crop');
+        drawPicCropCanvas();
+      } catch (err) {
+        showToast(err.message || 'Gagal membuka editor foto profil.', 'error');
+      }
+    }
+
+    function applyPicCrop() {
+      const session = state.picCropSession;
+      if (!session || !state.picEditDraft) {
+        closePicCropModal();
+        return;
+      }
+
+      const outSize = 300;
+      const ratio = outSize / session.cropSize;
+      const { scale } = getPicCropMetrics(session);
+
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = outSize;
+      outCanvas.height = outSize;
+      const octx = outCanvas.getContext('2d');
+      octx.fillStyle = '#090B0E';
+      octx.fillRect(0, 0, outSize, outSize);
+      octx.imageSmoothingEnabled = true;
+      octx.imageSmoothingQuality = 'high';
+      octx.translate(outSize / 2 + session.offsetX * ratio, outSize / 2 + session.offsetY * ratio);
+      octx.rotate((session.rotationDeg * Math.PI) / 180);
+      octx.scale(scale * ratio, scale * ratio);
+      octx.drawImage(session.img, -session.img.naturalWidth / 2, -session.img.naturalHeight / 2);
+
+      const croppedDataUrl = outCanvas.toDataURL('image/jpeg', 0.85);
+      state.picEditDraft.photoDataUrl = croppedDataUrl;
+      closePicCropModal();
+      renderPicFormModal();
+      showToast('Foto profil berhasil diatur (1:1). Klik Simpan untuk menerapkan.', 'success');
     }
 
     async function openPicFormModal(picId = null) {
@@ -4547,7 +4994,7 @@
 
               <div class="min-w-0 flex-1 space-y-1.5">
                 <div class="text-sm font-bold text-white">Foto Profil PIC <span class="text-xs font-normal text-slate-400">(Opsional)</span></div>
-                <p class="text-[11px] text-slate-400 leading-relaxed">Klik ikon kamera atau avatar di samping untuk mengunggah foto profil (JPG/PNG/WebP, otomatis disesuaikan persegi).</p>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Klik ikon kamera atau avatar di samping untuk mengunggah foto profil (JPG/PNG/WebP, bisa diatur &amp; crop rasio 1:1).</p>
                 <div class="flex flex-wrap items-center gap-2 pt-0.5">
                   <button type="button" data-action="pic-trigger-photo" class="px-3 py-1 rounded-lg bg-elevated hover:bg-slate-700 border border-line-strong text-xs font-semibold text-brand-soft transition-colors">
                     ${draft.photoDataUrl ? 'Ganti Foto' : 'Upload Foto'}
@@ -4609,21 +5056,15 @@
         </div>
       `;
 
-      // Bind photo file upload listener cleanly
+      // Bind photo file upload listener cleanly -> opens interactive 1:1 circular crop editor
       const photoInput = document.getElementById('pic-form-photo-input');
       if (photoInput) {
         photoInput.addEventListener('change', async (e) => {
           const file = e.target.files?.[0];
+          e.target.value = '';
           if (!file || !state.picEditDraft) return;
           syncPicDraftFromDom();
-          try {
-            const compressedDataUrl = await compressPicPhotoFile(file);
-            state.picEditDraft.photoDataUrl = compressedDataUrl;
-            renderPicFormModal();
-            showToast('Foto profil PIC berhasil dimuat. Klik Simpan untuk menerapkan.', 'success');
-          } catch (err) {
-            showToast(err.message || 'Gagal memproses foto profil.', 'error');
-          }
+          await openPicCropModal(file);
         });
       }
     }
@@ -6167,6 +6608,10 @@
       }
 
       if (e.target.classList.contains('modal-backdrop')) {
+        if (e.target.id === 'modal-pic-crop') {
+          closePicCropModal();
+          return;
+        }
         e.target.classList.add('d-none');
         if (e.target.id === 'modal-login') resetLoginFormFields();
         if (e.target.id === 'modal-pic-form') state.picEditDraft = null;
@@ -6295,6 +6740,24 @@
           renderPicFormModal();
           break;
         }
+        case 'pic-crop-rotate':
+          rotatePicCrop90();
+          break;
+        case 'pic-crop-reset':
+          resetPicCropTransform();
+          break;
+        case 'pic-crop-zoom-in':
+          if (state.picCropSession) setPicCropZoom(state.picCropSession.zoom + 0.25, 0, 0);
+          break;
+        case 'pic-crop-zoom-out':
+          if (state.picCropSession) setPicCropZoom(state.picCropSession.zoom - 0.25, 0, 0);
+          break;
+        case 'pic-crop-apply':
+          applyPicCrop();
+          break;
+        case 'pic-crop-cancel':
+          closePicCropModal();
+          break;
         case 'pic-add-slot': {
           if (!state.picEditDraft) break;
           syncPicDraftFromDom();
@@ -6418,6 +6881,10 @@
           closeModal('modal-confirm');
           return;
         }
+        if (!document.getElementById('modal-pic-crop').classList.contains('d-none')) {
+          closePicCropModal();
+          return;
+        }
         if (!document.getElementById('modal-import').classList.contains('d-none')) {
           closeModal('modal-import');
           return;
@@ -6436,7 +6903,7 @@
         return;
       }
       const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-confirm']
+      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-confirm']
         .some(id => !document.getElementById(id).classList.contains('d-none'));
 
       if (e.shiftKey && e.key === 'ArrowRight' && !isInputFocused && !anyModalOpen && state.isAdmin && state.view === 'room' && state.selectedRoomId) {
