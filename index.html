@@ -146,16 +146,30 @@
     <div class="max-w-[1440px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
 
       <!-- Left: Brand & Desktop Nav -->
-      <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+      <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
         <button id="btn-brand-home" type="button" class="flex items-center gap-2 sm:gap-2.5 text-left group focus:outline-none min-w-0">
           <img src="./icon-512.png" alt="Logo Camvis" class="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_0_6px_rgba(2,195,249,0.22)] group-hover:scale-105 transition-transform" />
-          <div class="leading-tight min-w-0">
-            <div class="font-extrabold text-base sm:text-lg tracking-tight text-white whitespace-nowrap group-hover:text-brand-soft transition-colors">Camvis</div>
+          <div class="leading-tight min-w-0 flex items-center gap-2">
+            <span class="font-extrabold text-base sm:text-lg tracking-tight text-white whitespace-nowrap group-hover:text-brand-soft transition-colors">Camvis</span>
+            <span id="header-workspace-crumb" class="d-none items-center gap-2 text-sm font-medium text-slate-400">
+              <span class="text-slate-600">/</span>
+              <span class="text-slate-300">Workspace</span>
+            </span>
           </div>
         </button>
 
         <!-- Desktop Main Navigation -->
-        <nav class="hidden md:flex items-center gap-1 ml-2 pl-4 border-l border-line" aria-label="Navigasi Utama">
+        <nav id="desktop-main-nav" class="hidden md:flex items-center gap-1 ml-2 pl-4 border-l border-line" aria-label="Navigasi Utama">
+          <button id="nav-workspace" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2" title="Kembali ke Camvis Workspace">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+            </svg>
+            <span>Workspace</span>
+          </button>
+
           <button id="nav-monitor" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2"></rect>
@@ -166,7 +180,7 @@
             <span id="badge-active-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
           </button>
 
-          <button id="nav-history" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+          <button id="nav-history" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
@@ -193,7 +207,7 @@
         </div>
 
         <!-- Master Live Clock -->
-        <div class="px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-canvas border border-line flex items-center gap-1.5 sm:gap-2" title="Waktu Aktual Lokal">
+        <div id="header-clock-box" class="px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-canvas border border-line flex items-center gap-1.5 sm:gap-2" title="Waktu Aktual Lokal">
           <span class="hidden lg:inline text-[10px] font-bold uppercase tracking-wider text-slate-400">TIME</span>
           <span id="header-clock" class="font-mono font-bold text-xs sm:text-base text-white tabular-nums tracking-tight">--:--:--</span>
         </div>
@@ -225,8 +239,8 @@
       </div>
     </div>
 
-    <!-- Mobile Navigation Bar -->
-    <div class="md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
+    <!-- Mobile Sub-Navigation Bar (Admin Only: Switch Master Monitor & History) -->
+    <div id="mobile-sub-nav" class="admin-only d-none md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
       <button id="nav-monitor-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
         <span>Master Monitor</span>
         <span id="badge-active-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
@@ -262,6 +276,9 @@
       <p class="text-sm font-medium tracking-wide">Menghubungkan ke Server...</p>
     </div>
 
+    <!-- ==================== VIEW 0: DESKTOP WORKSPACE (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
+    <section id="view-workspace" class="d-none"></section>
+
     <!-- ==================== VIEW 1: MASTER MONITOR ==================== -->
     <section id="view-monitor" class="d-none space-y-6">
       <!-- Top Action & Stats Bar -->
@@ -284,7 +301,7 @@
       </div>
 
       <!-- Summary Telemetry Strip -->
-      <div id="monitor-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div id="monitor-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div class="bg-surface border border-line rounded-xl p-4">
           <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Ruangan Aktif</div>
           <div id="stat-total-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-white mt-1 tabular-nums">0</div>
@@ -297,7 +314,7 @@
           <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ruangan Delay</div>
           <div id="stat-delayed-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-slate-300 mt-1 tabular-nums">0</div>
         </div>
-        <div class="bg-surface border border-line rounded-xl p-4">
+        <div id="stat-history-card" class="admin-only d-none bg-surface border border-line rounded-xl p-4">
           <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Selesai (History)</div>
           <div id="stat-history-rooms" class="font-mono text-2xl sm:text-3xl font-extrabold text-slate-200 mt-1 tabular-nums">0</div>
         </div>
@@ -430,44 +447,8 @@
       </div>
     </section>
 
-    <!-- ==================== VIEW 3: HISTORY ==================== -->
-    <section id="view-history" class="d-none space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">History Event & Riwayat Keterlambatan</h1>
-          <p class="text-sm text-slate-400 mt-1">Arsip ruangan dan rundown yang telah selesai lengkap dengan catatan waktu aktual dan delay per sesi.</p>
-        </div>
-
-        <div class="w-full sm:w-72">
-          <div class="relative">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input id="history-search" type="search" placeholder="Cari ruangan atau event..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
-          </div>
-        </div>
-      </div>
-
-      <!-- History List -->
-      <div id="history-list" class="space-y-4">
-        <!-- Rendered dynamically -->
-      </div>
-
-      <!-- History Empty State -->
-      <div id="history-empty" class="d-none bg-surface border border-line rounded-2xl p-12 text-center">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-elevated border border-line flex items-center justify-center text-slate-400 mb-4">
-          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </div>
-        <h2 class="text-lg font-bold text-white">Belum Ada Riwayat Event</h2>
-        <p class="text-sm text-slate-400 max-w-md mx-auto mt-1.5">
-          Ruangan yang telah selesai akan otomatis dipindahkan ke halaman ini beserta seluruh catatan keterlambatannya.
-        </p>
-      </div>
-    </section>
+    <!-- ==================== VIEW 3: HISTORY (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
+    <section id="view-history" class="d-none space-y-6"></section>
 
   </main>
 
@@ -475,6 +456,9 @@
   <footer class="border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500 text-center">
     Camvis UMN &copy; 2026
   </footer>
+
+  <!-- ==================== MOBILE BOTTOM NAVIGATION ROOT (ADMIN + MOBILE/APK ONLY, DYNAMIC MOUNT) ==================== -->
+  <div id="mobile-bottom-nav-root"></div>
 
   <!-- ==================== MODALS ==================== -->
 
@@ -902,6 +886,33 @@
     </div>
   </div>
 
+  <!-- Modal 5B: Feature Coming Soon -->
+  <div id="modal-coming-soon" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-line flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div id="coming-soon-icon" class="w-9 h-9 rounded-xl bg-brand/15 border border-brand/30 text-brand flex items-center justify-center shrink-0"></div>
+          <div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/15 text-brand-soft border border-brand/30">Coming Soon</span>
+            <h3 id="coming-soon-title" class="text-base font-bold text-white mt-0.5">Fitur Dalam Pengembangan</h3>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-coming-soon" class="text-slate-400 hover:text-white text-2xl leading-none px-1">&times;</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p id="coming-soon-desc" class="text-sm text-slate-300 leading-relaxed"></p>
+        <div class="p-3.5 rounded-xl bg-canvas border border-line text-xs text-slate-400 leading-relaxed">
+          Modul ini sedang disiapkan dan akan dikerjakan pada tahap pengembangan berikutnya di ekosistem <strong class="text-slate-200">Camvis Workspace</strong>.
+        </div>
+        <div class="pt-1 flex justify-end">
+          <button type="button" data-close-modal="modal-coming-soon" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-slate-950 text-sm font-bold transition-colors">
+            Mengerti
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal 6: Confirm Action -->
   <div id="modal-confirm" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
     <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
@@ -965,13 +976,18 @@
     const state = {
       user: null,
       isAdmin: false,
+      authResolved: false,
+      justLoggedIn: false,
       loaded: false,
       connected: false,
-      view: 'monitor', // 'monitor' | 'room' | 'history'
+      view: 'monitor', // 'workspace' | 'monitor' | 'room' | 'history'
       selectedRoomId: null,
       historyDetailRoomId: null,
       historySearch: '',
-      rooms: {}, // raw Firebase object
+      rooms: {}, // active (and legacy history) rooms from /rooms
+      historyRooms: {}, // protected admin-only history archive from /history
+      historyUnsub: null,
+      hasSeparateHistoryAccess: false,
       draftItems: [], // optional inline rundown items when creating a new room
       geminiApiKey: '', // loaded securely from /adminSecrets/geminiApiKey for Admin only
       importTarget: 'room', // 'draft' | 'room'
@@ -1114,10 +1130,25 @@
     }
 
     function getHistoryRoomList() {
+      if (!state.isAdmin) return [];
       const q = state.historySearch.trim().toLowerCase();
-      return Object.entries(state.rooms)
-        .map(([id, room]) => ({ ...room, id }))
-        .filter(r => r.status === 'history')
+      const mergedMap = new Map();
+
+      // Legacy history rooms stored in /rooms with status === 'history'
+      Object.entries(state.rooms || {}).forEach(([id, room]) => {
+        if (room && room.status === 'history') {
+          mergedMap.set(id, { ...room, id, _historySource: 'rooms' });
+        }
+      });
+
+      // Protected admin-only history rooms stored in /history
+      Object.entries(state.historyRooms || {}).forEach(([id, room]) => {
+        if (room) {
+          mergedMap.set(id, { ...room, id, status: 'history', _historySource: 'history' });
+        }
+      });
+
+      return Array.from(mergedMap.values())
         .filter(r => {
           if (!q) return true;
           return (
@@ -1127,6 +1158,17 @@
           );
         })
         .sort((a, b) => (b.completedAt || b.createdAt || 0) - (a.completedAt || a.createdAt || 0));
+    }
+
+    function findHistoryRoomById(roomId) {
+      if (!state.isAdmin || !roomId) return null;
+      if (state.historyRooms && state.historyRooms[roomId]) {
+        return { ...state.historyRooms[roomId], id: roomId, status: 'history', _historySource: 'history' };
+      }
+      if (state.rooms && state.rooms[roomId] && state.rooms[roomId].status === 'history') {
+        return { ...state.rooms[roomId], id: roomId, _historySource: 'rooms' };
+      }
+      return null;
     }
 
     function computeRoomStats(room) {
@@ -1306,13 +1348,10 @@
         state.rooms = snapshot.val() || {};
         state.loaded = true;
         hideGlobalAlert();
-        document.getElementById('view-loading').classList.add('d-none');
-        syncRouteFromHash();
         renderAll();
       },
       (error) => {
         state.loaded = true;
-        document.getElementById('view-loading').classList.add('d-none');
         console.error('Firebase RTDB read error:', error);
         if (error.code === 'PERMISSION_DENIED') {
           showGlobalAlert(
@@ -1324,6 +1363,70 @@
         renderAll();
       }
     );
+
+    // Admin-Only History Subscription (/history) — NEVER subscribed for Guests
+    function unsubscribeAdminHistory() {
+      if (typeof state.historyUnsub === 'function') {
+        try {
+          state.historyUnsub();
+        } catch (_) {}
+        state.historyUnsub = null;
+      }
+      state.historyRooms = {};
+      state.hasSeparateHistoryAccess = false;
+    }
+
+    function subscribeAdminHistory() {
+      unsubscribeAdminHistory();
+      if (!state.isAdmin) return;
+      state.historyUnsub = onValue(
+        ref(db, 'history'),
+        (snapshot) => {
+          state.hasSeparateHistoryAccess = true;
+          state.historyRooms = snapshot.val() || {};
+          renderAll();
+        },
+        (error) => {
+          // Graceful fallback if /history node is not yet enabled in database rules
+          state.hasSeparateHistoryAccess = false;
+          state.historyRooms = {};
+          if (error && error.code !== 'PERMISSION_DENIED') {
+            console.warn('History node read fallback:', error.message);
+          }
+        }
+      );
+    }
+
+    // Physically wipe all protected DOM containers when unauthorized or logged out
+    function purgeProtectedDOM() {
+      const wsEl = document.getElementById('view-workspace');
+      if (wsEl) {
+        wsEl.innerHTML = '';
+        wsEl.classList.add('d-none');
+      }
+      const histEl = document.getElementById('view-history');
+      if (histEl) {
+        histEl.innerHTML = '';
+        histEl.classList.add('d-none');
+      }
+      const bottomNavRoot = document.getElementById('mobile-bottom-nav-root');
+      if (bottomNavRoot) {
+        bottomNavRoot.innerHTML = '';
+      }
+      const histModalBody = document.getElementById('history-modal-body');
+      if (histModalBody) histModalBody.innerHTML = '';
+      const histModalActions = document.getElementById('history-modal-admin-actions');
+      if (histModalActions) histModalActions.innerHTML = '';
+      state.historyDetailRoomId = null;
+
+      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-confirm'].forEach(closeModal);
+      document.body.classList.remove('pb-24');
+      const toastContainer = document.getElementById('toast-container');
+      if (toastContainer) {
+        toastContainer.classList.remove('bottom-24');
+        toastContainer.classList.add('bottom-5');
+      }
+    }
 
     // ==================== 5B. ADMIN INACTIVITY AUTO-LOGOUT (6 JAM) ====================
     const ADMIN_IDLE_TIMEOUT_MS = 6 * 60 * 60 * 1000; // 6 jam tidak aktif -> auto logout
@@ -1385,7 +1488,8 @@
       if (idleMs >= ADMIN_IDLE_TIMEOUT_MS) {
         stopAdminIdleMonitor();
         clearAdminActivity();
-        ['modal-room', 'modal-item', 'modal-confirm'].forEach(closeModal);
+        unsubscribeAdminHistory();
+        purgeProtectedDOM();
         try {
           await signOut(auth);
         } catch (err) {
@@ -1423,15 +1527,23 @@
       checkAdminInactivity();
     });
 
-    // Auth State Listener
+    // Auth State Listener (Gatekeeper before protected rendering)
     onAuthStateChanged(auth, async (user) => {
+      const wasAdmin = state.isAdmin;
+      const wasJustLoggedIn = state.justLoggedIn;
+      state.justLoggedIn = false;
+
       if (user) {
         const storedTs = getStoredAdminActivity();
         if (storedTs && Date.now() - storedTs >= ADMIN_IDLE_TIMEOUT_MS) {
           stopAdminIdleMonitor();
           clearAdminActivity();
+          unsubscribeAdminHistory();
           state.user = null;
           state.isAdmin = false;
+          state.authResolved = true;
+          purgeProtectedDOM();
+          guardAndResolveRoute({ silentRedirect: true });
           updateAuthUI();
           renderAll();
           try {
@@ -1444,17 +1556,25 @@
         }
         state.user = user;
         state.isAdmin = true;
+        state.authResolved = true;
         if (!storedTs) {
           recordAdminActivity(true);
         }
         startAdminIdleMonitor();
         loadAdminGeminiApiKey();
+        subscribeAdminHistory();
+        guardAndResolveRoute({ isPostLogin: wasJustLoggedIn });
       } else {
         stopAdminIdleMonitor();
         clearAdminActivity();
+        unsubscribeAdminHistory();
         state.user = null;
         state.isAdmin = false;
+        state.authResolved = true;
         state.geminiApiKey = '';
+        purgeProtectedDOM();
+        // If user just logged out from an internal route, silently reset to #monitor without triggering unauthorized modal
+        guardAndResolveRoute({ silentRedirect: wasAdmin });
       }
       updateAuthUI();
       renderAll();
@@ -1487,14 +1607,235 @@
       document.querySelectorAll('.public-only').forEach((el) => {
         el.classList.toggle('d-none', state.isAdmin);
       });
+
+      // Keep Workspace button hidden in Mobile / Standalone APK mode (even on wide tablets)
+      const navWs = document.getElementById('nav-workspace');
+      if (navWs) {
+        navWs.classList.toggle('d-none', !state.isAdmin || isMobileOrStandalone());
+      }
     }
 
-    // ==================== 6. ROUTING & NAVIGATION ====================
+    // ==================== 6. DEVICE DETECTION, ROUTE GUARD & NAVIGATION ====================
+    function isMobileOrStandalone() {
+      const isNarrow = window.innerWidth < 768;
+      const isStandalone =
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true;
+      return isNarrow || isStandalone;
+    }
+
+    function replaceUrlToHash(hash) {
+      const target = `${window.location.pathname}${hash}`;
+      if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== target) {
+        try {
+          window.history.replaceState(null, '', target);
+        } catch (_) {
+          window.location.hash = hash;
+        }
+      }
+    }
+
+    function parseRequestedLocation() {
+      const rawHash = (window.location.hash || '').trim();
+      const params = new URLSearchParams(window.location.search || '');
+      const queryRoute = (
+        params.get('page') ||
+        params.get('view') ||
+        params.get('tab') ||
+        params.get('route') ||
+        ''
+      ).trim().toLowerCase();
+
+      if (queryRoute) {
+        return { kind: 'query', route: queryRoute, rawHash };
+      }
+
+      if (!rawHash || rawHash === '#') {
+        return { kind: 'empty', route: '', rawHash };
+      }
+
+      if (rawHash === '#monitor') {
+        return { kind: 'public', route: 'monitor', rawHash };
+      }
+
+      if (rawHash.startsWith('#room/')) {
+        const roomId = decodeURIComponent(rawHash.slice(6));
+        return { kind: 'room', route: 'room', roomId, rawHash };
+      }
+
+      const normalized = rawHash.replace(/^#\/?/, '').split('/')[0].toLowerCase();
+      return { kind: 'internal', route: normalized, rawHash };
+    }
+
+    function promptUnauthorizedRedirect(message = 'Akses halaman internal dibatasi khusus Admin. Silakan login terlebih dahulu.') {
+      purgeProtectedDOM();
+      state.view = 'monitor';
+      state.selectedRoomId = null;
+      replaceUrlToHash('#monitor');
+      showToast(message, 'warning');
+      const errBox = document.getElementById('login-error');
+      if (errBox) errBox.classList.add('d-none');
+      openModal('modal-login');
+    }
+
+    function guardAndResolveRoute({ isPostLogin = false, silentRedirect = false } = {}) {
+      const mobileMode = isMobileOrStandalone();
+
+      // 1. Fresh Admin Login Landing Split (Desktop -> Workspace, Mobile/APK -> Monitor)
+      if (isPostLogin && state.isAdmin) {
+        if (mobileMode) {
+          state.view = 'monitor';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#monitor');
+        } else {
+          state.view = 'workspace';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#workspace');
+        }
+        return;
+      }
+
+      const req = parseRequestedLocation();
+
+      // 2. UNAUTHENTICATED / GUEST GUARD (Anti-Bypass & Anti Copy-Paste URL)
+      if (!state.isAdmin) {
+        if (req.kind === 'empty' || (req.kind === 'public' && req.route === 'monitor')) {
+          state.view = 'monitor';
+          state.selectedRoomId = null;
+          if (window.location.search) {
+            replaceUrlToHash('#monitor');
+          }
+          return;
+        }
+
+        if (req.kind === 'room') {
+          const targetRoom = state.rooms[req.roomId];
+          if (targetRoom && targetRoom.status !== 'history') {
+            state.view = 'room';
+            state.selectedRoomId = req.roomId;
+            return;
+          }
+          // Room not found yet or belongs to History (blocked for guest)
+          if (state.loaded) {
+            state.view = 'monitor';
+            state.selectedRoomId = null;
+            replaceUrlToHash('#monitor');
+            if (!silentRedirect && targetRoom && targetRoom.status === 'history') {
+              promptUnauthorizedRedirect('Arsip History hanya dapat diakses oleh Admin. Silakan login terlebih dahulu.');
+            }
+          }
+          return;
+        }
+
+        // Any internal/protected route (#workspace, #history, #jadwal, #absensi, #admin, ?page=..., or unknown hash)
+        if (silentRedirect) {
+          state.view = 'monitor';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#monitor');
+        } else {
+          promptUnauthorizedRedirect();
+        }
+        return;
+      }
+
+      // 3. AUTHENTICATED ADMIN ROUTING
+      const route = req.route;
+
+      // Empty root URL for logged-in Admin: Desktop -> Workspace, Mobile/APK -> Monitor
+      if (req.kind === 'empty') {
+        if (mobileMode) {
+          state.view = 'monitor';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#monitor');
+        } else {
+          state.view = 'workspace';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#workspace');
+        }
+        return;
+      }
+
+      if (route === 'workspace') {
+        if (mobileMode) {
+          // Never render Workspace on Mobile / APK
+          state.view = 'monitor';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#monitor');
+        } else {
+          state.view = 'workspace';
+          state.selectedRoomId = null;
+          if (window.location.search) replaceUrlToHash('#workspace');
+        }
+        return;
+      }
+
+      if (route === 'monitor') {
+        state.view = 'monitor';
+        state.selectedRoomId = null;
+        if (window.location.search) replaceUrlToHash('#monitor');
+        return;
+      }
+
+      if (route === 'history') {
+        state.view = 'history';
+        state.selectedRoomId = null;
+        if (window.location.search) replaceUrlToHash('#history');
+        return;
+      }
+
+      if (route === 'room' && req.roomId) {
+        const targetRoom = state.rooms[req.roomId];
+        if (targetRoom && targetRoom.status !== 'history') {
+          state.view = 'room';
+          state.selectedRoomId = req.roomId;
+          return;
+        }
+        if (state.loaded) {
+          state.view = 'monitor';
+          state.selectedRoomId = null;
+          replaceUrlToHash('#monitor');
+        }
+        return;
+      }
+
+      // Future internal modules accessed directly via URL while Admin is logged in
+      if (route === 'jadwal' || route === 'absensi') {
+        const fallbackView = mobileMode ? 'monitor' : 'workspace';
+        state.view = fallbackView;
+        state.selectedRoomId = null;
+        replaceUrlToHash(`#${fallbackView}`);
+        openComingSoonModal(route);
+        return;
+      }
+
+      // Any unknown route for Admin -> safe landing
+      const fallbackView = mobileMode ? 'monitor' : 'workspace';
+      state.view = fallbackView;
+      state.selectedRoomId = null;
+      replaceUrlToHash(`#${fallbackView}`);
+    }
+
     function navigateTo(view, roomId = null) {
+      const mobileMode = isMobileOrStandalone();
+
+      // Strict State Protection before setting route
+      if ((view === 'workspace' || view === 'history') && !state.isAdmin) {
+        promptUnauthorizedRedirect();
+        return;
+      }
+
+      if (view === 'workspace' && mobileMode) {
+        view = 'monitor';
+        roomId = null;
+      }
+
       state.view = view;
       state.selectedRoomId = roomId;
+
       if (view === 'room' && roomId) {
         window.location.hash = `#room/${encodeURIComponent(roomId)}`;
+      } else if (view === 'workspace') {
+        window.location.hash = '#workspace';
       } else if (view === 'history') {
         window.location.hash = '#history';
       } else {
@@ -1504,37 +1845,89 @@
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
-    function syncRouteFromHash() {
-      const hash = window.location.hash || '#monitor';
-      if (hash.startsWith('#room/')) {
-        const id = decodeURIComponent(hash.slice(6));
-        if (state.rooms[id] && state.rooms[id].status !== 'history') {
-          state.view = 'room';
-          state.selectedRoomId = id;
-          return;
-        }
-      } else if (hash === '#history') {
-        state.view = 'history';
-        state.selectedRoomId = null;
-        return;
-      }
-      if (state.view === 'room' && (!state.selectedRoomId || !state.rooms[state.selectedRoomId] || state.rooms[state.selectedRoomId].status === 'history')) {
-        state.view = 'monitor';
-        state.selectedRoomId = null;
-      }
-    }
-
     window.addEventListener('hashchange', () => {
-      syncRouteFromHash();
+      if (!state.authResolved) return;
+      guardAndResolveRoute();
       renderAll();
     });
 
+    // Re-evaluate Desktop Workspace vs Mobile Bottom Nav when viewport crosses 768px
+    let resizeGuardTimer = null;
+    window.addEventListener('resize', () => {
+      if (resizeGuardTimer) clearTimeout(resizeGuardTimer);
+      resizeGuardTimer = setTimeout(() => {
+        if (!state.authResolved || !state.loaded) return;
+        if (state.isAdmin && state.view === 'workspace' && isMobileOrStandalone()) {
+          state.view = 'monitor';
+          replaceUrlToHash('#monitor');
+        }
+        renderAll();
+      }, 120);
+    });
+
+    // ==================== 6B. COMING SOON MODAL ====================
+    const COMING_SOON_FEATURES = {
+      jadwal: {
+        title: 'Jadwal PIC',
+        desc: 'Fitur Jadwal PIC untuk mengatur jadwal operasional, pembagian tugas, dan penempatan PIC Campus Visit sedang dalam tahap pengembangan.',
+        iconClass: 'w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 flex items-center justify-center shrink-0',
+        iconSvg: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path></svg>`
+      },
+      absensi: {
+        title: 'Absensi PIC',
+        desc: 'Fitur Absensi PIC untuk mencatat, memantau, dan merekap kehadiran PIC Campus Visit secara otomatis sedang dalam tahap pengembangan.',
+        iconClass: 'w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0',
+        iconSvg: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><polyline points="9 14 11 16 15 12"></polyline></svg>`
+      }
+    };
+
+    function openComingSoonModal(featureKey) {
+      if (!state.isAdmin) {
+        promptUnauthorizedRedirect();
+        return;
+      }
+      const cfg = COMING_SOON_FEATURES[featureKey] || COMING_SOON_FEATURES.jadwal;
+      const iconEl = document.getElementById('coming-soon-icon');
+      const titleEl = document.getElementById('coming-soon-title');
+      const descEl = document.getElementById('coming-soon-desc');
+      if (iconEl) {
+        iconEl.className = cfg.iconClass;
+        iconEl.innerHTML = cfg.iconSvg;
+      }
+      if (titleEl) titleEl.textContent = cfg.title;
+      if (descEl) descEl.textContent = cfg.desc;
+      openModal('modal-coming-soon');
+    }
+
     // ==================== 7. RENDERING ENGINE ====================
     function renderAll() {
-      if (!state.loaded) return;
+      // Gate rendering until BOTH Firebase Auth status and initial room data are resolved
+      if (!state.loaded || !state.authResolved) return;
+
+      document.getElementById('view-loading').classList.add('d-none');
+
+      // Re-verify active route against live auth & data state before touching DOM
+      guardAndResolveRoute({ silentRedirect: true });
+
+      const mobileMode = isMobileOrStandalone();
+      const isWorkspaceActive = state.isAdmin && !mobileMode && state.view === 'workspace';
+      const isHistoryActive = state.isAdmin && state.view === 'history';
 
       const activeRooms = getActiveRoomList();
       const historyRooms = getHistoryRoomList();
+
+      // Header Workspace Breadcrumb & Desktop Main Nav Visibility
+      const wsCrumb = document.getElementById('header-workspace-crumb');
+      if (wsCrumb) {
+        wsCrumb.classList.toggle('d-none', !isWorkspaceActive);
+        wsCrumb.classList.toggle('hidden', !isWorkspaceActive);
+        wsCrumb.classList.toggle('md:inline-flex', isWorkspaceActive);
+      }
+
+      const desktopNav = document.getElementById('desktop-main-nav');
+      if (desktopNav) {
+        desktopNav.classList.toggle('d-none', isWorkspaceActive);
+      }
 
       // Update Nav Badges
       document.getElementById('badge-active-count').textContent = activeRooms.length;
@@ -1544,29 +1937,47 @@
 
       // Update Nav Active Styling
       const isMonitorTab = state.view === 'monitor' || state.view === 'room';
-      const isHistoryTab = state.view === 'history';
-
+      setNavBtnStyle('nav-workspace', isWorkspaceActive);
       setNavBtnStyle('nav-monitor', isMonitorTab);
-      setNavBtnStyle('nav-history', isHistoryTab);
+      setNavBtnStyle('nav-history', isHistoryActive);
       setNavBtnStyle('nav-monitor-mobile', isMonitorTab);
-      setNavBtnStyle('nav-history-mobile', isHistoryTab);
+      setNavBtnStyle('nav-history-mobile', isHistoryActive);
 
-      // Toggle Views
+      // Update Master Monitor Stats Grid Columns (3 cols for Guest, 4 cols for Admin)
+      const statsGrid = document.getElementById('monitor-stats');
+      if (statsGrid) {
+        statsGrid.className = state.isAdmin
+          ? 'grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4'
+          : 'grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4';
+      }
+
+      // Toggle Public Views
       document.getElementById('view-monitor').classList.toggle('d-none', state.view !== 'monitor');
       document.getElementById('view-room').classList.toggle('d-none', state.view !== 'room');
-      document.getElementById('view-history').classList.toggle('d-none', state.view !== 'history');
+
+      // Protected Views: True DOM Mount/Unmount (NEVER left hidden in DOM for unauthorized users)
+      renderWorkspaceView(isWorkspaceActive);
+
+      if (isHistoryActive) {
+        renderHistoryView(historyRooms);
+      } else {
+        unmountHistoryView();
+      }
 
       if (state.view === 'monitor') {
         renderMasterMonitor(activeRooms, historyRooms);
       } else if (state.view === 'room') {
         renderRoomDetail(activeRooms);
-      } else if (state.view === 'history') {
-        renderHistoryView(historyRooms);
       }
 
-      // Refresh History Modal if open
-      if (state.historyDetailRoomId && !document.getElementById('modal-history-detail').classList.contains('d-none')) {
+      // Protected Mobile Bottom Navigation Bar (Admin + Mobile/APK ONLY)
+      renderMobileBottomNav();
+
+      // Refresh History Modal if open (Admin only)
+      if (state.isAdmin && state.historyDetailRoomId && !document.getElementById('modal-history-detail').classList.contains('d-none')) {
         renderHistoryDetailModal(state.historyDetailRoomId);
+      } else if (!state.isAdmin) {
+        closeModal('modal-history-detail');
       }
 
       // Apply admin/public visibility classes for dynamically rendered nodes
@@ -1583,8 +1994,310 @@
         el.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-elevated/50', 'border-transparent');
       } else {
         el.classList.remove('bg-elevated', 'text-white', 'border-line-strong');
-        el.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-elevated/50', 'border', 'border-transparent');
+        el.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-elevated/50', 'border-transparent');
       }
+    }
+
+    // ---------- 7.0. DESKTOP WORKSPACE VIEW (ADMIN + DESKTOP ONLY, DYNAMIC DOM) ----------
+    function renderWorkspaceView(shouldRender) {
+      const wsEl = document.getElementById('view-workspace');
+      if (!wsEl) return;
+
+      if (!shouldRender || !state.isAdmin || isMobileOrStandalone()) {
+        wsEl.innerHTML = '';
+        wsEl.classList.add('d-none');
+        return;
+      }
+
+      wsEl.classList.remove('d-none');
+      // Avoid rebuilding if already mounted
+      if (wsEl.dataset.mounted === 'true' && wsEl.children.length > 0) return;
+
+      wsEl.innerHTML = `
+        <div class="min-h-[calc(100vh-11.5rem)] flex items-center py-6 lg:py-10">
+          <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
+            <!-- Left Column: Hero & 3 Application Cards -->
+            <div class="lg:col-span-6 space-y-7">
+              <div class="space-y-3">
+                <div class="text-xs font-bold uppercase tracking-[0.22em] text-brand">CAMPUS VISIT MANAGEMENT</div>
+                <div class="space-y-1">
+                  <div class="text-lg sm:text-xl font-medium text-slate-400">Welcome to</div>
+                  <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-[1.1]">
+                    Camvis <span class="text-brand">Workspace.</span>
+                  </h1>
+                </div>
+                <p class="text-sm sm:text-base text-slate-400 pt-1">
+                  Satu platform untuk seluruh kebutuhan operasional Campus Visit.
+                </p>
+                <div class="pt-3">
+                  <div class="w-11 h-[3px] rounded-full bg-brand"></div>
+                </div>
+              </div>
+
+              <div class="space-y-3.5 max-w-xl">
+                <p class="text-sm text-slate-400">Pilih aplikasi yang ingin Anda gunakan.</p>
+
+                <!-- Card 1: Rundown Monitor (ACTIVE) -->
+                <button type="button" data-action="workspace-open-monitor" class="w-full text-left group bg-surface hover:bg-elevated/80 border border-line hover:border-brand/60 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200 shadow-sm hover:shadow-[0_10px_30px_rgba(2,195,249,0.10)]">
+                  <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-14 h-14 rounded-xl bg-brand/12 border border-brand/25 text-brand flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                        <polyline points="6 10 9.5 10 11 7 13.5 13 15 10 18 10"></polyline>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                      </svg>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-base font-bold text-white group-hover:text-brand-soft transition-colors">Rundown Monitor</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-live-dot"></span>Aktif
+                        </span>
+                      </div>
+                      <p class="text-sm text-slate-400 mt-1 leading-relaxed">Pantau dan kelola jalannya rundown kegiatan secara real-time.</p>
+                    </div>
+                  </div>
+                  <svg class="w-5 h-5 text-brand shrink-0 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+
+                <!-- Card 2: Jadwal PIC (COMING SOON) -->
+                <button type="button" data-action="open-coming-soon" data-feature="jadwal" class="w-full text-left group bg-surface hover:bg-elevated/70 border border-line hover:border-orange-500/45 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200">
+                  <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-14 h-14 rounded-xl bg-orange-500/12 border border-orange-500/25 text-orange-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path>
+                      </svg>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-base font-bold text-white">Jadwal PIC</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/35 text-[10px] font-bold uppercase tracking-wider text-orange-300">Coming Soon</span>
+                      </div>
+                      <p class="text-sm text-slate-400 mt-1 leading-relaxed">Atur jadwal, pembagian tugas, dan penempatan PIC kegiatan.</p>
+                    </div>
+                  </div>
+                  <svg class="w-5 h-5 text-brand/75 group-hover:text-brand shrink-0 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+
+                <!-- Card 3: Absensi PIC (COMING SOON) -->
+                <button type="button" data-action="open-coming-soon" data-feature="absensi" class="w-full text-left group bg-surface hover:bg-elevated/70 border border-line hover:border-emerald-500/45 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-200">
+                  <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-14 h-14 rounded-xl bg-emerald-500/12 border border-emerald-500/25 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+                        <rect x="9" y="3" width="6" height="4" rx="1"></rect>
+                        <polyline points="9 14 11 16 15 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-base font-bold text-white">Absensi PIC</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Coming Soon</span>
+                      </div>
+                      <p class="text-sm text-slate-400 mt-1 leading-relaxed">Catat, pantau, dan rekap kehadiran PIC Campus Visit.</p>
+                    </div>
+                  </div>
+                  <svg class="w-5 h-5 text-brand/75 group-hover:text-brand shrink-0 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Custom Broadcast Workspace Illustration -->
+            <div class="lg:col-span-6 flex flex-col items-center justify-center">
+              <div class="w-full max-w-[490px] relative select-none" aria-hidden="true">
+                <svg viewBox="0 0 500 410" class="w-full h-auto drop-shadow-[0_20px_50px_rgba(2,195,249,0.08)]" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <radialGradient id="ws-glow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#02c3f9" stop-opacity="0.16"/>
+                      <stop offset="100%" stop-color="#090B0E" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="ws-screen" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#141C27"/>
+                      <stop offset="100%" stop-color="#0D1219"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Soft Ambient Glow -->
+                  <circle cx="250" cy="200" r="185" fill="url(#ws-glow)"/>
+
+                  <!-- Outer Orbit Rings -->
+                  <circle cx="250" cy="200" r="172" stroke="#1E293B" stroke-width="1" opacity="0.65"/>
+                  <circle cx="250" cy="200" r="146" stroke="#263345" stroke-width="1.2" stroke-dasharray="4 7" opacity="0.8"/>
+
+                  <!-- Decorative Dot Grid Top-Right -->
+                  <g fill="#334155" opacity="0.7">
+                    <circle cx="372" cy="48" r="2.2"/><circle cx="388" cy="48" r="2.2"/><circle cx="404" cy="48" r="2.2"/>
+                    <circle cx="372" cy="64" r="2.2"/><circle cx="388" cy="64" r="2.2"/><circle cx="404" cy="64" r="2.2"/>
+                    <circle cx="372" cy="80" r="2.2"/><circle cx="388" cy="80" r="2.2"/><circle cx="404" cy="80" r="2.2"/>
+                  </g>
+
+                  <!-- Floating Accent Dots -->
+                  <circle cx="182" cy="70" r="3" fill="#02c3f9"/>
+                  <circle cx="76" cy="206" r="4" fill="#02c3f9"/>
+                  <circle cx="426" cy="192" r="2.8" fill="#38BDF8"/>
+
+                  <!-- Ground Shadow Ellipse -->
+                  <ellipse cx="250" cy="336" rx="145" ry="20" fill="#131B26" opacity="0.85"/>
+
+                  <!-- Monitor Stand -->
+                  <path d="M224 294H276L288 326H212L224 294Z" fill="#233042"/>
+                  <rect x="192" y="324" width="116" height="9" rx="4.5" fill="#2D3D54"/>
+
+                  <!-- Monitor Frame -->
+                  <rect x="98" y="106" width="304" height="190" rx="16" fill="#121822" stroke="#2D3D54" stroke-width="2.5"/>
+                  <rect x="110" y="118" width="280" height="162" rx="10" fill="url(#ws-screen)" stroke="#1E2A3A" stroke-width="1.5"/>
+
+                  <!-- Screen Inner Top Divider -->
+                  <line x1="110" y1="142" x2="390" y2="142" stroke="#1E2A3A" stroke-width="1.2"/>
+
+                  <!-- Sidebar Bars -->
+                  <rect x="128" y="160" width="34" height="6" rx="3" fill="#02c3f9"/>
+                  <rect x="128" y="176" width="24" height="5" rx="2.5" fill="#334155"/>
+                  <rect x="128" y="191" width="30" height="5" rx="2.5" fill="#334155"/>
+                  <rect x="128" y="206" width="20" height="5" rx="2.5" fill="#334155"/>
+
+                  <!-- 3 Mini Metric Cards on Screen -->
+                  <rect x="180" y="152" width="58" height="36" rx="7" fill="#131D2A" stroke="#253447" stroke-width="1.2"/>
+                  <rect x="190" y="163" width="26" height="5" rx="2.5" fill="#02c3f9"/>
+                  <rect x="190" y="174" width="15" height="5" rx="2.5" fill="#38BDF8" opacity="0.75"/>
+
+                  <rect x="247" y="152" width="58" height="36" rx="7" fill="#131D2A" stroke="#253447" stroke-width="1.2"/>
+                  <rect x="257" y="163" width="26" height="5" rx="2.5" fill="#FB923C"/>
+                  <rect x="257" y="174" width="16" height="5" rx="2.5" fill="#F97316" opacity="0.75"/>
+
+                  <rect x="314" y="152" width="58" height="36" rx="7" fill="#131D2A" stroke="#253447" stroke-width="1.2"/>
+                  <rect x="324" y="163" width="26" height="5" rx="2.5" fill="#34D399"/>
+                  <rect x="324" y="174" width="16" height="5" rx="2.5" fill="#10B981" opacity="0.75"/>
+
+                  <!-- Live Telemetry Chart Box -->
+                  <rect x="180" y="198" width="192" height="68" rx="8" fill="#101824" stroke="#253447" stroke-width="1.2"/>
+                  <line x1="192" y1="220" x2="360" y2="220" stroke="#1B2738" stroke-width="1"/>
+                  <line x1="192" y1="242" x2="360" y2="242" stroke="#1B2738" stroke-width="1"/>
+                  <path d="M196 250 L226 239 L250 245 L284 221 L312 232 L352 208" stroke="#02c3f9" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M196 250 L226 239 L250 245 L284 221 L312 232 L352 208 L352 258 L196 258 Z" fill="#02c3f9" opacity="0.08"/>
+
+                  <!-- Floating Tile 1 (Top-Left: Cyan Rundown Monitor) -->
+                  <g>
+                    <rect x="64" y="64" width="84" height="84" rx="18" fill="#102938" stroke="#02c3f9" stroke-opacity="0.45" stroke-width="1.6"/>
+                    <rect x="85" y="85" width="42" height="30" rx="5" stroke="#02c3f9" stroke-width="2.4"/>
+                    <polyline points="92,100 99,100 103,93 108,107 112,100 120,100" stroke="#02c3f9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="97" y1="124" x2="115" y2="124" stroke="#02c3f9" stroke-width="2.4" stroke-linecap="round"/>
+                  </g>
+
+                  <!-- Floating Tile 2 (Top-Right: Orange Jadwal PIC) -->
+                  <g>
+                    <rect x="352" y="74" width="82" height="82" rx="18" fill="#2B1E14" stroke="#FB923C" stroke-opacity="0.45" stroke-width="1.6"/>
+                    <rect x="375" y="99" width="36" height="34" rx="5" stroke="#FB923C" stroke-width="2.4"/>
+                    <line x1="384" y1="93" x2="384" y2="103" stroke="#FB923C" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="402" y1="93" x2="402" y2="103" stroke="#FB923C" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="375" y1="110" x2="411" y2="110" stroke="#FB923C" stroke-width="2.2"/>
+                    <circle cx="385" cy="119" r="1.8" fill="#FB923C"/>
+                    <circle cx="393" cy="119" r="1.8" fill="#FB923C"/>
+                    <circle cx="401" cy="119" r="1.8" fill="#FB923C"/>
+                    <circle cx="385" cy="126" r="1.8" fill="#FB923C"/>
+                    <circle cx="393" cy="126" r="1.8" fill="#FB923C"/>
+                  </g>
+
+                  <!-- Floating Tile 3 (Bottom-Right: Emerald Absensi PIC) -->
+                  <g>
+                    <rect x="346" y="252" width="84" height="84" rx="18" fill="#102B22" stroke="#34D399" stroke-opacity="0.45" stroke-width="1.6"/>
+                    <rect x="371" y="274" width="34" height="42" rx="5" stroke="#34D399" stroke-width="2.4"/>
+                    <rect x="380" y="268" width="16" height="9" rx="3" fill="#102B22" stroke="#34D399" stroke-width="2.2"/>
+                    <polyline points="380,296 386,302 397,290" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+                </svg>
+                <div class="text-center text-[11px] font-semibold tracking-[0.28em] text-slate-500 uppercase mt-2">
+                  CONNECTED. ORGANIZED. IN CONTROL.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      wsEl.dataset.mounted = 'true';
+    }
+
+    // ---------- 7.0B. MOBILE BOTTOM NAVIGATION BAR (ADMIN + MOBILE/APK ONLY, DYNAMIC DOM) ----------
+    function renderMobileBottomNav() {
+      const root = document.getElementById('mobile-bottom-nav-root');
+      const toastContainer = document.getElementById('toast-container');
+      if (!root) return;
+
+      const shouldMount = state.isAdmin && isMobileOrStandalone();
+      if (!shouldMount) {
+        root.innerHTML = '';
+        document.body.classList.remove('pb-24');
+        if (toastContainer) {
+          toastContainer.classList.remove('bottom-24');
+          toastContainer.classList.add('bottom-5');
+        }
+        return;
+      }
+
+      document.body.classList.add('pb-24');
+      if (toastContainer) {
+        toastContainer.classList.remove('bottom-5');
+        toastContainer.classList.add('bottom-24');
+      }
+
+      const isMonitorActive = state.view === 'monitor' || state.view === 'room' || state.view === 'history';
+
+      root.innerHTML = `
+        <nav aria-label="Navigasi Bawah Admin" class="fixed bottom-0 inset-x-0 z-40 bg-[#0B0F15]/95 backdrop-blur-lg border-t border-line shadow-[0_-8px_24px_rgba(0,0,0,0.45)]" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+          <div class="max-w-lg mx-auto grid grid-cols-3 h-16 px-2">
+            <!-- Tab 1: Monitor (Active) -->
+            <button type="button" data-action="bottom-nav-monitor" class="relative flex flex-col items-center justify-center gap-1 transition-colors ${isMonitorActive ? 'text-brand' : 'text-slate-400 hover:text-slate-200'}">
+              ${isMonitorActive ? '<span class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-[2.5px] rounded-b-full bg-brand"></span>' : ''}
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                <polyline points="6 10 9.5 10 11 7 13.5 13 15 10 18 10"></polyline>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span class="text-[11px] font-bold tracking-tight">Monitor</span>
+            </button>
+
+            <!-- Tab 2: Jadwal (Coming Soon) -->
+            <button type="button" data-action="open-coming-soon" data-feature="jadwal" class="relative flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-200 transition-colors">
+              <div class="relative">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <path d="M8 14h.01M12 14h.01M16 14h.01"></path>
+                </svg>
+                <span class="absolute -top-1 -right-2.5 px-1 py-0 rounded bg-orange-500/20 border border-orange-500/40 text-[8px] font-extrabold uppercase text-orange-300 leading-tight">Soon</span>
+              </div>
+              <span class="text-[11px] font-semibold tracking-tight">Jadwal</span>
+            </button>
+
+            <!-- Tab 3: Absensi (Coming Soon) -->
+            <button type="button" data-action="open-coming-soon" data-feature="absensi" class="relative flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-200 transition-colors">
+              <div class="relative">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+                  <rect x="9" y="3" width="6" height="4" rx="1"></rect>
+                  <polyline points="9 14 11 16 15 12"></polyline>
+                </svg>
+                <span class="absolute -top-1 -right-2.5 px-1 py-0 rounded bg-emerald-500/20 border border-emerald-500/40 text-[8px] font-extrabold uppercase text-emerald-300 leading-tight">Soon</span>
+              </div>
+              <span class="text-[11px] font-semibold tracking-tight">Absensi</span>
+            </button>
+          </div>
+        </nav>
+      `;
     }
 
     // ---------- 7A. MASTER MONITOR RENDER ----------
@@ -2167,10 +2880,76 @@
       }).join('');
     }
 
-    // ---------- 7C. HISTORY VIEW RENDER ----------
+    // ---------- 7C. HISTORY VIEW RENDER (ADMIN ONLY, DYNAMIC DOM) ----------
+    function unmountHistoryView() {
+      const viewEl = document.getElementById('view-history');
+      if (!viewEl) return;
+      viewEl.innerHTML = '';
+      viewEl.classList.add('d-none');
+    }
+
+    function ensureHistoryViewMounted() {
+      const viewEl = document.getElementById('view-history');
+      if (!viewEl || !state.isAdmin) return false;
+      viewEl.classList.remove('d-none');
+
+      if (!document.getElementById('history-list')) {
+        viewEl.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">History Event &amp; Riwayat Keterlambatan</h1>
+              <p class="text-sm text-slate-400 mt-1">Arsip ruangan dan rundown yang telah selesai lengkap dengan catatan waktu aktual dan delay per sesi.</p>
+            </div>
+
+            <div class="w-full sm:w-72">
+              <div class="relative">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input id="history-search" type="search" value="${escapeHtml(state.historySearch)}" placeholder="Cari ruangan atau event..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+              </div>
+            </div>
+          </div>
+
+          <div id="history-list" class="space-y-4"></div>
+
+          <div id="history-empty" class="d-none bg-surface border border-line rounded-2xl p-12 text-center">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-elevated border border-line flex items-center justify-center text-slate-400 mb-4">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <h2 class="text-lg font-bold text-white">Belum Ada Riwayat Event</h2>
+            <p class="text-sm text-slate-400 max-w-md mx-auto mt-1.5">
+              Ruangan yang telah selesai akan otomatis dipindahkan ke halaman ini beserta seluruh catatan keterlambatannya.
+            </p>
+          </div>
+        `;
+
+        const searchInput = document.getElementById('history-search');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            state.historySearch = e.target.value;
+            renderHistoryView(getHistoryRoomList());
+          });
+        }
+      }
+      return true;
+    }
+
     function renderHistoryView(historyRooms) {
+      if (!state.isAdmin || state.view !== 'history') {
+        unmountHistoryView();
+        return;
+      }
+
+      if (!ensureHistoryViewMounted()) return;
+
       const listEl = document.getElementById('history-list');
       const emptyEl = document.getElementById('history-empty');
+      if (!listEl || !emptyEl) return;
 
       if (historyRooms.length === 0) {
         listEl.innerHTML = '';
@@ -2230,7 +3009,11 @@
     }
 
     function renderHistoryDetailModal(roomId) {
-      const room = state.rooms[roomId];
+      if (!state.isAdmin) {
+        closeModal('modal-history-detail');
+        return;
+      }
+      const room = findHistoryRoomById(roomId);
       if (!room) {
         closeModal('modal-history-detail');
         return;
@@ -2677,7 +3460,7 @@
       }
     }
 
-    // Finish Room -> Move to History (DO NOT DELETE)
+    // Finish Room -> Move to Protected /history (with automatic fallback to legacy /rooms if rules not yet updated)
     function confirmFinishRoom(roomId) {
       if (!requireAdmin()) return;
       const room = state.rooms[roomId];
@@ -2686,34 +3469,65 @@
 
       openConfirm({
         title: 'Selesaikan Ruangan & Pindahkan ke History?',
-        message: `Event "${room.name}" tidak akan dihapus, melainkan dipindahkan ke tab History lengkap dengan catatan keterlambatan (${stats.delayedCount} sesi delay, maks +${stats.maxDelay} mnt).`,
+        message: `Event "${room.name}" tidak akan dihapus, melainkan dipindahkan ke tab History khusus Admin lengkap dengan catatan keterlambatan (${stats.delayedCount} sesi delay, maks +${stats.maxDelay} mnt).`,
         okText: 'Selesaikan & Arsipkan',
         danger: false,
         onConfirm: async () => {
           const now = new Date();
           const nowTs = now.getTime();
           const nowStr = formatHHMMSS(now);
-          const updates = {};
-
-          if (room.activeItemId && room.items && room.items[room.activeItemId]) {
-            updates[`rooms/${roomId}/items/${room.activeItemId}/cueState`] = 'completed';
-            updates[`rooms/${roomId}/items/${room.activeItemId}/actualEndTs`] = nowTs;
-            updates[`rooms/${roomId}/items/${room.activeItemId}/actualEndTime`] = nowStr;
-          }
-
-          updates[`rooms/${roomId}/status`] = 'history';
-          updates[`rooms/${roomId}/showState`] = 'completed';
-          updates[`rooms/${roomId}/activeItemId`] = null;
-          updates[`rooms/${roomId}/completedAt`] = nowTs;
-          updates[`rooms/${roomId}/historySummary`] = {
+          const historySummary = {
             totalItems: stats.totalItems,
             delayedCount: stats.delayedCount,
             onTimeCount: stats.onTimeCount,
             maxDelayMinutes: stats.maxDelay
           };
 
+          // Build clean archived copy for protected /history node
+          const archivedRoom = JSON.parse(JSON.stringify(room));
+          if (archivedRoom.activeItemId && archivedRoom.items && archivedRoom.items[archivedRoom.activeItemId]) {
+            archivedRoom.items[archivedRoom.activeItemId].cueState = 'completed';
+            archivedRoom.items[archivedRoom.activeItemId].actualEndTs = nowTs;
+            archivedRoom.items[archivedRoom.activeItemId].actualEndTime = nowStr;
+          }
+          archivedRoom.status = 'history';
+          archivedRoom.showState = 'completed';
+          archivedRoom.activeItemId = null;
+          archivedRoom.autoStart = false;
+          archivedRoom.completedAt = nowTs;
+          archivedRoom.historySummary = historySummary;
+
+          // Build legacy fallback updates inside /rooms
+          const legacyUpdates = {};
+          if (room.activeItemId && room.items && room.items[room.activeItemId]) {
+            legacyUpdates[`rooms/${roomId}/items/${room.activeItemId}/cueState`] = 'completed';
+            legacyUpdates[`rooms/${roomId}/items/${room.activeItemId}/actualEndTs`] = nowTs;
+            legacyUpdates[`rooms/${roomId}/items/${room.activeItemId}/actualEndTime`] = nowStr;
+          }
+          legacyUpdates[`rooms/${roomId}/status`] = 'history';
+          legacyUpdates[`rooms/${roomId}/showState`] = 'completed';
+          legacyUpdates[`rooms/${roomId}/activeItemId`] = null;
+          legacyUpdates[`rooms/${roomId}/autoStart`] = false;
+          legacyUpdates[`rooms/${roomId}/completedAt`] = nowTs;
+          legacyUpdates[`rooms/${roomId}/historySummary`] = historySummary;
+
           try {
-            await update(ref(db), updates);
+            if (state.hasSeparateHistoryAccess) {
+              try {
+                await update(ref(db), {
+                  [`history/${roomId}`]: archivedRoom,
+                  [`rooms/${roomId}`]: null
+                });
+              } catch (moveErr) {
+                if (moveErr && moveErr.code === 'PERMISSION_DENIED') {
+                  await update(ref(db), legacyUpdates);
+                } else {
+                  throw moveErr;
+                }
+              }
+            } else {
+              await update(ref(db), legacyUpdates);
+            }
             showToast(`"${room.name}" selesai & dipindahkan ke History.`, 'success');
             if (state.view !== 'monitor') {
               navigateTo('monitor');
@@ -2765,12 +3579,27 @@
     // Restore room from History back to Active
     async function restoreHistoryRoom(roomId) {
       if (!requireAdmin()) return;
+      const histRoom = findHistoryRoomById(roomId);
+      if (!histRoom) return;
       try {
-        await update(ref(db), {
-          [`rooms/${roomId}/status`]: 'active',
-          [`rooms/${roomId}/showState`]: 'standby',
-          [`rooms/${roomId}/completedAt`]: null
-        });
+        if (histRoom._historySource === 'history') {
+          const restored = JSON.parse(JSON.stringify(histRoom));
+          delete restored.id;
+          delete restored._historySource;
+          restored.status = 'active';
+          restored.showState = 'standby';
+          restored.completedAt = null;
+          await update(ref(db), {
+            [`rooms/${roomId}`]: restored,
+            [`history/${roomId}`]: null
+          });
+        } else {
+          await update(ref(db), {
+            [`rooms/${roomId}/status`]: 'active',
+            [`rooms/${roomId}/showState`]: 'standby',
+            [`rooms/${roomId}/completedAt`]: null
+          });
+        }
         closeModal('modal-history-detail');
         showToast('Ruangan dipulihkan ke Master Monitor.', 'success');
         navigateTo('room', roomId);
@@ -2807,7 +3636,7 @@
     // Permanently delete room from History
     function confirmPurgeHistoryRoom(roomId) {
       if (!requireAdmin()) return;
-      const room = state.rooms[roomId];
+      const room = findHistoryRoomById(roomId);
       if (!room) return;
       openConfirm({
         title: 'Hapus Permanen dari History?',
@@ -2816,7 +3645,8 @@
         danger: true,
         onConfirm: async () => {
           try {
-            await remove(ref(db, `rooms/${roomId}`));
+            const targetPath = room._historySource === 'history' ? `history/${roomId}` : `rooms/${roomId}`;
+            await remove(ref(db, targetPath));
             closeModal('modal-history-detail');
             showToast('Riwayat ruangan dihapus permanen.', 'info');
           } catch (err) {
@@ -2938,9 +3768,10 @@
       });
     }
 
-    // Export History Room to CSV
+    // Export History Room to CSV (Admin Only)
     function exportHistoryCSV(roomId) {
-      const room = state.rooms[roomId];
+      if (!requireAdmin()) return;
+      const room = findHistoryRoomById(roomId);
       if (!room) return;
       const items = getSortedItems(room);
       const header = ['No', 'Jam Rencana', 'Durasi (Mnt)', 'Fixed Time', 'Mulai Aktual', 'Selesai Aktual', 'Status/Delay (Mnt)', 'Nama Sesi', 'PIC', 'Catatan'];
@@ -3217,7 +4048,14 @@
     // ==================== 11. EVENT LISTENERS ====================
 
     // Navigation buttons
-    document.getElementById('btn-brand-home').addEventListener('click', () => navigateTo('monitor'));
+    document.getElementById('btn-brand-home').addEventListener('click', () => {
+      if (state.isAdmin && !isMobileOrStandalone()) {
+        navigateTo('workspace');
+      } else {
+        navigateTo('monitor');
+      }
+    });
+    document.getElementById('nav-workspace').addEventListener('click', () => navigateTo('workspace'));
     document.getElementById('nav-monitor').addEventListener('click', () => navigateTo('monitor'));
     document.getElementById('nav-history').addEventListener('click', () => navigateTo('history'));
     document.getElementById('nav-monitor-mobile').addEventListener('click', () => navigateTo('monitor'));
@@ -3281,6 +4119,8 @@
       try {
         stopAdminIdleMonitor();
         clearAdminActivity();
+        unsubscribeAdminHistory();
+        purgeProtectedDOM();
         await signOut(auth);
         showToast('Berhasil logout. Kembali ke Mode Viewer Publik.', 'info');
       } catch (err) {
@@ -3301,12 +4141,14 @@
       submitBtn.textContent = 'Memproses...';
 
       try {
-        // Stamp fresh activity timestamp before sign-in so onAuthStateChanged never sees stale expiry
+        // Stamp fresh activity timestamp & mark post-login redirect before sign-in
         recordAdminActivity(true);
+        state.justLoggedIn = true;
         await signInWithEmailAndPassword(auth, email, password);
         closeModal('modal-login');
         showToast('Login Admin berhasil. Auto-logout aktif jika tidak ada aktivitas selama 6 jam.', 'success');
       } catch (err) {
+        state.justLoggedIn = false;
         clearAdminActivity();
         let msg = 'Login gagal. Periksa kembali email dan password Anda.';
         if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
@@ -3618,12 +4460,6 @@
       }
     });
 
-    // History Search
-    document.getElementById('history-search').addEventListener('input', (e) => {
-      state.historySearch = e.target.value;
-      renderHistoryView(getHistoryRoomList());
-    });
-
     // Confirm Modal Buttons
     document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
       state.confirmCallback = null;
@@ -3658,6 +4494,15 @@
       const itemId = actionEl.dataset.itemId;
 
       switch (action) {
+        case 'workspace-open-monitor':
+          navigateTo('monitor');
+          break;
+        case 'bottom-nav-monitor':
+          navigateTo('monitor');
+          break;
+        case 'open-coming-soon':
+          openComingSoonModal(actionEl.dataset.feature || 'jadwal');
+          break;
         case 'open-room':
           navigateTo('room', roomId);
           break;
@@ -3714,6 +4559,10 @@
           break;
         }
         case 'open-history-detail':
+          if (!state.isAdmin) {
+            promptUnauthorizedRedirect();
+            break;
+          }
           renderHistoryDetailModal(roomId);
           openModal('modal-history-detail');
           break;
@@ -3738,11 +4587,11 @@
           closeModal('modal-import');
           return;
         }
-        ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail'].forEach(closeModal);
+        ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-coming-soon'].forEach(closeModal);
         return;
       }
       const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-confirm']
+      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-confirm']
         .some(id => !document.getElementById(id).classList.contains('d-none'));
 
       if (e.shiftKey && e.key === 'ArrowRight' && !isInputFocused && !anyModalOpen && state.isAdmin && state.view === 'room' && state.selectedRoomId) {
