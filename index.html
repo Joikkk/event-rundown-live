@@ -2776,7 +2776,7 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="font-mono text-xs font-semibold text-slate-400">${stats.completedCount}/${stats.totalItems}</span>
-                  ${state.isAdmin ? `
+                  ${state.isAdmin && room.showState !== 'live' ? `
                     <button type="button" data-action="delete-room" data-room-id="${escapeHtml(room.id)}" class="p-1.5 rounded-lg bg-elevated hover:bg-red-950 hover:border-red-700 hover:text-red-300 text-slate-400 border border-line transition-colors" title="Hapus Event / Ruangan">
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -2835,10 +2835,23 @@
       }).join('');
 
       const stats = computeRoomStats(room);
-      const isLive = room.showState === 'live' && stats.activeItem;
+      const isRunning = room.showState === 'live';
+      const isLive = isRunning && stats.activeItem;
       const delayMin = isLive ? (stats.activeItem.delayMinutes || 0) : 0;
       const isDelayed = isLive && delayMin > 0;
       const isLastCue = isLive && stats.activeIdx === stats.totalItems - 1;
+
+      // Disable Room Delete button while rundown is running/live
+      const btnRoomDelete = document.getElementById('btn-room-delete');
+      if (btnRoomDelete) {
+        btnRoomDelete.disabled = isRunning;
+        btnRoomDelete.className = isRunning
+          ? 'px-3 py-2 rounded-lg bg-surface border border-line text-xs font-semibold text-slate-500 opacity-45 cursor-not-allowed'
+          : 'px-3 py-2 rounded-lg bg-surface hover:bg-red-600 hover:border-red-500 hover:text-white border border-line text-xs font-semibold text-slate-200 transition-colors';
+        btnRoomDelete.title = isRunning
+          ? 'Event sedang berjalan (LIVE) dan tidak dapat dihapus. Reset atau selesaikan show terlebih dahulu.'
+          : 'Hapus ruangan / event ini';
+      }
 
       document.getElementById('room-item-progress-pill').textContent =
         `${stats.completedCount} / ${stats.totalItems} Selesai`;
@@ -6744,11 +6757,15 @@
       }
     }
 
-    // Delete active room / event with confirmation (Admin Only)
+    // Delete active room / event with confirmation (Admin Only, blocked while LIVE/running)
     function confirmDeleteRoom(roomId) {
       if (!requireAdmin()) return;
       const room = state.rooms[roomId];
       if (!room) return;
+      if (room.showState === 'live') {
+        showToast('Event sedang berjalan (LIVE) dan tidak dapat dihapus. Reset atau selesaikan show terlebih dahulu.', 'error');
+        return;
+      }
       openConfirm({
         title: 'Hapus Event / Ruangan?',
         message: `Apakah kamu yakin akan menghapus event "${room.name}" ini? Seluruh daftar sesi rundown di dalam ruangan ini akan ikut terhapus permanen.`,
@@ -6756,6 +6773,11 @@
         cancelText: 'Tidak',
         danger: true,
         onConfirm: async () => {
+          const latestRoom = state.rooms[roomId];
+          if (latestRoom && latestRoom.showState === 'live') {
+            showToast('Event sedang berjalan (LIVE) dan tidak dapat dihapus.', 'error');
+            return;
+          }
           try {
             await remove(ref(db, `rooms/${roomId}`));
             if (state.selectedRoomId === roomId) {

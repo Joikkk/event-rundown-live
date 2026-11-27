@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rundown-live-shell-v17';
+const CACHE_NAME = 'rundown-live-shell-v18';
 const APP_SHELL = [
   './',
   './index.html',
