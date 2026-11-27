@@ -481,8 +481,8 @@
 
   </main>
 
-  <!-- ==================== FOOTER ==================== -->
-  <footer class="border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500 text-center">
+  <!-- ==================== FOOTER (DESKTOP ONLY) ==================== -->
+  <footer id="app-footer" class="hidden md:block border-t border-line/70 py-4 px-4 sm:px-6 text-xs text-slate-500 text-center">
     Camvis UMN &copy; 2026
   </footer>
 
@@ -2243,7 +2243,11 @@
       setNavBtnStyle('nav-jadwal-mobile', isJadwalActive);
       setNavBtnStyle('nav-pic-data-mobile', isPicDataActive || isPicDetailActive);
 
-      // Master Monitor Stats Strip: HIDDEN completely on Mobile / APK (for BOTH Guest and Admin)
+      // Master Monitor Stats Strip & Footer: HIDDEN completely on Mobile / APK
+      const appFooter = document.getElementById('app-footer');
+      if (appFooter) {
+        appFooter.classList.toggle('d-none', mobileMode);
+      }
       const statsGrid = document.getElementById('monitor-stats');
       if (statsGrid) {
         if (mobileMode) {
