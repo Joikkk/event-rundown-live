@@ -157,41 +157,30 @@
           </div>
         </button>
 
-        <!-- Desktop Main Navigation (Contextual per Module, No Workspace button — click Camvis logo to return) -->
+        <!-- Desktop Main Navigation (3 Active Feature Tabs on all pages except Workspace) -->
         <nav id="desktop-main-nav" class="hidden md:flex items-center gap-1 ml-2 pl-4 border-l border-line" aria-label="Navigasi Utama">
-          <!-- Rundown Module Tabs -->
-          <button id="nav-monitor" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="nav-monitor" type="button" class="nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 whitespace-nowrap">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2"></rect>
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
-            <span>Master Monitor</span>
+            <span>Rundown Monitor</span>
             <span id="badge-active-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
           </button>
 
-          <button id="nav-history" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <span>History</span>
-            <span id="badge-history-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
-          </button>
-
-          <!-- PIC Module Tabs (Admin Only) -->
-          <button id="nav-jadwal" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="nav-jadwal" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 whitespace-nowrap">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span>Cek Jadwal PIC</span>
+            <span>Jadwal PIC</span>
           </button>
 
-          <button id="nav-pic-data" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="nav-pic-data" type="button" class="admin-only d-none nav-tab px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 whitespace-nowrap">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -251,10 +240,10 @@
       </div>
     </div>
 
-    <!-- Mobile Sub-Navigation Bar: Rundown Module (Admin Only) -->
+    <!-- Mobile Sub-Navigation Bar: Rundown Module (Admin Only — History stays here on Mobile) -->
     <div id="mobile-sub-nav" class="d-none md:hidden border-t border-line bg-surface px-4 py-2 flex items-center gap-2">
       <button id="nav-monitor-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
-        <span>Master Monitor</span>
+        <span>Rundown Monitor</span>
         <span id="badge-active-count-mobile" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-canvas">0</span>
       </button>
       <button id="nav-history-mobile" type="button" class="nav-tab-mobile flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
@@ -302,12 +291,12 @@
     <!-- ==================== VIEW 0: DESKTOP WORKSPACE (ADMIN ONLY, DYNAMIC MOUNT) ==================== -->
     <section id="view-workspace" class="d-none"></section>
 
-    <!-- ==================== VIEW 1: MASTER MONITOR ==================== -->
+    <!-- ==================== VIEW 1: RUNDOWN MONITOR ==================== -->
     <section id="view-monitor" class="d-none space-y-6">
       <!-- Top Action & Stats Bar -->
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Master Monitor</h1>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Rundown Monitor</h1>
           <p class="text-sm text-slate-400 mt-1">Pantau seluruh ruangan dan status cue secara real-time. Klik ruangan untuk melihat rundown lengkap.</p>
         </div>
 
@@ -319,6 +308,16 @@
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
             <span>Tambah Ruangan</span>
+          </button>
+
+          <!-- Desktop-Only History Button (moved from header to right of Tambah Ruangan) -->
+          <button id="btn-monitor-history" type="button" class="admin-only d-none hidden md:flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface hover:bg-elevated border border-line-strong text-sm font-semibold text-slate-200 hover:text-white transition-colors">
+            <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>History</span>
+            <span id="badge-history-count" class="font-mono text-xs px-1.5 py-0.5 rounded bg-elevated text-slate-300">0</span>
           </button>
         </div>
       </div>
@@ -381,7 +380,7 @@
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span>Master Monitor</span>
+            <span>Rundown Monitor</span>
           </button>
           <div id="quick-room-switcher" class="flex items-center gap-1.5">
             <!-- Active room pills rendered dynamically -->
@@ -955,6 +954,11 @@
     <div id="pic-crop-mount" class="bg-[#0B0F15] border border-line-strong rounded-2xl max-w-md w-full max-h-[94vh] shadow-2xl flex flex-col overflow-hidden"></div>
   </div>
 
+  <!-- Modal 5E: Bulk Import PIC (Admin Only, Dynamic Body) -->
+  <div id="modal-pic-bulk" class="d-none fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4">
+    <div id="pic-bulk-mount" class="bg-surface border border-line-strong rounded-2xl max-w-5xl w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden"></div>
+  </div>
+
   <!-- Modal 6: Confirm Action -->
   <div id="modal-confirm" class="d-none fixed inset-0 z-[70] modal-backdrop flex items-center justify-center p-4">
     <div class="bg-surface border border-line-strong rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
@@ -1035,7 +1039,7 @@
       historyUnsub: null,
       hasSeparateHistoryAccess: false,
       // Modular PIC Nodes (Admin Only, separated to avoid cross-module bloat)
-      pics: {}, // /pics/<picId> -> { name, active, createdAt, updatedAt }
+      pics: {}, // /pics/<picId> -> { name, major, active, createdAt, updatedAt }
       picSchedules: {}, // /picSchedules/<picId> -> { senin: [...], selasa: [...], ... }
       picProfilesCache: {}, // /picProfiles/<picId> -> loaded on-demand ONLY on Daftar/Detail/Edit PIC (never on #jadwal)
       picProfilesAllLoaded: false,
@@ -1046,6 +1050,8 @@
       // PIC Module UI state
       picSearch: '',
       picSort: 'az', // 'az' | 'za' | 'newest'
+      picMajorFilter: [], // array of selected major codes e.g. ['DKV', 'IF']
+      picMajorDropdownOpen: false,
       jadwalDate: _initTodayISO,
       jadwalStartTime: '08:00',
       jadwalEndTime: '15:00',
@@ -1057,6 +1063,9 @@
       picEditDraft: null,
       picCropSession: null,
       picCropMode: null, // 'picker' | 'crop' | null
+      picBulkRows: [],
+      picBulkDuplicateMode: 'update', // 'update' | 'skip'
+      picBulkSourceName: '',
       // Rundown Draft & Importer
       draftItems: [], // optional inline rundown items when creating a new room
       geminiApiKey: '', // loaded securely from /adminSecrets/geminiApiKey for Admin only
@@ -1487,6 +1496,10 @@
       state.picEditDraft = null;
       state.picCropSession = null;
       state.picCropMode = null;
+      state.picMajorFilter = [];
+      state.picMajorDropdownOpen = false;
+      state.picBulkRows = [];
+      state.picBulkSourceName = '';
     }
 
     function subscribeAdminPics() {
@@ -1622,6 +1635,8 @@
       if (picFormMount) picFormMount.innerHTML = '';
       const picCropMount = document.getElementById('pic-crop-mount');
       if (picCropMount) picCropMount.innerHTML = '';
+      const picBulkMount = document.getElementById('pic-bulk-mount');
+      if (picBulkMount) picBulkMount.innerHTML = '';
 
       const histModalBody = document.getElementById('history-modal-body');
       if (histModalBody) histModalBody.innerHTML = '';
@@ -1632,9 +1647,13 @@
       state.picEditDraft = null;
       state.picCropSession = null;
       state.picCropMode = null;
+      state.picMajorFilter = [];
+      state.picMajorDropdownOpen = false;
+      state.picBulkRows = [];
+      state.picBulkSourceName = '';
       state.jadwalCalendarOpen = false;
 
-      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-confirm'].forEach(closeModal);
+      ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-pic-bulk', 'modal-confirm'].forEach(closeModal);
       document.body.classList.remove('pb-24');
       const toastContainer = document.getElementById('toast-container');
       if (toastContainer) {
@@ -1817,7 +1836,7 @@
         modePill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand/15 border border-brand/40 text-[11px] font-bold tracking-wide uppercase';
         modePill.title = `Mode Admin Aktif (${state.user.email || 'Admin'})`;
         if (brandBtn) {
-          brandBtn.title = isMobileOrStandalone() ? 'Master Monitor' : 'Kembali ke Camvis Workspace';
+          brandBtn.title = isMobileOrStandalone() ? 'Rundown Monitor' : 'Kembali ke Camvis Workspace';
         }
       } else {
         btnLogin.classList.remove('d-none');
@@ -1836,17 +1855,6 @@
       document.querySelectorAll('.public-only').forEach((el) => {
         el.classList.toggle('d-none', state.isAdmin);
       });
-
-      // Contextual Desktop Tabs (Rundown vs PIC Module)
-      const isPicModule = state.isAdmin && (state.view === 'jadwal' || state.view === 'pic-data' || state.view === 'pic-detail');
-      const navMonitor = document.getElementById('nav-monitor');
-      const navHistory = document.getElementById('nav-history');
-      const navJadwal = document.getElementById('nav-jadwal');
-      const navPicData = document.getElementById('nav-pic-data');
-      if (navMonitor) navMonitor.classList.toggle('d-none', isPicModule);
-      if (navHistory) navHistory.classList.toggle('d-none', !state.isAdmin || isPicModule);
-      if (navJadwal) navJadwal.classList.toggle('d-none', !isPicModule);
-      if (navPicData) navPicData.classList.toggle('d-none', !isPicModule);
     }
 
     // ==================== 6. DEVICE DETECTION, ROUTE GUARD & NAVIGATION ====================
@@ -2220,8 +2228,10 @@
       }
 
       // Update Nav Badges
-      document.getElementById('badge-active-count').textContent = activeRooms.length;
-      document.getElementById('badge-history-count').textContent = historyRooms.length;
+      const activeBadge = document.getElementById('badge-active-count');
+      if (activeBadge) activeBadge.textContent = activeRooms.length;
+      const histBadge = document.getElementById('badge-history-count');
+      if (histBadge) histBadge.textContent = historyRooms.length;
       document.getElementById('badge-active-count-mobile').textContent = activeRooms.length;
       document.getElementById('badge-history-count-mobile').textContent = historyRooms.length;
       const picBadge = document.getElementById('badge-pic-count');
@@ -2232,7 +2242,6 @@
       // Update Nav Active Styling
       const isMonitorTab = state.view === 'monitor' || state.view === 'room';
       setNavBtnStyle('nav-monitor', isMonitorTab);
-      setNavBtnStyle('nav-history', isHistoryActive);
       setNavBtnStyle('nav-monitor-mobile', isMonitorTab);
       setNavBtnStyle('nav-history-mobile', isHistoryActive);
       setNavBtnStyle('nav-jadwal', isJadwalActive);
@@ -3421,6 +3430,83 @@
       { key: 'sabtu', label: 'Sabtu', short: 'Sab', jsDay: 6 }
     ];
 
+    const PIC_MAJORS = [
+      { code: 'IF', name: 'Informatika', aliases: ['if', 'informatika', 'teknik informatika'] },
+      { code: 'SI', name: 'Sistem Informasi', aliases: ['si', 'sistem informasi'] },
+      { code: 'TF', name: 'Teknik Fisika', aliases: ['tf', 'teknik fisika'] },
+      { code: 'TE', name: 'Teknik Elektro', aliases: ['te', 'teknik elektro'] },
+      { code: 'TK', name: 'Teknik Komputer', aliases: ['tk', 'teknik komputer'] },
+      { code: 'AI', name: 'Artificial Intelligence', aliases: ['ai', 'artificial intelligence', 'kecerdasan buatan'] },
+      { code: 'SC', name: 'Strategic Communication', aliases: ['sc', 'strategic communication', 'ilmu komunikasi', 'komunikasi'] },
+      { code: 'JR', name: 'Journalism & Content Creation', aliases: ['jr', 'journalism', 'jurnalistik', 'journalism & content creation', 'journalism and content creation'] },
+      { code: 'MAN', name: 'Manajemen', aliases: ['man', 'manajemen', 'management'] },
+      { code: 'AKUN', name: 'Akuntansi', aliases: ['akun', 'akuntansi', 'accounting'] },
+      { code: 'DKV', name: 'Design Komunikasi Visual', aliases: ['dkv', 'design komunikasi visual', 'desain komunikasi visual'] },
+      { code: 'FILM', name: 'Film', aliases: ['film', 'film & animasi', 'film dan animasi'] },
+      { code: 'ARSI', name: 'Arsitektur', aliases: ['arsi', 'arsitektur', 'arisitektur'] },
+      { code: 'HTL', name: 'D3 Hotel Operations', aliases: ['htl', 'd3 hotel operations', 'hotel operations', 'perhotelan', 'hotel'] }
+    ];
+
+    function resolvePicMajorCode(raw) {
+      const cleaned = String(raw || '').trim();
+      if (!cleaned) return '';
+      const lower = cleaned.toLowerCase();
+      // 1. Exact code match or parenthesized code e.g. "Informatika (IF)" or "IF - Informatika"
+      const parenMatch = cleaned.match(/\(([A-Za-z0-9]{2,6})\)/);
+      if (parenMatch) {
+        const parenCode = parenMatch[1].toUpperCase();
+        const foundByParen = PIC_MAJORS.find((m) => m.code === parenCode);
+        if (foundByParen) return foundByParen.code;
+      }
+      const dashPrefix = cleaned.match(/^([A-Za-z0-9]{2,6})\s*[-–—:]/);
+      if (dashPrefix) {
+        const prefCode = dashPrefix[1].toUpperCase();
+        const foundByPref = PIC_MAJORS.find((m) => m.code === prefCode);
+        if (foundByPref) return foundByPref.code;
+      }
+      // 2. Direct code / full name / alias match
+      const stripped = lower.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+      for (const m of PIC_MAJORS) {
+        if (m.code.toLowerCase() === lower || m.name.toLowerCase() === lower || m.name.toLowerCase() === stripped) {
+          return m.code;
+        }
+        if (m.aliases.includes(lower) || m.aliases.includes(stripped)) {
+          return m.code;
+        }
+      }
+      return '';
+    }
+
+    function getPicMajorMeta(codeOrRaw) {
+      const code = resolvePicMajorCode(codeOrRaw);
+      if (!code) return null;
+      return PIC_MAJORS.find((m) => m.code === code) || null;
+    }
+
+    function getPicMajorFullName(codeOrRaw) {
+      const meta = getPicMajorMeta(codeOrRaw);
+      return meta ? meta.name : '';
+    }
+
+    // Returns all 14 majors sorted by PIC count descending (highest at top -> smallest at bottom)
+    function getPicMajorStatsSorted() {
+      const counts = {};
+      PIC_MAJORS.forEach((m) => { counts[m.code] = 0; });
+      Object.entries(state.pics || {}).forEach(([id, p]) => {
+        if (!p || typeof p !== 'object') return;
+        const code = resolvePicMajorCode(p.major || state.picProfilesCache[id]?.major || '');
+        if (code && Object.prototype.hasOwnProperty.call(counts, code)) {
+          counts[code] += 1;
+        }
+      });
+      return PIC_MAJORS
+        .map((m, idx) => ({ code: m.code, name: m.name, count: counts[m.code] || 0, order: idx }))
+        .sort((a, b) => {
+          if (b.count !== a.count) return b.count - a.count;
+          return a.order - b.order;
+        });
+    }
+
     const ID_MONTHS = [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -3490,9 +3576,10 @@
         .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
     }
 
-    function getPicListSorted(filterQuery = '', sortMode = 'az') {
+    function getPicListSorted(filterQuery = '', sortMode = 'az', majorFilterCodes = []) {
       if (!state.isAdmin) return [];
       const q = (filterQuery || '').trim().toLowerCase();
+      const activeMajors = Array.isArray(majorFilterCodes) ? majorFilterCodes.filter(Boolean) : [];
       const list = Object.entries(state.pics || {})
         .filter(([, p]) => p && typeof p === 'object')
         .map(([id, p]) => {
@@ -3501,16 +3588,28 @@
           PIC_DAYS.forEach((d) => {
             totalSlots += normalizeDaySlots(sched[d.key]).length;
           });
+          const majorCode = resolvePicMajorCode(p.major || state.picProfilesCache[id]?.major || '');
+          const majorName = getPicMajorFullName(majorCode);
           return {
             id,
             name: String(p.name || 'Tanpa Nama').trim(),
+            major: majorCode,
+            majorName,
             active: p.active !== false,
             createdAt: Number(p.createdAt || 0),
             updatedAt: Number(p.updatedAt || 0),
             totalSlots
           };
         })
-        .filter((p) => !q || p.name.toLowerCase().includes(q));
+        .filter((p) => {
+          if (q && !p.name.toLowerCase().includes(q) && !p.majorName.toLowerCase().includes(q) && !p.major.toLowerCase().includes(q)) {
+            return false;
+          }
+          if (activeMajors.length > 0 && !activeMajors.includes(p.major)) {
+            return false;
+          }
+          return true;
+        });
 
       if (sortMode === 'za') {
         list.sort((a, b) => b.name.localeCompare(a.name, 'id', { sensitivity: 'base' }));
@@ -4030,37 +4129,67 @@
               <p class="text-sm text-slate-400 mt-1">Kelola dan lihat detail jadwal setiap PIC Campus Visit.</p>
             </div>
 
-            <button type="button" data-action="open-add-pic" class="self-start sm:self-auto px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-slate-950 text-sm font-extrabold transition-colors flex items-center gap-2 shadow-sm shrink-0">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <span>Add PIC</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2.5 self-start sm:self-auto shrink-0">
+              <button type="button" data-action="open-pic-bulk-import" class="px-4 py-2.5 rounded-xl bg-surface hover:bg-elevated border border-brand/45 hover:border-brand text-brand-soft hover:text-white text-sm font-bold transition-colors flex items-center gap-2 shrink-0">
+                <svg class="w-4 h-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>Import Bulk PIC</span>
+              </button>
+
+              <button type="button" data-action="open-add-pic" class="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-slate-950 text-sm font-extrabold transition-colors flex items-center gap-2 shadow-sm shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add PIC</span>
+              </button>
+            </div>
           </div>
 
           <div id="pic-data-rules-banner"></div>
 
-          <!-- Search & Sort Toolbar -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="relative w-full sm:max-w-md">
-              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input id="pic-data-search" type="search" value="${escapeHtml(state.picSearch)}" placeholder="Cari nama PIC..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
-            </div>
+          <!-- Search, Multi-Select Major Filter & Sort Toolbar -->
+          <div class="space-y-2.5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="relative w-full sm:max-w-md">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input id="pic-data-search" type="search" value="${escapeHtml(state.picSearch)}" placeholder="Cari nama PIC atau jurusan..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+              </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-              <div class="relative">
-                <select id="pic-data-sort" class="appearance-none pl-4 pr-9 py-2.5 rounded-xl bg-surface border border-line hover:border-line-strong focus:border-brand focus:outline-none text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
-                  <option value="az" ${state.picSort === 'az' ? 'selected' : ''}>Urutkan: A – Z</option>
-                  <option value="za" ${state.picSort === 'za' ? 'selected' : ''}>Urutkan: Z – A</option>
-                  <option value="newest" ${state.picSort === 'newest' ? 'selected' : ''}>Urutkan: Terbaru</option>
-                </select>
-                <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <!-- Multi-Select Filter Jurusan Dropdown -->
+                <div id="pic-major-filter-wrap" class="relative">
+                  <button id="btn-pic-major-filter" type="button" data-action="pic-major-toggle" class="px-3.5 py-2.5 rounded-xl bg-surface border border-line hover:border-line-strong text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-2 transition-colors">
+                    <svg class="w-4 h-4 text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span id="pic-major-filter-label">Filter Jurusan</span>
+                    <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+
+                  <div id="pic-major-filter-menu" class="d-none absolute right-0 sm:right-0 left-0 sm:left-auto mt-2 w-60 rounded-2xl bg-[#0F141D] border border-line-strong shadow-2xl z-30 overflow-hidden"></div>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="relative">
+                  <select id="pic-data-sort" class="appearance-none pl-4 pr-9 py-2.5 rounded-xl bg-surface border border-line hover:border-line-strong focus:border-brand focus:outline-none text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+                    <option value="az" ${state.picSort === 'az' ? 'selected' : ''}>Urutkan: A – Z</option>
+                    <option value="za" ${state.picSort === 'za' ? 'selected' : ''}>Urutkan: Z – A</option>
+                    <option value="newest" ${state.picSort === 'newest' ? 'selected' : ''}>Urutkan: Terbaru</option>
+                  </select>
+                  <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
               </div>
             </div>
+
+            <!-- Active Selected Major Chips -->
+            <div id="pic-major-active-chips" class="d-none flex flex-wrap items-center gap-1.5"></div>
           </div>
 
           <!-- PIC List Table Card -->
@@ -4078,7 +4207,7 @@
               </div>
               <div class="text-sm font-bold text-white" id="pic-data-empty-title">Belum Ada Data PIC</div>
               <p class="text-xs text-slate-400 max-w-sm mx-auto" id="pic-data-empty-desc">
-                Klik tombol <strong>+ Add PIC</strong> di pojok kanan atas untuk menambahkan data PIC baru beserta jadwal kuliah/kegiatannya.
+                Klik tombol <strong>+ Add PIC</strong> atau <strong>Import Bulk PIC</strong> di pojok kanan atas untuk menambahkan data PIC baru beserta jadwal kuliah/kegiatannya.
               </p>
             </div>
           </div>
@@ -4104,6 +4233,82 @@
       return true;
     }
 
+    function renderPicMajorFilterUI() {
+      const btn = document.getElementById('btn-pic-major-filter');
+      const labelEl = document.getElementById('pic-major-filter-label');
+      const menuEl = document.getElementById('pic-major-filter-menu');
+      const chipsEl = document.getElementById('pic-major-active-chips');
+      if (!btn || !labelEl || !menuEl || !chipsEl) return;
+
+      const selected = Array.isArray(state.picMajorFilter) ? state.picMajorFilter : [];
+      const stats = getPicMajorStatsSorted(); // Sorted by PIC count descending
+
+      // Button label & active highlight
+      if (selected.length === 0) {
+        labelEl.textContent = 'Filter Jurusan';
+        btn.classList.remove('border-brand', 'bg-brand/10', 'text-white');
+        btn.classList.add('border-line', 'bg-surface', 'text-slate-200');
+      } else {
+        labelEl.textContent = selected.length <= 2
+          ? `Jurusan: ${selected.join(', ')}`
+          : `Jurusan (${selected.length})`;
+        btn.classList.add('border-brand', 'bg-brand/10', 'text-white');
+        btn.classList.remove('border-line', 'bg-surface', 'text-slate-200');
+      }
+
+      // Popover checklist (ONLY major code + grey PIC count, ordered highest count -> lowest)
+      menuEl.classList.toggle('d-none', !state.picMajorDropdownOpen);
+      if (state.picMajorDropdownOpen) {
+        menuEl.innerHTML = `
+          <div class="px-3.5 py-2.5 border-b border-line flex items-center justify-between bg-elevated/60">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pilih Jurusan</span>
+            ${selected.length > 0
+              ? `<button type="button" data-action="pic-major-clear" class="text-[11px] font-bold text-brand hover:text-brand-soft transition-colors">Reset</button>`
+              : `<span class="text-[10px] text-slate-500">Multi-pilih</span>`
+            }
+          </div>
+          <div class="max-h-72 overflow-y-auto py-1.5 divide-y divide-line/30">
+            ${stats.map((item) => {
+              const checked = selected.includes(item.code);
+              return `
+                <button type="button" data-action="pic-major-item" data-major="${escapeHtml(item.code)}" class="w-full px-3.5 py-2 flex items-center justify-between gap-2 text-left hover:bg-elevated/80 transition-colors ${checked ? 'bg-brand/10' : ''}" title="${escapeHtml(item.name)}">
+                  <span class="flex items-center gap-2.5 min-w-0">
+                    <span class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${checked ? 'bg-brand border-brand text-slate-950' : 'border-line-strong bg-canvas'}">
+                      ${checked ? '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                    </span>
+                    <span class="text-xs sm:text-sm font-bold tracking-wide ${checked ? 'text-brand-soft' : 'text-white'}">${escapeHtml(item.code)}</span>
+                    <span class="text-xs font-mono text-slate-400">(${item.count})</span>
+                  </span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
+      // Active filter chips bar
+      if (selected.length === 0) {
+        chipsEl.innerHTML = '';
+        chipsEl.classList.add('d-none');
+      } else {
+        const countMap = {};
+        stats.forEach((s) => { countMap[s.code] = s.count; });
+        chipsEl.classList.remove('d-none');
+        chipsEl.innerHTML = `
+          ${selected.map((code) => `
+            <button type="button" data-action="pic-major-item" data-major="${escapeHtml(code)}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand/15 hover:bg-brand/25 border border-brand/45 text-xs font-bold text-white transition-colors" title="Klik untuk hapus filter ${escapeHtml(code)}">
+              <span>${escapeHtml(code)}</span>
+              <span class="font-mono text-[11px] text-slate-400">(${countMap[code] ?? 0})</span>
+              <span class="text-slate-400 hover:text-white ml-0.5">&times;</span>
+            </button>
+          `).join('')}
+          <button type="button" data-action="pic-major-clear" class="text-xs font-semibold text-slate-400 hover:text-brand px-2 py-1 transition-colors">
+            Reset filter
+          </button>
+        `;
+      }
+    }
+
     function renderPicDataView() {
       if (!state.isAdmin || state.view !== 'pic-data') {
         unmountProtectedView('view-pic-data');
@@ -4117,8 +4322,11 @@
       const banner = document.getElementById('pic-data-rules-banner');
       if (banner) banner.innerHTML = renderPicRulesAlertBanner();
 
+      // Render multi-select Major filter dropdown & active chips
+      renderPicMajorFilterUI();
+
       const totalAll = Object.keys(state.pics || {}).length;
-      const filtered = getPicListSorted(state.picSearch, state.picSort);
+      const filtered = getPicListSorted(state.picSearch, state.picSort, state.picMajorFilter);
       const rowsEl = document.getElementById('pic-data-rows');
       const emptyEl = document.getElementById('pic-data-empty');
       const footerEl = document.getElementById('pic-data-footer');
@@ -4130,12 +4338,15 @@
         emptyEl.classList.remove('d-none');
         const emptyTitle = document.getElementById('pic-data-empty-title');
         const emptyDesc = document.getElementById('pic-data-empty-desc');
-        if (totalAll > 0 && state.picSearch.trim()) {
+        if (totalAll > 0 && (state.picSearch.trim() || state.picMajorFilter.length > 0)) {
           if (emptyTitle) emptyTitle.textContent = 'PIC Tidak Ditemukan';
-          if (emptyDesc) emptyDesc.textContent = `Tidak ada nama PIC yang cocok dengan kata kunci "${state.picSearch.trim()}".`;
+          const parts = [];
+          if (state.picSearch.trim()) parts.push(`kata kunci "${state.picSearch.trim()}"`);
+          if (state.picMajorFilter.length > 0) parts.push(`jurusan ${state.picMajorFilter.join(', ')}`);
+          if (emptyDesc) emptyDesc.textContent = `Tidak ada data PIC yang cocok dengan ${parts.join(' dan ')}.`;
         } else {
           if (emptyTitle) emptyTitle.textContent = 'Belum Ada Data PIC';
-          if (emptyDesc) emptyDesc.innerHTML = 'Klik tombol <strong>+ Add PIC</strong> di pojok kanan atas untuk menambahkan data PIC baru beserta jadwal mingguannya.';
+          if (emptyDesc) emptyDesc.innerHTML = 'Klik tombol <strong>+ Add PIC</strong> atau <strong>Import Bulk PIC</strong> di pojok kanan atas untuk menambahkan data PIC baru beserta jadwal mingguannya.';
         }
         if (footerEl) footerEl.textContent = `Menampilkan 0 dari ${totalAll} PIC`;
         return;
@@ -4154,15 +4365,16 @@
                  <circle cx="12" cy="7" r="4"></circle>
                </svg>
              </div>`;
+        const majorSubtitle = pic.majorName
+          ? `<div class="text-xs text-slate-400 truncate">${escapeHtml(pic.majorName)}</div>`
+          : `<div class="text-xs text-slate-500 italic">Jurusan belum diatur</div>`;
         return `
         <div data-action="open-pic-detail" data-pic-id="${escapeHtml(pic.id)}" class="group px-5 py-3.5 hover:bg-elevated/55 flex items-center justify-between gap-4 cursor-pointer transition-colors">
           <div class="flex items-center gap-3.5 min-w-0">
             ${avatarHtml}
             <div class="min-w-0">
               <div class="text-sm sm:text-base font-bold text-white group-hover:text-brand-soft truncate transition-colors">${escapeHtml(pic.name)}</div>
-              <div class="text-[11px] text-slate-400">
-                ${pic.totalSlots > 0 ? `${pic.totalSlots} slot jadwal mingguan` : 'Belum ada jadwal sibuk'}
-              </div>
+              ${majorSubtitle}
             </div>
           </div>
 
@@ -4287,6 +4499,8 @@
 
       const schedule = state.picSchedules[picId] || {};
       const profile = state.picProfilesCache[picId] || {};
+      const majorMeta = getPicMajorMeta(pic.major || profile.major || '');
+      const majorDisplay = majorMeta ? `${majorMeta.name} (${majorMeta.code})` : '-';
       const bankLabel = profile.bankName ? `Rek ${profile.bankName}` : 'Rek BCA';
       const bankAccDisplay = profile.bankAccount ? profile.bankAccount : '-';
       const normalizedPhone = normalizePicPhoneForStorage(profile.phone || '');
@@ -4356,6 +4570,10 @@
                 <div>
                   <div class="text-xs font-medium text-slate-400">Nama</div>
                   <div class="text-base sm:text-lg font-extrabold text-white mt-0.5 break-words">${escapeHtml(pic.name)}</div>
+                </div>
+                <div>
+                  <div class="text-xs font-medium text-slate-400">Jurusan</div>
+                  <div class="text-xs sm:text-sm font-semibold ${majorMeta ? 'text-brand-soft' : 'text-slate-500'} mt-0.5 break-words">${escapeHtml(majorDisplay)}</div>
                 </div>
                 <div>
                   <div class="text-xs font-medium text-slate-400">Nomor HP / WhatsApp</div>
@@ -5026,6 +5244,7 @@
       state.picEditDraft = {
         id: isEdit ? picId : null,
         name: isEdit ? String(state.pics[picId].name || '') : '',
+        major: isEdit ? resolvePicMajorCode(state.pics[picId].major || profile.major || '') : '',
         phone: normalizePicPhoneForStorage(profile.phone || ''),
         personalEmail: String(profile.personalEmail || ''),
         studentEmail: String(profile.studentEmail || ''),
@@ -5048,6 +5267,7 @@
       const draft = state.picEditDraft;
       if (!draft) return;
       const nameEl = document.getElementById('pic-form-name');
+      const majorEl = document.getElementById('pic-form-major');
       const phoneEl = document.getElementById('pic-form-phone');
       const personalEmailEl = document.getElementById('pic-form-email-personal');
       const studentEmailEl = document.getElementById('pic-form-email-student');
@@ -5055,6 +5275,7 @@
       const accEl = document.getElementById('pic-form-account');
       const notesEl = document.getElementById('pic-form-notes');
       if (nameEl) draft.name = nameEl.value;
+      if (majorEl) draft.major = resolvePicMajorCode(majorEl.value);
       if (phoneEl) draft.phone = sanitizePicPhoneDigits(phoneEl.value);
       if (personalEmailEl) draft.personalEmail = personalEmailEl.value;
       if (studentEmailEl) draft.studentEmail = studentEmailEl.value;
@@ -5078,6 +5299,9 @@
       if (!mount || !draft || !state.isAdmin) return;
 
       const isEdit = Boolean(draft.id);
+      const majorOptionsHtml = PIC_MAJORS.map((m) =>
+        `<option value="${escapeHtml(m.code)}" ${draft.major === m.code ? 'selected' : ''}>${escapeHtml(m.name)} (${escapeHtml(m.code)})</option>`
+      ).join('');
 
       const daysEditorHtml = PIC_DAYS.map((d) => {
         const slots = draft.schedule[d.key] || [];
@@ -5177,6 +5401,16 @@
                 <input id="pic-form-name" type="text" required value="${escapeHtml(draft.name)}" placeholder="Contoh: Ariel Barlian Obadiyah" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
               </div>
               <div>
+                <label for="pic-form-major" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Jurusan <span class="text-[11px] font-normal normal-case text-slate-500">(Opsional)</span></label>
+                <div class="relative">
+                  <select id="pic-form-major" class="appearance-none w-full pl-3.5 pr-9 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white cursor-pointer">
+                    <option value="">— Pilih Jurusan —</option>
+                    ${majorOptionsHtml}
+                  </select>
+                  <svg class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+              <div>
                 <label for="pic-form-phone" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nomor HP / WhatsApp</label>
                 <input id="pic-form-phone" type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${escapeHtml(sanitizePicPhoneDigits(draft.phone))}" placeholder="Contoh: 081234567890 atau 6281234567890" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
               </div>
@@ -5192,14 +5426,16 @@
                 <label for="pic-form-bank" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Bank</label>
                 <input id="pic-form-bank" type="text" value="${escapeHtml(draft.bankName)}" placeholder="BCA" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
               </div>
-              <div>
-                <label for="pic-form-account" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nomor Rekening</label>
-                <input id="pic-form-account" type="text" value="${escapeHtml(draft.bankAccount)}" placeholder="Contoh: 1234 5678 9012" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
+              <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="pic-form-account" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nomor Rekening</label>
+                  <input id="pic-form-account" type="text" value="${escapeHtml(draft.bankAccount)}" placeholder="Contoh: 1234 5678 9012" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
+                </div>
+                <div>
+                  <label for="pic-form-notes" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Catatan (Opsional)</label>
+                  <input id="pic-form-notes" type="text" value="${escapeHtml(draft.notes)}" placeholder="Catatan tambahan PIC (angkatan/peran)" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+                </div>
               </div>
-            </div>
-            <div>
-              <label for="pic-form-notes" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Catatan (Opsional)</label>
-              <input id="pic-form-notes" type="text" value="${escapeHtml(draft.notes)}" placeholder="Catatan tambahan PIC (prodi/angkatan/peran)" class="w-full px-3.5 py-2 rounded-lg bg-canvas border border-line focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
             </div>
           </div>
 
@@ -5320,6 +5556,7 @@
       }
 
       const normalizedPhone = normalizePicPhoneForStorage(draft.phone);
+      const majorCode = resolvePicMajorCode(draft.major);
 
       // Validate & clean weekly slots
       const cleanSchedule = {};
@@ -5352,6 +5589,7 @@
       const existingCreatedAt = isEdit && state.pics[picId]?.createdAt ? state.pics[picId].createdAt : nowTs;
 
       const profilePayload = {
+        major: majorCode,
         phone: normalizedPhone,
         personalEmail,
         studentEmail,
@@ -5365,6 +5603,7 @@
       const atomicUpdates = {
         [`pics/${picId}`]: {
           name,
+          major: majorCode,
           active: true,
           createdAt: existingCreatedAt,
           updatedAt: nowTs
@@ -5425,6 +5664,579 @@
           }
         }
       });
+    }
+
+    // ---------- 7D-5. IMPORT BULK PIC (.xlsx / .csv / Copy-Paste Google Sheets) ----------
+    function parsePicBulkSlotsCell(rawCell, dayLabel) {
+      const text = String(rawCell ?? '').trim();
+      if (!text || text === '-' || text === '–' || /^kosong|available|free|libur|none$/i.test(text)) {
+        return { slots: [], errors: [] };
+      }
+
+      // Split multiple slots separated by ";", newlines, or "," before a time token
+      const chunks = text
+        .split(/[;\r\n]+|,\s*(?=\d{1,2}[:.]\d{2})/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const slots = [];
+      const errors = [];
+
+      for (const chunk of chunks) {
+        // Match e.g. "08:00-11:00", "8.00 - 11.30 (Kuliah)", "08:00–11:00 Kuliah"
+        const m = chunk.match(/^(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})(?:\s*(?:\(([^)]*)\)|(.+)))?$/);
+        if (!m) {
+          errors.push(`${dayLabel}: format "${chunk}" tidak valid (gunakan HH:MM-HH:MM)`);
+          continue;
+        }
+        const sh = Number(m[1]);
+        const sm = Number(m[2]);
+        const eh = Number(m[3]);
+        const em = Number(m[4]);
+        if (sh < 0 || sh > 23 || sm < 0 || sm > 59 || eh < 0 || eh > 23 || em < 0 || em > 59) {
+          errors.push(`${dayLabel}: jam tidak valid pada "${chunk}"`);
+          continue;
+        }
+        const startMin = sh * 60 + sm;
+        const endMin = eh * 60 + em;
+        if (endMin <= startMin) {
+          errors.push(`${dayLabel}: jam selesai harus > jam mulai pada "${chunk}"`);
+          continue;
+        }
+        const label = String(m[5] ?? m[6] ?? '').trim();
+        slots.push({
+          start: minutesToHHMM(startMin),
+          end: minutesToHHMM(endMin),
+          label
+        });
+      }
+
+      slots.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+      return { slots, errors };
+    }
+
+    function detectPicBulkColumns(headerRow) {
+      const normalized = (headerRow || []).map((c) => String(c ?? '').trim().toLowerCase());
+      const findCol = (preds) => normalized.findIndex((h) => preds.some((re) => re.test(h)));
+
+      const nameCol = findCol([/^nama/, /name/]);
+      const majorCol = findCol([/jurusan/, /prodi/, /major/]);
+      const phoneCol = findCol([/wa/, /whatsapp/, /hp/, /telepon/, /telp/, /phone/]);
+      const personalEmailCol = findCol([/email\s*pribadi/, /personal\s*email/]);
+      const studentEmailCol = findCol([/email\s*student/, /student\s*email/, /email\s*umn/, /email\s*kampus/]);
+      const bankCol = findCol([/^bank$/, /nama\s*bank/]);
+      const accountCol = findCol([/rekening/, /rek/, /account/]);
+      const notesCol = findCol([/catatan/, /note/, /ket/]);
+      const dayCols = {};
+      PIC_DAYS.forEach((d) => {
+        dayCols[d.key] = findCol([new RegExp(`^${d.key}$`), new RegExp(d.key)]);
+      });
+
+      const hasHeader = nameCol !== -1 && (majorCol !== -1 || phoneCol !== -1 || dayCols.senin !== -1);
+      if (hasHeader) {
+        return {
+          hasHeader: true,
+          map: { name: nameCol, major: majorCol, phone: phoneCol, personalEmail: personalEmailCol, studentEmail: studentEmailCol, bank: bankCol, account: accountCol, notes: notesCol, ...dayCols }
+        };
+      }
+
+      // Fallback: exact 14-column Google Sheets Template order
+      return {
+        hasHeader: false,
+        map: {
+          name: 0, major: 1, phone: 2, personalEmail: 3, studentEmail: 4, bank: 5, account: 6, notes: 7,
+          senin: 8, selasa: 9, rabu: 10, kamis: 11, jumat: 12, sabtu: 13
+        }
+      };
+    }
+
+    function parsePicBulkMatrix(matrix) {
+      const nonEmptyRows = (matrix || [])
+        .map((row) => (Array.isArray(row) ? row : [row]))
+        .filter((row) => row.some((cell) => String(cell ?? '').trim() !== ''));
+
+      if (nonEmptyRows.length === 0) return [];
+
+      const { hasHeader, map } = detectPicBulkColumns(nonEmptyRows[0]);
+      const dataRows = hasHeader ? nonEmptyRows.slice(1) : nonEmptyRows;
+
+      // Build case-insensitive existing PIC name map for duplicate detection
+      const existingByName = new Map();
+      Object.entries(state.pics || {}).forEach(([pid, p]) => {
+        if (!p || !p.name) return;
+        existingByName.set(String(p.name).trim().toLowerCase(), pid);
+      });
+
+      const getVal = (row, idx) => {
+        if (idx === undefined || idx < 0 || idx >= row.length) return '';
+        return String(row[idx] ?? '').replace(/^'/, '').trim();
+      };
+
+      const basicEmailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const parsed = [];
+
+      dataRows.forEach((row, rIdx) => {
+        const name = getVal(row, map.name);
+        const rawMajor = getVal(row, map.major);
+        const rawPhone = getVal(row, map.phone);
+        const personalEmail = getVal(row, map.personalEmail);
+        const studentEmail = getVal(row, map.studentEmail);
+        const bankName = getVal(row, map.bank) || 'BCA';
+        const bankAccount = getVal(row, map.account);
+        const notes = getVal(row, map.notes);
+
+        // Skip completely empty rows
+        const hasAnyDay = PIC_DAYS.some((d) => getVal(row, map[d.key]) !== '');
+        if (!name && !rawMajor && !rawPhone && !hasAnyDay) return;
+
+        const errors = [];
+        const warnings = [];
+
+        if (!name) errors.push('Nama Lengkap kosong');
+
+        const majorCode = resolvePicMajorCode(rawMajor);
+        if (rawMajor && !majorCode) {
+          warnings.push(`Jurusan "${rawMajor}" tidak dikenali (akan dikosongkan)`);
+        }
+
+        const phone = normalizePicPhoneForStorage(rawPhone);
+        if (personalEmail && !basicEmailRe.test(personalEmail)) {
+          errors.push('Format Email Pribadi tidak valid');
+        }
+        if (studentEmail && !basicEmailRe.test(studentEmail)) {
+          errors.push('Format Email Student tidak valid');
+        }
+
+        const schedule = {};
+        let totalSlots = 0;
+        PIC_DAYS.forEach((d) => {
+          const cellVal = getVal(row, map[d.key]);
+          const res = parsePicBulkSlotsCell(cellVal, d.label);
+          schedule[d.key] = res.slots;
+          totalSlots += res.slots.length;
+          if (res.errors.length > 0) errors.push(...res.errors);
+        });
+
+        const existingPicId = name ? (existingByName.get(name.toLowerCase()) || null) : null;
+
+        parsed.push({
+          rowNum: (hasHeader ? rIdx + 2 : rIdx + 1),
+          name,
+          major: majorCode,
+          majorName: getPicMajorFullName(majorCode),
+          phone,
+          personalEmail,
+          studentEmail,
+          bankName,
+          bankAccount,
+          notes,
+          schedule,
+          totalSlots,
+          existingPicId,
+          errors,
+          warnings
+        });
+      });
+
+      return parsed;
+    }
+
+    function parsePicBulkTsvText(rawText) {
+      // Parse Google Sheets / Excel TSV clipboard text cleanly, preserving quoted multiline cells
+      const rows = [];
+      let curRow = [];
+      let curCell = '';
+      let inQuotes = false;
+      const str = String(rawText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      for (let i = 0; i < str.length; i += 1) {
+        const ch = str[i];
+        if (inQuotes) {
+          if (ch === '"' && str[i + 1] === '"') {
+            curCell += '"';
+            i += 1;
+          } else if (ch === '"') {
+            inQuotes = false;
+          } else {
+            curCell += ch;
+          }
+        } else if (ch === '"' && curCell === '') {
+          inQuotes = true;
+        } else if (ch === '\t') {
+          curRow.push(curCell);
+          curCell = '';
+        } else if (ch === '\n') {
+          curRow.push(curCell);
+          rows.push(curRow);
+          curRow = [];
+          curCell = '';
+        } else {
+          curCell += ch;
+        }
+      }
+      if (curCell !== '' || curRow.length > 0) {
+        curRow.push(curCell);
+        rows.push(curRow);
+      }
+      return rows;
+    }
+
+    async function handlePicBulkFile(file) {
+      if (!file) return;
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if (!['xlsx', 'xls', 'csv', 'tsv'].includes(ext)) {
+        showToast('Format file harus Excel (.xlsx / .xls) atau CSV (.csv).', 'error');
+        return;
+      }
+
+      try {
+        let matrix = [];
+        if (ext === 'tsv') {
+          const text = await file.text();
+          matrix = parsePicBulkTsvText(text);
+        } else {
+          if (typeof XLSX === 'undefined') {
+            showToast('Library pembaca Excel belum selesai dimuat. Coba lagi sebentar.', 'error');
+            return;
+          }
+          const buf = await file.arrayBuffer();
+          const wb = XLSX.read(buf, { type: 'array', raw: false });
+          // Prefer "Data PIC" sheet from official template; fallback to first sheet
+          const sheetName = wb.SheetNames.find((n) => n.trim().toLowerCase() === 'data pic') || wb.SheetNames[0];
+          const sheet = wb.Sheets[sheetName];
+          matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+        }
+
+        const rows = parsePicBulkMatrix(matrix);
+        if (rows.length === 0) {
+          showToast('Tidak ada baris data PIC yang ditemukan dalam file tersebut.', 'error');
+          return;
+        }
+
+        state.picBulkRows = rows;
+        state.picBulkSourceName = file.name;
+        renderPicBulkModal();
+        showToast(`${rows.length} baris PIC berhasil dibaca dari "${file.name}".`, 'success');
+      } catch (err) {
+        showToast(`Gagal membaca file: ${err.message || err}`, 'error');
+      }
+    }
+
+    function openPicBulkModal() {
+      if (!requireAdmin()) return;
+      state.picBulkRows = [];
+      state.picBulkSourceName = '';
+      state.picBulkDuplicateMode = 'update';
+      renderPicBulkModal();
+      openModal('modal-pic-bulk');
+      setTimeout(() => {
+        const dz = document.getElementById('pic-bulk-dropzone');
+        if (dz) dz.focus();
+      }, 40);
+    }
+
+    function closePicBulkModal() {
+      state.picBulkRows = [];
+      state.picBulkSourceName = '';
+      const mount = document.getElementById('pic-bulk-mount');
+      if (mount) mount.innerHTML = '';
+      closeModal('modal-pic-bulk');
+    }
+
+    function renderPicBulkModal() {
+      const mount = document.getElementById('pic-bulk-mount');
+      if (!mount || !state.isAdmin) return;
+
+      const rows = state.picBulkRows || [];
+      const validRows = rows.filter((r) => r.errors.length === 0);
+      const errorRows = rows.filter((r) => r.errors.length > 0);
+      const duplicateRows = validRows.filter((r) => Boolean(r.existingPicId));
+      const actionableRows = state.picBulkDuplicateMode === 'skip'
+        ? validRows.filter((r) => !r.existingPicId)
+        : validRows;
+
+      mount.innerHTML = `
+        <div class="px-6 py-4 border-b border-line flex items-center justify-between gap-4 shrink-0">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Import Bulk Data PIC</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Upload file Excel (.xlsx/.csv) dari template Google Sheets atau copy-paste langsung baris tabel dengan Ctrl + V.</p>
+          </div>
+          <button type="button" data-action="pic-bulk-close" class="text-slate-400 hover:text-white text-2xl leading-none px-1">&times;</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
+          <!-- Upload / Drag-Drop / Paste Zone -->
+          <div id="pic-bulk-dropzone" tabindex="0" class="rounded-2xl border-2 border-dashed border-brand/75 hover:border-brand bg-canvas/80 p-6 text-center transition-colors cursor-pointer focus:outline-none focus:border-brand">
+            <input id="pic-bulk-file-input" type="file" accept=".xlsx,.xls,.csv,.tsv" class="d-none" />
+            <div class="space-y-2.5">
+              <div class="w-11 h-11 mx-auto rounded-xl bg-elevated border border-line-strong flex items-center justify-center text-brand">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="text-sm font-bold text-white">
+                Klik untuk pilih file Excel/CSV, tarik ke sini, atau tekan
+                <span class="inline-block px-2 py-0.5 mx-0.5 rounded-md bg-elevated border border-line-strong font-mono text-brand-soft text-xs align-middle">Ctrl + V</span>
+                dari Google Sheets
+              </div>
+              <p class="text-xs text-slate-400">
+                ${state.picBulkSourceName
+                  ? `Sumber aktif: <strong class="text-brand-soft">${escapeHtml(state.picBulkSourceName)}</strong> (klik lagi untuk mengganti file)`
+                  : 'Mendukung file <strong>.xlsx, .xls, .csv</strong> (tab "Data PIC") maupun copy-paste langsung.'
+                }
+              </p>
+            </div>
+          </div>
+
+          ${rows.length > 0 ? `
+            <!-- Summary & Duplicate Handling Bar -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-xl bg-canvas border border-line">
+              <div class="flex flex-wrap items-center gap-2 text-xs">
+                <span class="px-2.5 py-1 rounded-lg bg-elevated border border-line text-slate-200 font-bold">Total: ${rows.length} baris</span>
+                <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 font-bold">Valid: ${validRows.length}</span>
+                ${duplicateRows.length > 0 ? `<span class="px-2.5 py-1 rounded-lg bg-brand/15 border border-brand/35 text-brand-soft font-bold">Sudah Terdaftar: ${duplicateRows.length}</span>` : ''}
+                ${errorRows.length > 0 ? `<span class="px-2.5 py-1 rounded-lg bg-red-500/15 border border-red-500/40 text-red-300 font-bold">Error: ${errorRows.length}</span>` : ''}
+              </div>
+
+              ${duplicateRows.length > 0 ? `
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="text-slate-400">Jika nama sudah ada:</span>
+                  <select id="pic-bulk-dup-mode" class="px-2.5 py-1.5 rounded-lg bg-surface border border-line-strong text-xs font-semibold text-white focus:border-brand focus:outline-none">
+                    <option value="update" ${state.picBulkDuplicateMode === 'update' ? 'selected' : ''}>Update data &amp; jadwal (foto tetap aman)</option>
+                    <option value="skip" ${state.picBulkDuplicateMode === 'skip' ? 'selected' : ''}>Lewati (Skip)</option>
+                  </select>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Preview Table -->
+            <div class="rounded-xl border border-line overflow-hidden bg-canvas">
+              <div class="overflow-x-auto max-h-[42vh]">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead class="bg-elevated/80 sticky top-0 z-10 text-[11px] uppercase tracking-wider text-slate-400 border-b border-line">
+                    <tr>
+                      <th class="px-3 py-2.5">Status</th>
+                      <th class="px-3 py-2.5">Nama PIC</th>
+                      <th class="px-3 py-2.5">Jurusan</th>
+                      <th class="px-3 py-2.5">Nomor WA (62)</th>
+                      <th class="px-3 py-2.5">Email</th>
+                      <th class="px-3 py-2.5">Rekening</th>
+                      <th class="px-3 py-2.5 text-center">Jadwal</th>
+                      <th class="px-2 py-2.5 text-right">Hapus</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-line/70">
+                    ${rows.map((r, idx) => {
+                      const hasErr = r.errors.length > 0;
+                      const isDup = Boolean(r.existingPicId);
+                      const isSkipped = !hasErr && isDup && state.picBulkDuplicateMode === 'skip';
+                      const statusBadge = hasErr
+                        ? `<span class="inline-flex px-2 py-0.5 rounded bg-red-500/20 border border-red-500/40 text-red-300 font-bold">Error</span>`
+                        : isSkipped
+                          ? `<span class="inline-flex px-2 py-0.5 rounded bg-slate-700/60 border border-slate-600 text-slate-300 font-bold">Skip</span>`
+                          : isDup
+                            ? `<span class="inline-flex px-2 py-0.5 rounded bg-brand/20 border border-brand/40 text-brand-soft font-bold">Update</span>`
+                            : `<span class="inline-flex px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold">Baru</span>`;
+                      return `
+                        <tr class="${hasErr ? 'bg-red-950/25' : isSkipped ? 'opacity-55' : 'hover:bg-elevated/35'}">
+                          <td class="px-3 py-2.5 align-top whitespace-nowrap">${statusBadge}</td>
+                          <td class="px-3 py-2.5 align-top min-w-[160px]">
+                            <div class="font-bold text-white">${escapeHtml(r.name || '(Kosong)')}</div>
+                            ${r.notes ? `<div class="text-[11px] text-slate-400 truncate max-w-[200px]">${escapeHtml(r.notes)}</div>` : ''}
+                            ${hasErr ? `<div class="mt-1 text-[11px] text-red-300 leading-snug">${escapeHtml(r.errors.join(' • '))}</div>` : ''}
+                            ${!hasErr && r.warnings.length > 0 ? `<div class="mt-1 text-[11px] text-amber-300 leading-snug">${escapeHtml(r.warnings.join(' • '))}</div>` : ''}
+                          </td>
+                          <td class="px-3 py-2.5 align-top whitespace-nowrap">
+                            ${r.major
+                              ? `<span class="font-bold text-brand-soft">${escapeHtml(r.major)}</span><div class="text-[10px] text-slate-400">${escapeHtml(r.majorName)}</div>`
+                              : `<span class="text-slate-500">-</span>`
+                            }
+                          </td>
+                          <td class="px-3 py-2.5 align-top font-mono text-slate-200 whitespace-nowrap">${escapeHtml(r.phone || '-')}</td>
+                          <td class="px-3 py-2.5 align-top max-w-[200px]">
+                            ${r.personalEmail ? `<div class="truncate text-slate-200" title="${escapeHtml(r.personalEmail)}">${escapeHtml(r.personalEmail)}</div>` : ''}
+                            ${r.studentEmail ? `<div class="truncate text-slate-400" title="${escapeHtml(r.studentEmail)}">${escapeHtml(r.studentEmail)}</div>` : ''}
+                            ${!r.personalEmail && !r.studentEmail ? '<span class="text-slate-500">-</span>' : ''}
+                          </td>
+                          <td class="px-3 py-2.5 align-top whitespace-nowrap">
+                            ${r.bankAccount
+                              ? `<span class="text-slate-400">${escapeHtml(r.bankName)}</span> <span class="font-mono text-slate-200">${escapeHtml(r.bankAccount)}</span>`
+                              : `<span class="text-slate-500">-</span>`
+                            }
+                          </td>
+                          <td class="px-3 py-2.5 align-top text-center whitespace-nowrap">
+                            <span class="font-mono font-bold ${r.totalSlots > 0 ? 'text-orange-300' : 'text-emerald-400'}">${r.totalSlots} slot</span>
+                          </td>
+                          <td class="px-2 py-2.5 align-top text-right">
+                            <button type="button" data-action="pic-bulk-remove-row" data-bulk-idx="${idx}" class="p-1 rounded-lg bg-elevated hover:bg-red-900 hover:text-red-200 text-slate-400 border border-line transition-colors" title="Hapus baris ini dari import">
+                              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="px-6 py-4 border-t border-line bg-elevated/40 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div class="text-xs text-slate-400">
+            ${errorRows.length > 0
+              ? `<span class="text-amber-300">${errorRows.length} baris error akan dilewati otomatis atau hapus baris error terlebih dahulu.</span>`
+              : rows.length > 0
+                ? `${actionableRows.length} PIC siap disimpan ke database.`
+                : 'Belum ada data dimuat.'
+            }
+          </div>
+          <div class="flex items-center gap-2.5">
+            <button type="button" data-action="pic-bulk-close" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+              Batal
+            </button>
+            <button id="btn-save-pic-bulk" type="button" data-action="pic-bulk-save" ${actionableRows.length === 0 ? 'disabled' : ''} class="px-5 py-2 rounded-lg bg-brand hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-sm font-extrabold transition-colors">
+              Import ${actionableRows.length} PIC
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Bind dropzone & file picker listeners
+      const dz = document.getElementById('pic-bulk-dropzone');
+      const fileInput = document.getElementById('pic-bulk-file-input');
+      if (dz && fileInput) {
+        dz.addEventListener('click', () => fileInput.click());
+        dz.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dz.classList.add('bg-brand/10', 'border-brand');
+        });
+        dz.addEventListener('dragleave', () => {
+          dz.classList.remove('bg-brand/10');
+        });
+        dz.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dz.classList.remove('bg-brand/10');
+          const f = e.dataTransfer?.files?.[0];
+          if (f) handlePicBulkFile(f);
+        });
+        fileInput.addEventListener('change', (e) => {
+          const f = e.target.files?.[0];
+          e.target.value = '';
+          if (f) handlePicBulkFile(f);
+        });
+      }
+
+      const dupSelect = document.getElementById('pic-bulk-dup-mode');
+      if (dupSelect) {
+        dupSelect.addEventListener('change', (e) => {
+          state.picBulkDuplicateMode = e.target.value === 'skip' ? 'skip' : 'update';
+          renderPicBulkModal();
+        });
+      }
+    }
+
+    async function savePicBulkImport() {
+      if (!requireAdmin()) return;
+      const validRows = (state.picBulkRows || []).filter((r) => r.errors.length === 0);
+      const rowsToImport = state.picBulkDuplicateMode === 'skip'
+        ? validRows.filter((r) => !r.existingPicId)
+        : validRows;
+
+      if (rowsToImport.length === 0) {
+        showToast('Tidak ada baris PIC valid untuk di-import.', 'error');
+        return;
+      }
+
+      const saveBtn = document.getElementById('btn-save-pic-bulk');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Menyimpan...';
+      }
+
+      try {
+        // Ensure existing profiles are loaded so updating existing PICs NEVER wipes their uploaded profile photo
+        if (rowsToImport.some((r) => r.existingPicId)) {
+          await ensurePicListProfilesLoaded();
+        }
+
+        const nowTs = Date.now();
+        const atomicUpdates = {};
+        const cacheUpdates = {};
+        let newCount = 0;
+        let updatedCount = 0;
+
+        // Deduplicate within the same import batch by lowercase name (later row wins)
+        const batchNameToId = new Map();
+
+        rowsToImport.forEach((row, i) => {
+          const lowerName = row.name.toLowerCase();
+          let picId = row.existingPicId || batchNameToId.get(lowerName);
+          const isUpdate = Boolean(row.existingPicId);
+          if (!picId) {
+            picId = push(ref(db, 'pics')).key;
+            newCount += 1;
+          } else if (isUpdate && !batchNameToId.has(lowerName)) {
+            updatedCount += 1;
+          }
+          batchNameToId.set(lowerName, picId);
+
+          const existingPic = state.pics[picId] || {};
+          const existingProfile = state.picProfilesCache[picId] || {};
+          const createdAt = existingPic.createdAt ? Number(existingPic.createdAt) : (nowTs + i);
+
+          const profilePayload = {
+            major: row.major || '',
+            phone: row.phone || '',
+            personalEmail: row.personalEmail || '',
+            studentEmail: row.studentEmail || '',
+            bankName: row.bankName || 'BCA',
+            bankAccount: row.bankAccount || '',
+            notes: row.notes || '',
+            photoDataUrl: existingProfile.photoDataUrl || '',
+            updatedAt: nowTs
+          };
+
+          atomicUpdates[`pics/${picId}`] = {
+            name: row.name,
+            major: row.major || '',
+            active: true,
+            createdAt,
+            updatedAt: nowTs
+          };
+          atomicUpdates[`picSchedules/${picId}`] = row.schedule;
+          atomicUpdates[`picProfiles/${picId}`] = profilePayload;
+          cacheUpdates[picId] = profilePayload;
+        });
+
+        await update(ref(db), atomicUpdates);
+        Object.entries(cacheUpdates).forEach(([pid, prof]) => {
+          state.picProfilesCache[pid] = prof;
+        });
+
+        closePicBulkModal();
+        const summaryParts = [];
+        if (newCount > 0) summaryParts.push(`${newCount} PIC baru ditambahkan`);
+        if (updatedCount > 0) summaryParts.push(`${updatedCount} PIC diperbarui`);
+        showToast(`Import Bulk berhasil: ${summaryParts.join(', ')}.`, 'success');
+        renderAll();
+      } catch (err) {
+        handleWriteError(err, 'Gagal menyimpan hasil Import Bulk PIC ke database.');
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = `Import ${rowsToImport.length} PIC`;
+        }
+      }
     }
 
     // ==================== 8. LIVE 1-SECOND CLOCK & TIMER ENGINE ====================
@@ -5927,7 +6739,7 @@
           });
         }
         closeModal('modal-history-detail');
-        showToast('Ruangan dipulihkan ke Master Monitor.', 'success');
+        showToast('Ruangan dipulihkan ke Rundown Monitor.', 'success');
         navigateTo('room', roomId);
       } catch (err) {
         handleWriteError(err, 'Gagal memulihkan ruangan.');
@@ -6382,7 +7194,7 @@
       }
     });
     document.getElementById('nav-monitor').addEventListener('click', () => navigateTo('monitor'));
-    document.getElementById('nav-history').addEventListener('click', () => navigateTo('history'));
+    document.getElementById('btn-monitor-history').addEventListener('click', () => navigateTo('history'));
     document.getElementById('nav-jadwal').addEventListener('click', () => navigateTo('jadwal'));
     document.getElementById('nav-pic-data').addEventListener('click', () => navigateTo('pic-data'));
     document.getElementById('nav-monitor-mobile').addEventListener('click', () => navigateTo('monitor'));
@@ -6825,7 +7637,7 @@
       if (typeof cb === 'function') await cb();
     });
 
-    // Generic Modal Close buttons, Mini Calendar outside click & delegated dynamic actions
+    // Generic Modal Close buttons, Mini Calendar & Major Filter outside click & delegated dynamic actions
     document.addEventListener('click', (e) => {
       // Close mini calendar popup directly without rebuilding focused inputs
       if (state.jadwalCalendarOpen && !e.target.closest('#jadwal-mini-calendar') && !e.target.closest('#btn-jadwal-calendar')) {
@@ -6834,18 +7646,29 @@
         if (calEl) calEl.remove();
       }
 
+      // Close multi-select Jurusan filter dropdown when clicking outside
+      if (state.picMajorDropdownOpen && !e.target.closest('#pic-major-filter-wrap')) {
+        state.picMajorDropdownOpen = false;
+        renderPicMajorFilterUI();
+      }
+
       const closeBtn = e.target.closest('[data-close-modal]');
       if (closeBtn) {
         const modalId = closeBtn.dataset.closeModal;
         closeModal(modalId);
         if (modalId === 'modal-login') resetLoginFormFields();
         if (modalId === 'modal-pic-form') state.picEditDraft = null;
+        if (modalId === 'modal-pic-bulk') closePicBulkModal();
         return;
       }
 
       if (e.target.classList.contains('modal-backdrop')) {
         if (e.target.id === 'modal-pic-crop') {
           closePicCropModal();
+          return;
+        }
+        if (e.target.id === 'modal-pic-bulk') {
+          closePicBulkModal();
           return;
         }
         e.target.classList.add('d-none');
@@ -6952,6 +7775,45 @@
           renderJadwalPicView(true);
           break;
         }
+        case 'pic-major-toggle': {
+          state.picMajorDropdownOpen = !state.picMajorDropdownOpen;
+          renderPicMajorFilterUI();
+          break;
+        }
+        case 'pic-major-item': {
+          const code = actionEl.dataset.major;
+          if (!code) break;
+          const idx = state.picMajorFilter.indexOf(code);
+          if (idx >= 0) {
+            state.picMajorFilter.splice(idx, 1);
+          } else {
+            state.picMajorFilter.push(code);
+          }
+          renderPicDataView();
+          break;
+        }
+        case 'pic-major-clear': {
+          state.picMajorFilter = [];
+          renderPicDataView();
+          break;
+        }
+        case 'open-pic-bulk-import':
+          openPicBulkModal();
+          break;
+        case 'pic-bulk-close':
+          closePicBulkModal();
+          break;
+        case 'pic-bulk-remove-row': {
+          const bIdx = Number(actionEl.dataset.bulkIdx);
+          if (!Number.isNaN(bIdx) && Array.isArray(state.picBulkRows)) {
+            state.picBulkRows.splice(bIdx, 1);
+            renderPicBulkModal();
+          }
+          break;
+        }
+        case 'pic-bulk-save':
+          savePicBulkImport();
+          break;
         case 'open-add-pic':
           openPicFormModal(null);
           break;
@@ -7121,6 +7983,11 @@
           renderJadwalPicView();
           return;
         }
+        if (state.picMajorDropdownOpen) {
+          state.picMajorDropdownOpen = false;
+          renderPicMajorFilterUI();
+          return;
+        }
         if (!document.getElementById('modal-confirm').classList.contains('d-none')) {
           state.confirmCallback = null;
           closeModal('modal-confirm');
@@ -7128,6 +7995,10 @@
         }
         if (!document.getElementById('modal-pic-crop').classList.contains('d-none')) {
           closePicCropModal();
+          return;
+        }
+        if (!document.getElementById('modal-pic-bulk').classList.contains('d-none')) {
+          closePicBulkModal();
           return;
         }
         if (!document.getElementById('modal-import').classList.contains('d-none')) {
@@ -7148,7 +8019,7 @@
         return;
       }
       const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-confirm']
+      const anyModalOpen = ['modal-login', 'modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-pic-bulk', 'modal-confirm']
         .some(id => !document.getElementById(id).classList.contains('d-none'));
 
       if (e.shiftKey && e.key === 'ArrowRight' && !isInputFocused && !anyModalOpen && state.isAdmin && state.view === 'room' && state.selectedRoomId) {
@@ -8045,8 +8916,32 @@ Aturan wajib:
       if (f) handleSelectedImportFile(f, false);
     });
 
-    // Global Ctrl+V / Cmd+V Paste Listener (PIC Profile Photo Picker & Modal Import)
+    // Global Ctrl+V / Cmd+V Paste Listener (PIC Profile Photo Picker, Bulk PIC Import & Modal Import)
     document.addEventListener('paste', (e) => {
+      const picBulkModal = document.getElementById('modal-pic-bulk');
+      const isPicBulkOpen = picBulkModal && !picBulkModal.classList.contains('d-none');
+
+      // 0. Paste tabel dari Google Sheets / Excel ke Modal Import Bulk PIC
+      if (state.isAdmin && isPicBulkOpen) {
+        const activeTag = document.activeElement?.tagName;
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+        const text = e.clipboardData?.getData('text/plain') || '';
+        if (text.trim()) {
+          e.preventDefault();
+          const matrix = parsePicBulkTsvText(text);
+          const rows = parsePicBulkMatrix(matrix);
+          if (rows.length > 0) {
+            state.picBulkRows = rows;
+            state.picBulkSourceName = 'Copy-Paste Clipboard (Google Sheets / Excel)';
+            renderPicBulkModal();
+            showToast(`${rows.length} baris PIC terbaca dari hasil copy-paste!`, 'success');
+          } else {
+            showToast('Data yang di-paste belum terbaca sebagai baris PIC. Pastikan menyalin baris dari template Google Sheets.', 'error');
+          }
+          return;
+        }
+      }
+
       const picCropModal = document.getElementById('modal-pic-crop');
       const picFormModal = document.getElementById('modal-pic-form');
       const isPicPickerOpen = picCropModal && !picCropModal.classList.contains('d-none') && state.picCropMode === 'picker';
