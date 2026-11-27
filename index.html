@@ -4289,7 +4289,10 @@
       const profile = state.picProfilesCache[picId] || {};
       const bankLabel = profile.bankName ? `Rek ${profile.bankName}` : 'Rek BCA';
       const bankAccDisplay = profile.bankAccount ? profile.bankAccount : '-';
-      const phoneDisplay = profile.phone ? profile.phone : '-';
+      const normalizedPhone = normalizePicPhoneForStorage(profile.phone || '');
+      const phoneDisplay = normalizedPhone || '-';
+      const personalEmailDisplay = profile.personalEmail ? profile.personalEmail : '-';
+      const studentEmailDisplay = profile.studentEmail ? profile.studentEmail : '-';
 
       const daySummaryPills = PIC_DAYS.map((d) => {
         const slots = normalizeDaySlots(schedule[d.key]);
@@ -4333,7 +4336,7 @@
 
         ${renderPicRulesAlertBanner()}
 
-        <!-- Profile Card (Matches Reference Image 2) -->
+        <!-- Profile Card -->
         <div class="bg-surface border border-line rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-7 min-w-0 flex-1">
             <!-- Avatar Circle -->
@@ -4348,19 +4351,30 @@
             </div>
 
             <!-- Info Columns -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 sm:border-l sm:border-line sm:pl-7 flex-1 min-w-0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 sm:border-l sm:border-line sm:pl-7 flex-1 min-w-0">
               <div class="space-y-3 min-w-0">
                 <div>
                   <div class="text-xs font-medium text-slate-400">Nama</div>
                   <div class="text-base sm:text-lg font-extrabold text-white mt-0.5 break-words">${escapeHtml(pic.name)}</div>
                 </div>
                 <div>
-                  <div class="text-xs font-medium text-slate-400">Nomor HP</div>
+                  <div class="text-xs font-medium text-slate-400">Nomor HP / WhatsApp</div>
                   <div class="text-sm font-bold text-slate-100 font-mono mt-0.5">${escapeHtml(phoneDisplay)}</div>
                 </div>
               </div>
 
-              <div class="space-y-3 sm:border-l sm:border-line sm:pl-7 min-w-0">
+              <div class="space-y-3 sm:border-l sm:border-line sm:pl-6 min-w-0">
+                <div>
+                  <div class="text-xs font-medium text-slate-400">Email Pribadi</div>
+                  <div class="text-xs sm:text-sm font-semibold ${profile.personalEmail ? 'text-slate-100' : 'text-slate-500'} mt-0.5 break-all">${escapeHtml(personalEmailDisplay)}</div>
+                </div>
+                <div>
+                  <div class="text-xs font-medium text-slate-400">Email Student</div>
+                  <div class="text-xs sm:text-sm font-semibold ${profile.studentEmail ? 'text-slate-100' : 'text-slate-500'} mt-0.5 break-all">${escapeHtml(studentEmailDisplay)}</div>
+                </div>
+              </div>
+
+              <div class="space-y-3 xl:border-l xl:border-line xl:pl-6 min-w-0">
                 <div>
                   <div class="text-xs font-medium text-slate-400">${escapeHtml(bankLabel)}</div>
                   <div class="text-sm sm:text-base font-bold text-white font-mono mt-0.5">${escapeHtml(bankAccDisplay)}</div>
@@ -4980,6 +4994,20 @@
       showToast('Foto profil berhasil diatur (1:1). Klik Simpan untuk menerapkan.', 'success');
     }
 
+    function sanitizePicPhoneDigits(raw) {
+      return String(raw || '').replace(/\D+/g, '');
+    }
+
+    function normalizePicPhoneForStorage(raw) {
+      const digits = sanitizePicPhoneDigits(raw);
+      if (!digits) return '';
+      // Replace ONLY the leading "0" with "62"; keep middle/trailing zeros and existing "62..." intact
+      if (digits.startsWith('0')) {
+        return `62${digits.slice(1)}`;
+      }
+      return digits;
+    }
+
     async function openPicFormModal(picId = null) {
       if (!requireAdmin()) return;
 
@@ -4998,7 +5026,9 @@
       state.picEditDraft = {
         id: isEdit ? picId : null,
         name: isEdit ? String(state.pics[picId].name || '') : '',
-        phone: String(profile.phone || ''),
+        phone: normalizePicPhoneForStorage(profile.phone || ''),
+        personalEmail: String(profile.personalEmail || ''),
+        studentEmail: String(profile.studentEmail || ''),
         bankName: String(profile.bankName || 'BCA'),
         bankAccount: String(profile.bankAccount || ''),
         notes: String(profile.notes || ''),
@@ -5019,11 +5049,15 @@
       if (!draft) return;
       const nameEl = document.getElementById('pic-form-name');
       const phoneEl = document.getElementById('pic-form-phone');
+      const personalEmailEl = document.getElementById('pic-form-email-personal');
+      const studentEmailEl = document.getElementById('pic-form-email-student');
       const bankEl = document.getElementById('pic-form-bank');
       const accEl = document.getElementById('pic-form-account');
       const notesEl = document.getElementById('pic-form-notes');
       if (nameEl) draft.name = nameEl.value;
-      if (phoneEl) draft.phone = phoneEl.value;
+      if (phoneEl) draft.phone = sanitizePicPhoneDigits(phoneEl.value);
+      if (personalEmailEl) draft.personalEmail = personalEmailEl.value;
+      if (studentEmailEl) draft.studentEmail = studentEmailEl.value;
       if (bankEl) draft.bankName = bankEl.value;
       if (accEl) draft.bankAccount = accEl.value;
       if (notesEl) draft.notes = notesEl.value;
@@ -5144,7 +5178,16 @@
               </div>
               <div>
                 <label for="pic-form-phone" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Nomor HP / WhatsApp</label>
-                <input id="pic-form-phone" type="text" value="${escapeHtml(draft.phone)}" placeholder="Contoh: +62 812-3456-7890" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
+                <input id="pic-form-phone" type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${escapeHtml(sanitizePicPhoneDigits(draft.phone))}" placeholder="Contoh: 081234567890 atau 6281234567890" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm font-mono text-white placeholder-slate-500" />
+                <p class="mt-1 text-[11px] text-slate-500">Hanya angka. Awalan <span class="font-mono text-slate-400">0</span> otomatis diubah ke <span class="font-mono text-slate-400">62</span> saat disimpan.</p>
+              </div>
+              <div>
+                <label for="pic-form-email-personal" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email Pribadi <span class="text-[11px] font-normal normal-case text-slate-500">(Opsional)</span></label>
+                <input id="pic-form-email-personal" type="email" autocomplete="off" value="${escapeHtml(draft.personalEmail || '')}" placeholder="Contoh: nama@gmail.com" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
+              </div>
+              <div>
+                <label for="pic-form-email-student" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Email Student <span class="text-[11px] font-normal normal-case text-slate-500">(Opsional)</span></label>
+                <input id="pic-form-email-student" type="email" autocomplete="off" value="${escapeHtml(draft.studentEmail || '')}" placeholder="Contoh: nama@student.umn.ac.id" class="w-full px-3.5 py-2.5 rounded-lg bg-canvas border border-line-strong focus:border-brand focus:outline-none text-sm text-white placeholder-slate-500" />
               </div>
               <div>
                 <label for="pic-form-bank" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Bank</label>
@@ -5185,6 +5228,49 @@
         </div>
       `;
 
+      // Strict numeric-only Phone / WhatsApp input & auto-clean copy-paste handler
+      const phoneInput = document.getElementById('pic-form-phone');
+      if (phoneInput) {
+        const allowedNavKeys = new Set([
+          'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+          'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+        ]);
+
+        phoneInput.addEventListener('keydown', (e) => {
+          if (e.ctrlKey || e.metaKey || e.altKey || allowedNavKeys.has(e.key)) return;
+          if (e.key.length === 1 && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+          }
+        });
+
+        phoneInput.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const rawText = e.clipboardData?.getData('text/plain') || '';
+          const cleanedPaste = sanitizePicPhoneDigits(rawText);
+          const start = phoneInput.selectionStart ?? phoneInput.value.length;
+          const end = phoneInput.selectionEnd ?? phoneInput.value.length;
+          const nextValue = sanitizePicPhoneDigits(
+            phoneInput.value.slice(0, start) + cleanedPaste + phoneInput.value.slice(end)
+          );
+          const nextCursor = sanitizePicPhoneDigits(phoneInput.value.slice(0, start)).length + cleanedPaste.length;
+          phoneInput.value = nextValue;
+          try { phoneInput.setSelectionRange(nextCursor, nextCursor); } catch (_) {}
+          if (state.picEditDraft) state.picEditDraft.phone = nextValue;
+        });
+
+        phoneInput.addEventListener('input', () => {
+          const prevVal = phoneInput.value;
+          const cleaned = sanitizePicPhoneDigits(prevVal);
+          if (cleaned !== prevVal) {
+            const rawCursor = phoneInput.selectionStart ?? prevVal.length;
+            const digitsBeforeCursor = sanitizePicPhoneDigits(prevVal.slice(0, rawCursor)).length;
+            phoneInput.value = cleaned;
+            try { phoneInput.setSelectionRange(digitsBeforeCursor, digitsBeforeCursor); } catch (_) {}
+          }
+          if (state.picEditDraft) state.picEditDraft.phone = cleaned;
+        });
+      }
+
       // Bind photo file upload listener cleanly -> opens interactive 1:1 circular crop editor
       const photoInput = document.getElementById('pic-form-photo-input');
       if (photoInput) {
@@ -5215,6 +5301,26 @@
         }
         return;
       }
+
+      const personalEmail = String(draft.personalEmail || '').trim();
+      const studentEmail = String(draft.studentEmail || '').trim();
+      const basicEmailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (personalEmail && !basicEmailRe.test(personalEmail)) {
+        if (errBox) {
+          errBox.textContent = 'Format Email Pribadi tidak valid. Kosongkan jika tidak ingin diisi.';
+          errBox.classList.remove('d-none');
+        }
+        return;
+      }
+      if (studentEmail && !basicEmailRe.test(studentEmail)) {
+        if (errBox) {
+          errBox.textContent = 'Format Email Student tidak valid. Kosongkan jika tidak ingin diisi.';
+          errBox.classList.remove('d-none');
+        }
+        return;
+      }
+
+      const normalizedPhone = normalizePicPhoneForStorage(draft.phone);
 
       // Validate & clean weekly slots
       const cleanSchedule = {};
@@ -5247,7 +5353,9 @@
       const existingCreatedAt = isEdit && state.pics[picId]?.createdAt ? state.pics[picId].createdAt : nowTs;
 
       const profilePayload = {
-        phone: draft.phone.trim(),
+        phone: normalizedPhone,
+        personalEmail,
+        studentEmail,
         bankName: draft.bankName.trim() || 'BCA',
         bankAccount: draft.bankAccount.trim(),
         notes: draft.notes.trim(),
