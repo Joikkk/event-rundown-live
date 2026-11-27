@@ -1056,6 +1056,7 @@
       jadwalCalMonth: _initNow.getMonth(),
       picEditDraft: null,
       picCropSession: null,
+      picCropMode: null, // 'picker' | 'crop' | null
       // Rundown Draft & Importer
       draftItems: [], // optional inline rundown items when creating a new room
       geminiApiKey: '', // loaded securely from /adminSecrets/geminiApiKey for Admin only
@@ -1485,6 +1486,7 @@
       state.selectedPicId = null;
       state.picEditDraft = null;
       state.picCropSession = null;
+      state.picCropMode = null;
     }
 
     function subscribeAdminPics() {
@@ -1629,6 +1631,7 @@
       state.selectedPicId = null;
       state.picEditDraft = null;
       state.picCropSession = null;
+      state.picCropMode = null;
       state.jadwalCalendarOpen = false;
 
       ['modal-room', 'modal-item', 'modal-history-detail', 'modal-import', 'modal-coming-soon', 'modal-pic-form', 'modal-pic-crop', 'modal-confirm'].forEach(closeModal);
@@ -4714,11 +4717,137 @@
         try { URL.revokeObjectURL(state.picCropSession.objectUrl); } catch (_) {}
       }
       state.picCropSession = null;
+      state.picCropMode = null;
       const mount = document.getElementById('pic-crop-mount');
       if (mount) mount.innerHTML = '';
       closeModal('modal-pic-crop');
       const photoInput = document.getElementById('pic-form-photo-input');
       if (photoInput) photoInput.value = '';
+    }
+
+    async function pastePicPhotoFromClipboard() {
+      if (!requireAdmin() || !state.picEditDraft) return;
+      if (!navigator.clipboard || typeof navigator.clipboard.read !== 'function') {
+        showToast('Gunakan Ctrl + V untuk paste foto, atau klik area upload untuk memilih file.', 'info');
+        return;
+      }
+      try {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          const imgType = (item.types || []).find((t) => t.startsWith('image/'));
+          if (imgType) {
+            const blob = await item.getType(imgType);
+            const ext = imgType.split('/')[1] || 'png';
+            const pastedFile = new File([blob], `pic-photo-paste.${ext}`, { type: imgType });
+            await openPicCropModal(pastedFile);
+            return;
+          }
+        }
+        showToast('Tidak ada foto di clipboard. Salin gambar/screenshot terlebih dahulu.', 'error');
+      } catch (err) {
+        if (err && err.name === 'NotAllowedError') {
+          showToast('Izin baca clipboard ditolak browser. Gunakan Ctrl + V atau klik pilih file.', 'error');
+        } else {
+          showToast('Gagal membaca clipboard. Gunakan Ctrl + V atau pilih file foto.', 'error');
+        }
+      }
+    }
+
+    function openPicPhotoPickerModal() {
+      if (!requireAdmin() || !state.picEditDraft) return;
+      if (state.picCropSession?.objectUrl) {
+        try { URL.revokeObjectURL(state.picCropSession.objectUrl); } catch (_) {}
+      }
+      state.picCropSession = null;
+      state.picCropMode = 'picker';
+
+      const mount = document.getElementById('pic-crop-mount');
+      if (!mount) return;
+
+      mount.innerHTML = `
+        <div class="px-5 py-3.5 border-b border-line flex items-center justify-between shrink-0 bg-surface">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm sm:text-base font-bold text-white">Upload Foto Profil</h3>
+            <span class="px-2 py-0.5 rounded-md bg-brand/15 border border-brand/35 font-mono text-[11px] font-bold text-brand">1:1</span>
+          </div>
+          <button type="button" data-action="pic-crop-cancel" class="text-slate-400 hover:text-white text-2xl leading-none px-1" aria-label="Tutup">&times;</button>
+        </div>
+
+        <div class="p-5 sm:p-6 space-y-4 bg-[#0B0F15]">
+          <!-- Dashed Cyan Upload / Drag-Drop / Paste Zone (Matches Import Dropzone UI) -->
+          <div id="pic-photo-dropzone" tabindex="0" class="rounded-2xl border-2 border-dashed border-brand/85 hover:border-brand bg-canvas/80 p-6 sm:p-8 text-center transition-colors cursor-pointer focus:outline-none focus:border-brand">
+            <div class="space-y-3">
+              <div class="w-12 h-12 mx-auto rounded-xl bg-elevated border border-line-strong flex items-center justify-center text-brand">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="text-sm sm:text-base font-bold text-white leading-snug">
+                Klik untuk pilih file, tarik ke sini, atau tekan
+                <span class="inline-block px-2 py-0.5 mx-0.5 rounded-md bg-elevated border border-line-strong font-mono text-brand-soft text-xs align-middle">Ctrl + V</span>
+                untuk paste foto
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+                Mendukung <strong class="text-slate-200">Foto / Screenshot</strong> (JPG, PNG, WEBP). Foto yang dipilih atau di-paste akan langsung masuk ke editor crop 1:1.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Buttons (Especially helpful on Mobile/HP where Ctrl+V is unavailable) -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" data-action="pic-photo-browse" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-elevated hover:bg-slate-700 border border-line-strong text-xs sm:text-sm font-bold text-white transition-colors">
+              <svg class="w-4 h-4 text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Pilih File</span>
+            </button>
+            <button type="button" data-action="pic-photo-paste-clipboard" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-brand/15 hover:bg-brand/25 border border-brand/50 text-xs sm:text-sm font-bold text-brand-soft transition-colors">
+              <svg class="w-4 h-4 text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+              <span>Paste Foto</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="px-5 py-3.5 border-t border-line bg-surface flex items-center justify-end shrink-0">
+          <button type="button" data-action="pic-crop-cancel" class="px-4 py-2 rounded-lg bg-elevated hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors">
+            Batal
+          </button>
+        </div>
+      `;
+
+      const dropzone = document.getElementById('pic-photo-dropzone');
+      if (dropzone) {
+        dropzone.addEventListener('click', () => {
+          const photoInput = document.getElementById('pic-form-photo-input');
+          if (photoInput) photoInput.click();
+        });
+        dropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropzone.classList.add('bg-brand/10', 'border-brand');
+        });
+        dropzone.addEventListener('dragleave', () => {
+          dropzone.classList.remove('bg-brand/10');
+        });
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('bg-brand/10');
+          const droppedFile = e.dataTransfer?.files?.[0];
+          if (droppedFile) openPicCropModal(droppedFile);
+        });
+      }
+
+      openModal('modal-pic-crop');
+      setTimeout(() => {
+        const dz = document.getElementById('pic-photo-dropzone');
+        if (dz) dz.focus();
+      }, 40);
     }
 
     async function openPicCropModal(file) {
@@ -4732,6 +4861,7 @@
         const stageSize = Math.max(240, Math.min(360, window.innerWidth - 52, window.innerHeight - 290));
         const cropSize = Math.round(stageSize * 0.84);
 
+        state.picCropMode = 'crop';
         state.picCropSession = {
           img,
           objectUrl,
@@ -6729,10 +6859,19 @@
           if (picId) confirmDeletePic(picId);
           break;
         case 'pic-trigger-photo': {
+          if (!state.picEditDraft) break;
+          syncPicDraftFromDom();
+          openPicPhotoPickerModal();
+          break;
+        }
+        case 'pic-photo-browse': {
           const photoInput = document.getElementById('pic-form-photo-input');
           if (photoInput) photoInput.click();
           break;
         }
+        case 'pic-photo-paste-clipboard':
+          pastePicPhotoFromClipboard();
+          break;
         case 'pic-remove-photo': {
           if (!state.picEditDraft) break;
           syncPicDraftFromDom();
@@ -7800,27 +7939,65 @@ Aturan wajib:
       if (f) handleSelectedImportFile(f, false);
     });
 
-    // Global Ctrl+V / Cmd+V Paste Listener when Modal Import is open
+    // Global Ctrl+V / Cmd+V Paste Listener (PIC Profile Photo Picker & Modal Import)
     document.addEventListener('paste', (e) => {
+      const picCropModal = document.getElementById('modal-pic-crop');
+      const picFormModal = document.getElementById('modal-pic-form');
+      const isPicPickerOpen = picCropModal && !picCropModal.classList.contains('d-none') && state.picCropMode === 'picker';
+      const isPicFormOpen = picFormModal && !picFormModal.classList.contains('d-none') && picCropModal && picCropModal.classList.contains('d-none');
+
+      // Helper to extract an image file from ClipboardEvent
+      const extractClipboardImageFile = (clipData, prefix) => {
+        const items = clipData?.items;
+        if (items) {
+          for (const item of items) {
+            if (item.type && item.type.startsWith('image/')) {
+              const blob = item.getAsFile();
+              if (blob) {
+                const ext = item.type.split('/')[1] || 'png';
+                return new File([blob], `${prefix}.${ext}`, { type: item.type });
+              }
+            }
+          }
+        }
+        const files = clipData?.files;
+        if (files && files.length > 0 && files[0].type && files[0].type.startsWith('image/')) {
+          return files[0];
+        }
+        return null;
+      };
+
+      // 1. Paste Foto Profil PIC -> langsung buka editor crop 1:1
+      if (state.isAdmin && state.picEditDraft && (isPicPickerOpen || isPicFormOpen)) {
+        const activeTag = document.activeElement?.tagName;
+        if (isPicFormOpen && (activeTag === 'INPUT' || activeTag === 'TEXTAREA')) {
+          return;
+        }
+        const pastedImg = extractClipboardImageFile(e.clipboardData, 'pic-photo-paste');
+        if (pastedImg) {
+          e.preventDefault();
+          syncPicDraftFromDom();
+          openPicCropModal(pastedImg);
+          return;
+        }
+        if (isPicPickerOpen) {
+          e.preventDefault();
+          showToast('Clipboard tidak berisi gambar. Salin foto/screenshot terlebih dahulu.', 'error');
+          return;
+        }
+      }
+
+      // 2. Paste untuk Modal Import Rundown
       const modalEl = document.getElementById('modal-import');
       if (modalEl.classList.contains('d-none')) return;
       const activeTag = document.activeElement?.tagName;
       if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
 
-      const items = e.clipboardData?.items;
-      if (items) {
-        for (const item of items) {
-          if (item.type && item.type.startsWith('image/')) {
-            e.preventDefault();
-            const blob = item.getAsFile();
-            if (blob) {
-              const ext = item.type.split('/')[1] || 'png';
-              const pastedFile = new File([blob], `screenshot-rundown.${ext}`, { type: item.type });
-              handleSelectedImportFile(pastedFile, true);
-            }
-            return;
-          }
-        }
+      const pastedImportImg = extractClipboardImageFile(e.clipboardData, 'screenshot-rundown');
+      if (pastedImportImg) {
+        e.preventDefault();
+        handleSelectedImportFile(pastedImportImg, true);
+        return;
       }
 
       // Also support direct copy-paste of cells from Google Sheets / Excel (TSV)
